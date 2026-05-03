@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from pipeline.config import OUTPUT_DIR, DATA_DIR
 from pipeline.run import run_pipeline
-from pipeline.db import list_prompts, get_prompt, save_prompt, delete_prompt, list_generations
+from pipeline.db import list_prompts, get_prompt, save_prompt, delete_prompt, list_generations, _session
 
 # New SQLite database
 from db.database import get_db as get_db_session
@@ -123,9 +123,24 @@ def topic_page(request: Request, slug: str, db: Session = Depends(get_db_session
 # ------------------------------------------------------------------
 
 @app.get("/prompts", response_class=HTMLResponse)
-def prompts_page(request: Request):
+def prompts_page(request: Request, db: Session = Depends(get_db_session)):
+    prompts = crud.list_prompts(db)
+    # Group by family (root prompts and their versions)
+    families = []
+    seen = set()
+    for p in prompts:
+        if p.id in seen:
+            continue
+        family = crud.get_prompt_family(db, p.id)
+        for f in family:
+            seen.add(f.id)
+        families.append({
+            "root": family[0],
+            "versions": family[1:],
+            "all": family,
+        })
     return templates.TemplateResponse(request, "prompts.html", {
-        "prompts": list_prompts(),
+        "families": families,
     })
 
 
@@ -134,8 +149,9 @@ def create_prompt(
     name: str = Form(...),
     system_prompt: str = Form(...),
     question_prompt: str = Form(...),
+    parent_id: Optional[str] = Form(None),
 ):
-    save_prompt(name, system_prompt, question_prompt)
+    save_prompt(name, system_prompt, question_prompt, parent_id=parent_id or None)
     return RedirectResponse(url="/prompts", status_code=303)
 
 
@@ -355,6 +371,7 @@ def api_get_generation(generation_id: int, db: Session = Depends(get_db_session)
             {"source_type": gl.source_type, "source_url": gl.source_url, "verification_status": gl.verification_status}
             for gl in g.grounding_logs
         ],
+        "timeline": g.timeline,
         "created_at": g.created_at.isoformat() if g.created_at else None,
     }
 

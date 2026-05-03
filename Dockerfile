@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY db/ ./db/
 COPY pipeline/ ./pipeline/
 COPY web/ ./web/
-COPY data/ ./data/ 2>/dev/null || true
-COPY output/ ./output/ 2>/dev/null || true
+COPY data/ ./data/
+COPY output/ ./output/
 COPY test_pipeline.py ./
 
 # Ensure data dir exists (for SQLite DB)

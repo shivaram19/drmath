@@ -5,6 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prompt Builder — Dr. Math</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .prompt-family { margin-bottom: 1.5rem; }
+        .family-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #334155;
+        }
+        .family-header h2 {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin: 0;
+        }
+        .version-badge {
+            background: #4c1d95;
+            color: #c4b5fd;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .prompt-card { position: relative; }
+        .prompt-text-collapsed {
+            max-height: 120px;
+            overflow: hidden;
+            position: relative;
+        }
+        .prompt-text-collapsed::after {
+            content: "";
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, #0f172a);
+        }
+        .prompt-text-expanded {
+            max-height: none;
+        }
+        .expand-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        .expand-btn:hover { background: rgba(56, 189, 248, 0.1); }
+        .version-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.4rem 0;
+            border-left: 2px solid #334155;
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+        }
+        .version-row .v-label {
+            color: var(--muted);
+            font-size: 0.8rem;
+            min-width: 60px;
+        }
+        .version-row .v-date {
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+        .edit-form {
+            display: none;
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.75rem;
+            border: 1px solid #334155;
+        }
+        .edit-form.active { display: block; }
+        .edit-form textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: var(--text);
+            font-family: inherit;
+            margin-bottom: 0.5rem;
+        }
+        .edit-form button {
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            border: none;
+            background: var(--success);
+            color: #064e3b;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .btn-link {
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: underline;
+            padding: 0;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -51,34 +159,60 @@ Rules:
         </section>
 
         <section class="topics">
-            <h2>📂 Saved Prompts</h2>
-            {% if prompts %}
-            <div class="prompt-grid">
-                {% for p in prompts %}
-                <div class="prompt-card">
-                    <div class="prompt-header">
-                        <h3>{{ p.name }}</h3>
-                        <span class="prompt-id">ID: {{ p.id }}</span>
+            <h2>📂 Saved Prompt Families</h2>
+            {% if families %}
+                {% for family in families %}
+                <div class="prompt-family">
+                    <div class="family-header">
+                        <h2>{{ family.root.name }}</h2>
+                        <span class="version-badge">{{ family.all|length }} version{{ 's' if family.all|length > 1 else '' }}</span>
                     </div>
-                    <div class="prompt-body">
-                        <div class="prompt-section">
-                            <strong>System Prompt:</strong>
-                            <pre>{{ p.system_prompt[:200] }}{% if p.system_prompt|length > 200 %}...{% endif %}</pre>
+
+                    <div class="prompt-grid">
+                        {% for p in family.all %}
+                        <div class="prompt-card" id="card-{{ p.id }}">
+                            <div class="prompt-header">
+                                <h3>{{ p.name }}</h3>
+                                <span class="prompt-id">ID: {{ p.id }}</span>
+                            </div>
+                            <div class="prompt-body">
+                                <div class="prompt-section">
+                                    <strong>System Prompt:</strong>
+                                    <pre class="prompt-text-collapsed" id="sys-{{ p.id }}">{{ p.system_prompt }}</pre>
+                                    <button class="expand-btn" onclick="toggleText('sys-{{ p.id }}', this)">Show full</button>
+                                </div>
+                                <div class="prompt-section">
+                                    <strong>Question Prompt:</strong>
+                                    <pre class="prompt-text-collapsed" id="q-{{ p.id }}">{{ p.question_prompt }}</pre>
+                                    <button class="expand-btn" onclick="toggleText('q-{{ p.id }}', this)">Show full</button>
+                                </div>
+                            </div>
+                            <div class="prompt-footer">
+                                <span class="date">{{ p.created_at.strftime('%Y-%m-%d %H:%M') if p.created_at else '' }}</span>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn-link" onclick="toggleEdit('edit-{{ p.id }}')">🔄 Edit → new version</button>
+                                    <form action="/prompts/{{ p.id }}/delete" method="post" onsubmit="return confirm('Delete this prompt?')">
+                                        <button type="submit" class="btn-danger">🗑️ Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Inline edit form — saves as new version -->
+                            <div class="edit-form" id="edit-{{ p.id }}">
+                                <form action="/prompts" method="post">
+                                    <input type="hidden" name="parent_id" value="{{ p.id }}">
+                                    <label style="font-size: 0.85rem; color: var(--muted);">Editing creates a new version of: <strong>{{ p.name }}</strong></label>
+                                    <input type="text" name="name" value="{{ p.name }}" required style="width: 100%; margin: 0.5rem 0; padding: 0.5rem;">
+                                    <textarea name="system_prompt" rows="6" required>{{ p.system_prompt }}</textarea>
+                                    <textarea name="question_prompt" rows="6" required>{{ p.question_prompt }}</textarea>
+                                    <button type="submit">💾 Save as New Version</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="prompt-section">
-                            <strong>Question Prompt:</strong>
-                            <pre>{{ p.question_prompt[:200] }}{% if p.question_prompt|length > 200 %}...{% endif %}</pre>
-                        </div>
-                    </div>
-                    <div class="prompt-footer">
-                        <span class="date">{{ p.created_at[:10] }}</span>
-                        <form action="/prompts/{{ p.id }}/delete" method="post" onsubmit="return confirm('Delete this prompt?')">
-                            <button type="submit" class="btn-danger">🗑️ Delete</button>
-                        </form>
+                        {% endfor %}
                     </div>
                 </div>
                 {% endfor %}
-            </div>
             {% else %}
             <p class="empty">No custom prompts yet. Create one above!</p>
             {% endif %}
@@ -90,5 +224,24 @@ Rules:
             <a href="/">← Back to topics</a>
         </div>
     </footer>
+
+    <script>
+        function toggleText(id, btn) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('prompt-text-collapsed')) {
+                el.classList.remove('prompt-text-collapsed');
+                el.classList.add('prompt-text-expanded');
+                btn.textContent = 'Collapse';
+            } else {
+                el.classList.remove('prompt-text-expanded');
+                el.classList.add('prompt-text-collapsed');
+                btn.textContent = 'Show full';
+            }
+        }
+        function toggleEdit(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

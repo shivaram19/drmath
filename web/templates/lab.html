@@ -25,6 +25,10 @@
         .badge-sm { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
         .compare-form { display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem; }
         .compare-form select { padding: 0.4rem; border-radius: 6px; background: #0f172a; color: var(--text); border: 1px solid #475569; }
+        .timeline { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+        .timeline-item { display: flex; gap: 0.5rem; padding: 0.2rem 0; }
+        .timeline-item .dot { color: var(--accent); }
+        .timeline-item .time { color: var(--muted); font-size: 0.75rem; }
         @media (max-width: 768px) { .lab-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -113,6 +117,17 @@
                             {% if g.avg_rating %}⭐ {{ g.avg_rating }} ({{ g.eval_count }} evals){% else %}Not rated{% endif %}
                             • {{ g.created_at[:16].replace('T', ' ') }}
                         </span>
+                        {% if g.timeline %}
+                        <div class="timeline">
+                            {% for step in g.timeline %}
+                            <div class="timeline-item">
+                                <span class="dot">●</span>
+                                <span>{{ step.step }}</span>
+                                <span class="time">{{ step.at[11:16] }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="gen-actions">
                         <a href="/topic/{{ g.slug }}" class="btn-sm">View</a>
