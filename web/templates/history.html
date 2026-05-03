@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generation History — Dr. Math</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">🧮 Dr. Math</a>
+            <div class="nav-links">
+                <a href="/prompts">🎨 Prompts</a>
+                <a href="/history" class="active">📜 History</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>📜 Generation History</h1>
+            <p>Every topic generated, tracked with the prompt used.</p>
+        </section>
+
+        <section class="topics">
+            {% if generations %}
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Topic</th>
+                        <th>Prompt Used</th>
+                        <th>Status</th>
+                        <th>Questions</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in generations|sort(attribute='created_at', reverse=True) %}
+                    <tr>
+                        <td class="date">{{ g.created_at[:16].replace('T', ' ') }}</td>
+                        <td><strong>{{ g.topic }}</strong></td>
+                        <td>
+                            {% if g.prompt_id and g.prompt_id in prompts %}
+                                <span class="prompt-badge">{{ prompts[g.prompt_id].name }}</span>
+                            {% else %}
+                                <span class="prompt-badge default">Default</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if g.status == 'success' %}
+                                <span class="status success">✅ Success</span>
+                            {% else %}
+                                <span class="status error">❌ Error</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ g.meta.get('total_questions', '-') }}</td>
+                        <td>
+                            {% if g.status == 'success' %}
+                            <a href="/topic/{{ g.topic.lower().replace(' ', '_') }}" class="btn-sm">View</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty">No generations yet. Go generate a topic!</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <a href="/">← Back to topics</a>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Builder — Dr. Math</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">🧮 Dr. Math</a>
+            <div class="nav-links">
+                <a href="/prompts" class="active">🎨 Prompts</a>
+                <a href="/history">📜 History</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>🎨 Prompt Builder</h1>
+            <p>Define your teaching persona. Every generation will follow your style.</p>
+        </section>
+
+        <section class="generate-box">
+            <h2>Create New Prompt</h2>
+            <form action="/prompts" method="post" class="prompt-form">
+                <label>Prompt Name</label>
+                <input type="text" name="name" placeholder="e.g. Strict Exam Coach, Fun Storyteller, Visual Learner" required>
+
+                <label>System Prompt (Teacher Persona)</label>
+                <textarea name="system_prompt" rows="8" placeholder="Define who the AI becomes. Example:
+You are a strict CBSE exam coach. Use formal language. Focus on step-by-step derivations. Include common exam traps in explanations." required></textarea>
+
+                <label>Question Prompt (How to generate MCQs)</label>
+                <textarea name="question_prompt" rows="8" placeholder="Define how questions are built. Use {topic} and {adapted_content} placeholders. Example:
+Create exactly 40 multiple-choice questions on: {topic}
+
+Reference content:
+{adapted_content}
+
+Rules:
+1. Every question must have a real-world Indian context (bazaar, cricket, school)
+2. Include at least 5 'trick' questions that test common misconceptions
+3. Explanations must reference the exact rule/theorem used" required></textarea>
+
+                <button type="submit">💾 Save Prompt</button>
+            </form>
+        </section>
+
+        <section class="topics">
+            <h2>📂 Saved Prompts</h2>
+            {% if prompts %}
+            <div class="prompt-grid">
+                {% for p in prompts %}
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <h3>{{ p.name }}</h3>
+                        <span class="prompt-id">ID: {{ p.id }}</span>
+                    </div>
+                    <div class="prompt-body">
+                        <div class="prompt-section">
+                            <strong>System Prompt:</strong>
+                            <pre>{{ p.system_prompt[:200] }}{% if p.system_prompt|length > 200 %}...{% endif %}</pre>
+                        </div>
+                        <div class="prompt-section">
+                            <strong>Question Prompt:</strong>
+                            <pre>{{ p.question_prompt[:200] }}{% if p.question_prompt|length > 200 %}...{% endif %}</pre>
+                        </div>
+                    </div>
+                    <div class="prompt-footer">
+                        <span class="date">{{ p.created_at[:10] }}</span>
+                        <form action="/prompts/{{ p.id }}/delete" method="post" onsubmit="return confirm('Delete this prompt?')">
+                            <button type="submit" class="btn-danger">🗑️ Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty">No custom prompts yet. Create one above!</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <a href="/">← Back to topics</a>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ topic.topic }} — Dr. Math</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">🧮 Dr. Math</a>
+            <span class="tagline">{{ topic.topic }}</span>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="topic-header">
+            <h1>{{ topic.topic }}</h1>
+            <div class="stats">
+                <span class="stat">{{ topic.meta.total_questions }} Questions</span>
+                <span class="stat">{{ topic.source_ixl_skills|length }} IXL Skills</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('content')">📖 Lesson</button>
+            <button class="tab-btn" onclick="showTab('questions')">📝 Questions ({{ topic.meta.total_questions }})</button>
+            <button class="tab-btn" onclick="showTab('json')">📋 JSON</button>
+        </div>
+
+        <!-- Lesson Tab -->
+        <section id="tab-content" class="tab-panel active">
+            <div class="markdown-box">
+                <pre>{{ markdown }}</pre>
+            </div>
+        </section>
+
+        <!-- Questions Tab -->
+        <section id="tab-questions" class="tab-panel">
+            <div class="filter-bar">
+                <button onclick="filterDiff(0)" class="filter-btn active">All</button>
+                <button onclick="filterDiff(1)" class="filter-btn">Level 1</button>
+                <button onclick="filterDiff(2)" class="filter-btn">Level 2</button>
+                <button onclick="filterDiff(3)" class="filter-btn">Level 3</button>
+                <button onclick="filterDiff(4)" class="filter-btn">Level 4</button>
+            </div>
+
+            <div class="questions-list">
+                {% for q in topic.questions %}
+                <div class="q-card" data-diff="{{ q.difficulty }}">
+                    <div class="q-header">
+                        <span class="q-id">#{{ q.id }}</span>
+                        <span class="q-diff d{{ q.difficulty }}">Level {{ q.difficulty }}</span>
+                    </div>
+                    <p class="q-text">{{ q.question }}</p>
+                    <div class="options">
+                        {% for opt in q.options %}
+                        <div class="option {% if opt.startswith(q.correct_answer) %}correct{% endif %}">
+                            {{ opt }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="explanation">
+                        <strong>Explanation:</strong> {{ q.explanation }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- JSON Tab -->
+        <section id="tab-json" class="tab-panel">
+            <pre class="json-box">{{ topic|tojson(indent=2) }}</pre>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <a href="/">← Back to topics</a>
+        </div>
+    </footer>
+
+    <script>
+        function showTab(name) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function filterDiff(level) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.q-card').forEach(card => {
+                if (level === 0 || card.dataset.diff == level) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

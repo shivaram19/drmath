@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Math — Class VII Content Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">🧮 Dr. Math</a>
+            <div class="nav-links">
+                <a href="/prompts">🎨 Prompts</a>
+                <a href="/history">📜 History</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Generate Math Content in One Click</h1>
+            <p>Pick a topic. Choose a teaching style. We scrape IXL + MathIsFun and generate 40 MCQs.</p>
+        </section>
+
+        <section class="generate-box">
+            <form action="/generate" method="post" class="gen-form">
+                <input type="text" name="topic" placeholder="Enter topic (e.g. Integers, Fractions, Triangles)" required>
+                <select name="prompt_id" class="prompt-select">
+                    <option value="">🎨 Default (Anti-Gravity)</option>
+                    {% for p in prompts %}
+                    <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">🚀 Generate</button>
+            </form>
+            <p class="hint">
+                <a href="/prompts">Create custom prompts →</a> to match your teaching style
+            </p>
+        </section>
+
+        <section class="topics">
+            <h2>📚 Generated Topics</h2>
+            {% if topics %}
+            <div class="topic-grid">
+                {% for t in topics %}
+                <a href="/topic/{{ t.slug }}" class="topic-card">
+                    <h3>{{ t.name }}</h3>
+                    <div class="meta">
+                        <span>{{ t.total_questions }} questions</span>
+                        <span class="prompt-badge">{{ t.prompt_name }}</span>
+                    </div>
+                    <div class="diff-badges">
+                        <span class="badge d1">{{ t.difficulty.get('1',0) }}</span>
+                        <span class="badge d2">{{ t.difficulty.get('2',0) }}</span>
+                        <span class="badge d3">{{ t.difficulty.get('3',0) }}</span>
+                        <span class="badge d4">{{ t.difficulty.get('4',0) }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty">No topics yet. Generate one above!</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Built for Bill — Trelo Labs</p>
+        </div>
+    </footer>
+</body>
+</html>
