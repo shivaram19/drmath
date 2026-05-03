@@ -14,12 +14,36 @@ from db.models import Prompt, Topic, Generation, Evaluation, GroundingLog
 # Prompts
 # ------------------------------------------------------------------
 
-def create_prompt(db: Session, name: str, system_prompt: str, question_prompt: str) -> Prompt:
+def create_prompt(db: Session, name: str, system_prompt: str, question_prompt: str, parent_id: Optional[str] = None) -> Prompt:
+    """Create a prompt. If parent_id is given, it's a new version of an existing prompt.
+    If name already exists without parent_id, auto-create as a new version."""
+    
+    # Determine version number
+    version = 1
+    if parent_id:
+        parent = get_prompt(db, parent_id)
+        if parent:
+            # Count existing children + 1
+            version = len(parent.children) + 1 if parent.children else 1
+    else:
+        # Check if a prompt with this exact name already exists (as a root)
+        existing = db.query(Prompt).filter(Prompt.name == name).filter(Prompt.parent_id.is_(None)).first()
+        if existing:
+            parent_id = existing.id
+            version = len(existing.children) + 1 if existing.children else 1
+    
+    # Auto-name with timestamp if it's a version
+    display_name = name
+    if parent_id:
+        display_name = f"{name} (v{version} — {datetime.utcnow().strftime('%b %d, %H:%M')})"
+    
     prompt = Prompt(
         id=str(uuid.uuid4())[:8],
-        name=name,
+        name=display_name,
         system_prompt=system_prompt,
         question_prompt=question_prompt,
+        parent_id=parent_id,
+        version=version,
     )
     db.add(prompt)
     db.commit()
@@ -33,6 +57,35 @@ def get_prompt(db: Session, prompt_id: str) -> Optional[Prompt]:
 
 def list_prompts(db: Session) -> List[Prompt]:
     return db.query(Prompt).order_by(Prompt.created_at.desc()).all()
+
+
+def list_prompt_versions(db: Session, parent_id: str) -> List[Prompt]:
+    """Return all versions (children) of a given prompt, oldest first."""
+    return (
+        db.query(Prompt)
+        .filter(Prompt.parent_id == parent_id)
+        .order_by(Prompt.version.asc())
+        .all()
+    )
+
+
+def get_prompt_family(db: Session, prompt_id: str) -> List[Prompt]:
+    """Return a prompt and all its versions (parent + children)."""
+    prompt = get_prompt(db, prompt_id)
+    if not prompt:
+        return []
+    
+    # Find the root parent
+    root = prompt
+    while root.parent_id:
+        root = get_prompt(db, root.parent_id)
+        if not root:
+            break
+    
+    # Get root + all descendants
+    family = [root]
+    family.extend(list_prompt_versions(db, root.id))
+    return family
 
 
 def delete_prompt(db: Session, prompt_id: str) -> bool:
@@ -100,6 +153,10 @@ def update_generation(
     raw_html_path: Optional[str] = None,
     antigravity_path: Optional[str] = None,
     meta: Optional[dict] = None,
+    scraped_at: Optional[datetime] = None,
+    adapted_at: Optional[datetime] = None,
+    questions_generated_at: Optional[datetime] = None,
+    saved_at: Optional[datetime] = None,
 ) -> Optional[Generation]:
     gen = get_generation(db, generation_id)
     if not gen:
@@ -122,6 +179,14 @@ def update_generation(
         gen.antigravity_path = antigravity_path
     if meta is not None:
         gen.meta = json.dumps(meta)
+    if scraped_at is not None:
+        gen.scraped_at = scraped_at
+    if adapted_at is not None:
+        gen.adapted_at = adapted_at
+    if questions_generated_at is not None:
+        gen.questions_generated_at = questions_generated_at
+    if saved_at is not None:
+        gen.saved_at = saved_at
     db.commit()
     db.refresh(gen)
     return gen

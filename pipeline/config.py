@@ -2,6 +2,10 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 OBSCURA_BINARY = os.getenv(
     "OBSCURA_BINARY",
     "/home/shivaramgoud/tinkering/tinkering-with-claws/picocloth/shared/project/tools/linkedin-scraper/obscura-src/target/release/obscura",

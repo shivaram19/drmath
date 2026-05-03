@@ -16,9 +16,13 @@ class Prompt(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     system_prompt: Mapped[str] = mapped_column(Text, nullable=False)
     question_prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    parent_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey("prompts.id"), nullable=True)
+    version: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     generations: Mapped[List["Generation"]] = relationship("Generation", back_populates="prompt")
+    parent: Mapped[Optional["Prompt"]] = relationship("Prompt", remote_side=[id], back_populates="children")
+    children: Mapped[List["Prompt"]] = relationship("Prompt", back_populates="parent")
 
 
 class Topic(Base):
@@ -47,6 +51,11 @@ class Generation(Base):
     raw_html_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     antigravity_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     meta: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # Pipeline step timestamps
+    scraped_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    adapted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    questions_generated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    saved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     topic: Mapped["Topic"] = relationship("Topic", back_populates="generations")
@@ -65,6 +74,20 @@ class Generation(Base):
         if self.difficulty_distribution:
             return json.loads(self.difficulty_distribution)
         return {}
+
+    @property
+    def timeline(self) -> List[dict]:
+        """Return chronologically ordered pipeline steps with timestamps."""
+        steps = []
+        if self.scraped_at:
+            steps.append({"step": "Scrape sources (IXL + MathIsFun)", "at": self.scraped_at.isoformat()})
+        if self.adapted_at:
+            steps.append({"step": "Adapt content via LLM", "at": self.adapted_at.isoformat()})
+        if self.questions_generated_at:
+            steps.append({"step": "Generate 40 questions via LLM", "at": self.questions_generated_at.isoformat()})
+        if self.saved_at:
+            steps.append({"step": "Save output to disk + DB", "at": self.saved_at.isoformat()})
+        return steps
 
 
 class Evaluation(Base):

@@ -29,16 +29,7 @@ def list_prompts() -> List[Dict[str, Any]]:
     db = _session()
     try:
         prompts = crud.list_prompts(db)
-        return [
-            {
-                "id": p.id,
-                "name": p.name,
-                "system_prompt": p.system_prompt,
-                "question_prompt": p.question_prompt,
-                "created_at": p.created_at.isoformat() if p.created_at else None,
-            }
-            for p in prompts
-        ]
+        return [_prompt_to_dict(p) for p in prompts]
     finally:
         db.close()
 
@@ -51,28 +42,16 @@ def get_prompt(prompt_id: str) -> Optional[Dict[str, Any]]:
         p = crud.get_prompt(db, prompt_id)
         if not p:
             return None
-        return {
-            "id": p.id,
-            "name": p.name,
-            "system_prompt": p.system_prompt,
-            "question_prompt": p.question_prompt,
-            "created_at": p.created_at.isoformat() if p.created_at else None,
-        }
+        return _prompt_to_dict(p)
     finally:
         db.close()
 
 
-def save_prompt(name: str, system_prompt: str, question_prompt: str) -> Dict[str, Any]:
+def save_prompt(name: str, system_prompt: str, question_prompt: str, parent_id: Optional[str] = None) -> Dict[str, Any]:
     db = _session()
     try:
-        p = crud.create_prompt(db, name, system_prompt, question_prompt)
-        return {
-            "id": p.id,
-            "name": p.name,
-            "system_prompt": p.system_prompt,
-            "question_prompt": p.question_prompt,
-            "created_at": p.created_at.isoformat() if p.created_at else None,
-        }
+        p = crud.create_prompt(db, name, system_prompt, question_prompt, parent_id=parent_id)
+        return _prompt_to_dict(p)
     finally:
         db.close()
 
@@ -117,6 +96,18 @@ def log_generation(topic: str, prompt_id: Optional[str], output_path: str, statu
 # ------------------------------------------------------------------
 # Internal helpers
 # ------------------------------------------------------------------
+
+def _prompt_to_dict(p: models.Prompt) -> Dict[str, Any]:
+    return {
+        "id": p.id,
+        "name": p.name,
+        "system_prompt": p.system_prompt,
+        "question_prompt": p.question_prompt,
+        "parent_id": p.parent_id,
+        "version": p.version,
+        "created_at": p.created_at.isoformat() if p.created_at else None,
+    }
+
 
 def _gen_to_dict(g: models.Generation) -> Dict[str, Any]:
     return {

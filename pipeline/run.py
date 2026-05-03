@@ -2,6 +2,7 @@
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -48,6 +49,7 @@ def run_pipeline(topic: str, output_path: str, prompt_id: Optional[str] = None):
             print(f"  ✅ Found {len(matched)} matching skills on IXL")
         else:
             print(f"  ⚠️  Topic not found in IXL. Proceeding anyway.")
+        scraped_at = datetime.utcnow()
 
         # Step 2: Fetch MathIsFun content
         print("[2/5] Fetching MathIsFun content via Obscura...")
@@ -72,6 +74,7 @@ def run_pipeline(topic: str, output_path: str, prompt_id: Optional[str] = None):
             user_prompt = f"TOPIC: {topic}\nRAW CONTENT:\n{strip_html(raw_html)[:4000]}\n\nAdapt this into a lesson."
         adapted_content = llm.generate(sys_prompt, user_prompt, temperature=0.8, max_tokens=4000)
         print(f"  ✅ Generated {len(adapted_content)} chars of adapted content")
+        adapted_at = datetime.utcnow()
 
         adapted_path = DATA_DIR / f"{slug}_antigravity.md"
         adapted_path.write_text(adapted_content, encoding="utf-8")
@@ -86,6 +89,7 @@ def run_pipeline(topic: str, output_path: str, prompt_id: Optional[str] = None):
         raw_questions = llm.generate(q_sys, q_user, temperature=0.7, max_tokens=12000)
         questions = parse_json_array(raw_questions)
         print(f"  ✅ Parsed {len(questions)} questions")
+        questions_generated_at = datetime.utcnow()
 
         diff_counts = {1: 0, 2: 0, 3: 0, 4: 0}
         for q in questions:
@@ -112,6 +116,7 @@ def run_pipeline(topic: str, output_path: str, prompt_id: Optional[str] = None):
         out_path = Path(output_path)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
+        saved_at = datetime.utcnow()
 
         # ------------------------------------------------------------------
         # Save to database
@@ -129,6 +134,10 @@ def run_pipeline(topic: str, output_path: str, prompt_id: Optional[str] = None):
             raw_html_path=str(raw_path),
             antigravity_path=str(adapted_path),
             meta={"total_questions": len(questions), "difficulty": diff_counts, "prompt_name": prompt_name},
+            scraped_at=scraped_at,
+            adapted_at=adapted_at,
+            questions_generated_at=questions_generated_at,
+            saved_at=saved_at,
         )
 
         # Grounding logs
