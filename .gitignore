@@ -18,6 +18,8 @@ pip-log.txt
 data/*_raw.html
 data/*_antigravity.md
 data/generations_db.json
+data/prompts_db.json
+data/drmath.db
 output/*.json
 
 # IDE

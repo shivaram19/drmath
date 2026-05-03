@@ -14,11 +14,15 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app code
+COPY db/ ./db/
 COPY pipeline/ ./pipeline/
 COPY web/ ./web/
 COPY data/ ./data/ 2>/dev/null || true
 COPY output/ ./output/ 2>/dev/null || true
 COPY test_pipeline.py ./
+
+# Ensure data dir exists (for SQLite DB)
+RUN mkdir -p data output
 
 # Expose port
 EXPOSE 8000
