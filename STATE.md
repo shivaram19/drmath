@@ -3,8 +3,18 @@
 **Last Updated:** 2026-05-03  
 **Branch:** `main`  
 **Commits:** 12 total (conventional format)  
-**Environment:** Dev VM → Target VM `20.193.129.119`  
-**Domain:** `drmath.trelolabs.com` (DNS **not yet** configured at Namecheap)
+**Environment:** Production VM `20.193.129.119`  
+**Domain:** `drmath.trelolabs.com` ✅ Live with HTTPS
+
+---
+
+## 🌐 Live URLs
+
+| URL | Status |
+|---|---|
+| https://drmath.trelolabs.com | ✅ Live |
+| https://drmath.trelolabs.com/lab | ✅ Manager Lab |
+| https://drmath.trelolabs.com/api/topics | ✅ API |
 
 ---
 
@@ -29,8 +39,8 @@
 
 | Item | Why | Next Step |
 |---|---|---|
-| **Live deploy** | DNS A-record missing | You add `drmath.trelolabs.com → 20.193.129.119` at Namecheap, then run `scripts/deploy.sh` on server |
-| **Azure OpenAI** | No model deployment exists | Create `gpt-4o-mini` deployment in Azure AI Foundry |
+| **Live deploy** | ✅ Done | System nginx proxies to Docker app on localhost:8000 |
+| **Azure OpenAI** | No model deployment exists | Optional — OpenAI working fine |
 | **HTTPS/SSL** | Needs live server first | Run Certbot after DNS + deploy |
 | **Student session UI** | Not built yet | Phase after manager workflow stabilizes |
 
@@ -132,6 +142,7 @@ docker-compose config
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-05-03 | **LIVE: Deployed to production with HTTPS** | `e264acb` |
 | 2026-05-03 | ADR-008: SQLite for prompt experimentation | `7c80386` |
 | 2026-05-03 | SQLite DB layer (models, CRUD, migration) | `6e37c2e` |
 | 2026-05-03 | Pipeline DB integration + grounding logs | `e75fa70` |
