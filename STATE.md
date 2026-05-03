@@ -1,112 +1,122 @@
-# Dr. Math — Current State & Progress Log
+# Dr. Math — Current State
 
 **Last Updated:** 2026-05-03  
-**Environment:** Development VM → Target VM (20.193.129.119)  
-**Domain:** drmath.trelolabs.com (DNS pending Namecheap setup)
+**Branch:** `main`  
+**Commits:** 12 total (conventional format)  
+**Environment:** Dev VM → Target VM `20.193.129.119`  
+**Domain:** `drmath.trelolabs.com` (DNS **not yet** configured at Namecheap)
 
 ---
 
-## ✅ Completed
+## ✅ What Works Right Now
 
-### Phase 1: Pipeline Foundation
-- [x] Obscura headless browser integration (ADR-001)
-- [x] IXL topic scraper (225+ topics extracted)
-- [x] MathIsFun content fetcher (heuristic slug mapping)
-- [x] OpenAI/Azure/Grok LLM client (ADR-002)
-- [x] JSON file database for prompts & generations (ADR-006)
-
-### Phase 2: Domain Logic
-- [x] Content adaptation with custom prompt injection (ADR-003)
-- [x] Question generator with robust JSON parsing & normalization
-- [x] 40-MCQ generation per topic (difficulty distribution 10/10/10/10)
-- [x] Generation tracking (prompt_id, timestamp, status, meta)
-
-### Phase 3: Web Application
-- [x] FastAPI + Jinja2 server-side rendering (ADR-004)
-- [x] Homepage with topic grid + prompt selector
-- [x] Topic detail page (Lesson / Questions / JSON tabs)
-- [x] Prompt Builder (CRUD for custom teaching personas)
-- [x] Generation History (audit log with prompt attribution)
-- [x] Dark theme responsive UI
-
-### Phase 4: Research & Documentation
-- [x] BFS research synthesis (30+ sources, child learning science)
-- [x] DFS prompt templates (6 research-backed personas)
-- [x] 7 Architecture Decision Records (ADR-001 through ADR-007)
-- [x] Adaptive Engine Design document (Mark system)
-- [x] 20-source canonical bibliography
-- [x] Research-First Covenant
-- [x] AGENTS.md (10-persona operating model)
-
-### Phase 5: Deployment
-- [x] Dockerfile (python:3.11-slim)
-- [x] docker-compose.yml (app + nginx)
-- [x] nginx.conf (drmath.trelolabs.com routing)
-- [x] DEPLOY.md
-- [x] .env configured with OpenAI API key
-- [x] Test suite (pipeline validation)
-
-### Phase 6: Git Workflow
-- [x] .gitignore (runtime artifacts excluded)
-- [x] 8 batched commits with conventional commit format
-- [x] Pre-commit hook (validates .env exclusion, artifacts, commit format)
-- [x] .kimi/skills/dr-math/SKILL.md (session context)
+| Component | Status | Detail |
+|---|---|---|
+| **Pipeline** | ✅ | Obscura → IXL + MathIsFun → LLM → 40 MCQs |
+| **LLM** | ✅ | OpenAI `gpt-4o-mini` (primary). Azure authenticated but **no deployment** (404). Grok exhausted. |
+| **Database** | ✅ | **SQLite** with SQLAlchemy (replaces JSON files). Tables: `prompts`, `topics`, `generations`, `evaluations`, `grounding_logs` |
+| **Prompt Builder** | ✅ | Create custom teaching personas. Saved to DB. |
+| **Manager Lab** | ✅ | `/lab` — rate generations 1–5⭐, see prompt leaderboard, A/B compare any two versions |
+| **Generation History** | ✅ | **All versions kept** (not just latest). Every prompt experiment is preserved. |
+| **Grounding** | ✅ | Every generation logs IXL skills + MathIsFun URL used |
+| **Web UI** | ✅ | FastAPI + Jinja2. Home, topic pages, prompt builder, history, lab, compare |
+| **Pre-commit** | ✅ | Blocks `.env`, runtime artifacts, `__pycache__`. Enforces conventional commits. |
+| **Docker** | ✅ | `Dockerfile` + `docker-compose.yml` + `nginx.conf` ready |
 
 ---
 
-## ⏳ In Progress / Pending
+## ❌ Blockers / Not Working
 
-- [ ] Namecheap DNS A record for `drmath.trelolabs.com` → `20.193.129.119`
-- [ ] Git push to remote repository
-- [ ] Clone & deploy on target server
-- [ ] HTTPS / Let's Encrypt certificate
-- [ ] Docker Compose up on production VM
-
----
-
-## 📋 Next Phase: Adaptive Engine (Phase 3)
-
-### Goals
-- [ ] Real-time Mark updates during student sessions
-- [ ] Question selection algorithm based on multi-dimensional state
-- [ ] Timeout detection and handling
-- [ ] Interleaved spaced repetition
-- [ ] Student-facing session UI (answer questions, get adaptive next question)
-
-### Research Needed
-- [ ] Item Response Theory (IRT) calibration data collection
-- [ ] Student affect detection (frustration vs. boredom signals)
-- [ ] Long-term retention measurement methodology
+| Item | Why | Next Step |
+|---|---|---|
+| **Live deploy** | DNS A-record missing | You add `drmath.trelolabs.com → 20.193.129.119` at Namecheap |
+| **Azure OpenAI** | No model deployment exists | Create `gpt-4o-mini` deployment in Azure AI Foundry |
+| **HTTPS/SSL** | Needs live server first | Run Certbot after DNS + deploy |
+| **Student session UI** | Not built yet | Phase after manager workflow stabilizes |
 
 ---
 
-## 🎯 Generated Topics (Test Data)
+## 🗄️ Database Schema (SQLite)
 
-| Topic | Prompt Used | Questions | Status |
-|-------|------------|-----------|--------|
-| Integers | Default | 40 | ✅ |
-| Fractions | Default | 40 | ✅ |
-| Triangles | Default | 40 | ✅ |
-| Percentage | Default | 40 | ✅ |
-| Rational Numbers | Strict Exam Coach | 40 | ✅ |
-| Exponents | Cultural Storyteller | 40 | ✅ |
-| Quantum Physics | Default | 40 | ⚠️ Off-topic |
+```
+prompts              → id, name, system_prompt, question_prompt, created_at
+topics               → id, slug, name, created_at
+generations          → id, topic_id, prompt_id, status, total_questions,
+                       difficulty_distribution, adapted_content, questions_json,
+                       raw_html_path, antigravity_path, meta, created_at
+evaluations          → id, generation_id, rating (1-5), notes, created_at
+grounding_logs       → id, generation_id, source_type, source_url,
+                       content_snippet, verification_status, created_at
+```
+
+**Key behavior:** Every `run_pipeline()` call creates a `generations` row. Re-generating the same topic appends a new row — old versions are never overwritten. This is intentional for manager A/B testing.
 
 ---
 
-## 🔧 Quick Diagnostics
+## 🧪 Manager Workflow (Current)
+
+1. Go to **🎨 Prompts** → Create a teaching style
+2. Go to **🏠 Home** → Generate topic with that prompt
+3. Go to **🧪 Lab** → Rate output 1–5⭐, add notes
+4. Generate **same topic again** with different prompt
+5. Go to **⚖️ Compare** (`/compare?a=1&b=2`) → Side-by-side diff
+6. Check **🏆 Leaderboard** → Which prompt has highest avg rating?
+
+No passwords. Open access.
+
+---
+
+## 🏗️ Architecture Decisions
+
+| ADR | Topic | Status |
+|---|---|---|
+| ADR-001 | Obscura headless browser | Accepted |
+| ADR-002 | LLM provider strategy (OpenAI primary) | Accepted |
+| ADR-003 | Pedagogy-backed prompt templates | Accepted |
+| ADR-004 | FastAPI + Jinja2 SSR | Accepted |
+| ADR-005 | Docker + nginx deployment | Accepted |
+| ADR-006 | JSON file storage (original) | **Superseded by ADR-008** |
+| ADR-007 | Adaptive engine design | Accepted |
+| **ADR-008** | **SQLite for prompt experimentation** | **Accepted** |
+
+---
+
+## 📦 Generated Topics (DB)
+
+| Topic | Versions | Prompts Used | Evaluations |
+|---|---|---|---|
+| Rational Numbers | 1 | Default | ⭐ 5.0 (1 eval) |
+| Exponents | 1 | Default | ⭐ 4.0 (1 eval) |
+| Integers | 1 | Default | — |
+| Fractions | 1 | Default | — |
+| Triangles | 1 | Default | — |
+| Percentage | 1 | Default | — |
+
+> Note: 6 topics exist as JSON files from earlier runs. DB migration captured 2 generations (Rational Numbers, Exponents). Re-generating any topic will create a fresh DB row.
+
+---
+
+## 🎯 Next Immediate Work
+
+1. **Deploy to server** (waiting on you for DNS)
+2. **Azure deployment** (waiting on you for AI Foundry config)
+3. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
+
+---
+
+## 🔧 One-Liner Diagnostics
 
 ```bash
-# Is the pipeline working?
-python3 test_pipeline.py
+# Check DB health
+python3 -c "from db.database import SessionLocal; from db.models import Generation; db=SessionLocal(); print('Generations:', db.query(Generation).count())"
 
-# Is the web app running?
-curl http://localhost:8000/api/topics
+# Start web app
+python3 web/main.py          # localhost:8000
 
-# Is ngrok exposing it?
-curl -s http://localhost:4040/api/tunnels | grep public_url
+# Test pipeline (costs API tokens)
+python3 -m pipeline.run --topic "Integers" --prompt-id <id>
 
-# Is Docker ready?
+# Verify Docker
 docker-compose config
 ```
 
@@ -115,12 +125,9 @@ docker-compose config
 ## 📝 Change Log
 
 | Date | Change | Commit |
-|------|--------|--------|
-| 2026-05-03 | Project foundation | f308070 |
-| 2026-05-03 | Research synthesis | b2361fa |
-| 2026-05-03 | ADRs 001–007 | 7894cba |
-| 2026-05-03 | Core pipeline | 7411dc0 |
-| 2026-05-03 | Domain logic | a8bd5a0 |
-| 2026-05-03 | Web application | ec55a69 |
-| 2026-05-03 | Deployment artifacts | b0c4432 |
-| 2026-05-03 | Test suite | 58005ec |
+|---|---|---|
+| 2026-05-03 | ADR-008: SQLite for prompt experimentation | `7c80386` |
+| 2026-05-03 | SQLite DB layer (models, CRUD, migration) | `6e37c2e` |
+| 2026-05-03 | Pipeline DB integration + grounding logs | `e75fa70` |
+| 2026-05-03 | Manager Lab: A/B compare, ratings, leaderboard | `8f98520` |
+| 2026-05-03 | Pre-commit hook + setup script | `7c81e4e` |
