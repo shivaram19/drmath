@@ -1,0 +1,68 @@
+#!/bin/bash
+# Dr. Math Pre-Commit Hook
+# Validates research-backed development practices
+
+set -e
+
+echo "🔍 Dr. Math Pre-Commit Checks"
+echo "=============================="
+
+# 1. Check that .env is NOT staged
+if git diff --cached --name-only | grep -q '^\.env$'; then
+    echo "❌ FAILED: .env is staged. DO NOT commit API keys."
+    echo "   Fix: git reset HEAD .env && echo '.env' >> .gitignore"
+    exit 1
+fi
+echo "✅ .env not staged"
+
+# 2. Check that no runtime artifacts are staged
+STAGED_FILES=$(git diff --cached --name-only)
+if echo "$STAGED_FILES" | grep -qE '^data/.*_(raw\.html|antigravity\.md)$|^output/.*\.json$|^data/generations_db\.json$'; then
+    echo "❌ FAILED: Runtime artifacts are staged."
+    echo "   These should be in .gitignore: data/*_raw.html, data/*_antigravity.md, output/*.json"
+    exit 1
+fi
+echo "✅ No runtime artifacts staged"
+
+# 3. Check that __pycache__ is not staged
+if echo "$STAGED_FILES" | grep -q '__pycache__'; then
+    echo "❌ FAILED: __pycache__ files are staged."
+    echo "   Fix: git rm -r --cached __pycache__ && echo '__pycache__/' >> .gitignore"
+    exit 1
+fi
+echo "✅ No __pycache__ staged"
+
+# 4. Check conventional commit format
+COMMIT_MSG_FILE=$(git rev-parse --git-dir)/COMMIT_EDITMSG
+if [ -f "$COMMIT_MSG_FILE" ]; then
+    FIRST_LINE=$(head -1 "$COMMIT_MSG_FILE")
+    if ! echo "$FIRST_LINE" | grep -qE '^(feat|fix|docs|test|refactor|chore|research): '; then
+        echo "⚠️  WARNING: Commit message does not follow conventional commits."
+        echo "   Expected: feat:|fix:|docs:|test:|refactor:|chore:|research:"
+        echo "   Got: $FIRST_LINE"
+        echo ""
+        echo "   Continue anyway? (y/n)"
+        read -r RESPONSE
+        if [ "$RESPONSE" != "y" ]; then
+            exit 1
+        fi
+    else
+        echo "✅ Conventional commit format"
+    fi
+fi
+
+# 5. Check for ADR reference if pipeline/web code changed
+if echo "$STAGED_FILES" | grep -qE '^(pipeline/|web/)'; then
+    if ! echo "$STAGED_FILES" | grep -q '^docs/adrs/'; then
+        echo "⚠️  NOTE: Pipeline or web code changed but no ADR updated."
+        echo "   Is this a new architectural decision? If so, create ADR-00N."
+        echo "   Continue? (y/n)"
+        read -r RESPONSE
+        if [ "$RESPONSE" != "y" ]; then
+            exit 1
+        fi
+    fi
+fi
+
+echo "=============================="
+echo "✅ All checks passed. Committing..."
