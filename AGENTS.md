@@ -6,6 +6,9 @@ A **research-driven, citation-backed** engineering project to build an adaptive 
 
 The system scrapes curriculum-aligned topics (IXL), fetches pedagogical content (MathIsFun), adapts it via LLM using research-backed prompt personas, and generates 40 adaptive assessment items per topic with full traceability.
 
+**Current State:** See `STATE.md` for deployed status, generated topics, and pending items.
+**Session Context:** See `.kimi/skills/dr-math/SKILL.md` for quick-start commands and diagnostics.
+
 ## Personas (Multi-Dimensional Operating Mode)
 
 When modifying this project, operate through all ten lenses simultaneously:
@@ -30,6 +33,7 @@ docs/
 │   ├── bfs/           # Breadth-first landscape mapping
 │   ├── dfs/           # Depth-first technology deep-dives
 │   └── bidirectional/ # Cross-domain impact analysis
+├── architecture/      # System design documents
 ├── principles/        # Design principles and ten personas
 ├── references/        # Canonical bibliography
 └── decisions/         # Council decision logs
@@ -57,6 +61,15 @@ Claim about scaffolded instruction [^1].
 - All scraper implementations belong in `pipeline/`.
 - All web service logic belongs in `web/`.
 - All generated runtime artifacts belong in `data/` and `output/` (gitignored).
+
+## Pre-Commit Validation
+
+A git pre-commit hook enforces:
+- `.env` is never committed
+- No runtime artifacts (`*_raw.html`, `*_antigravity.md`, `output/*.json`) are committed
+- No `__pycache__` is committed
+- Commit messages follow conventional commits (`feat:`, `fix:`, `docs:`, `test:`)
+- Pipeline/web changes prompt for ADR updates
 
 ## Prohibited Patterns
 
@@ -87,6 +100,6 @@ When in doubt:
 
 ---
 
-*Document version: 1.0*  
+*Document version: 1.1*  
 *Established: 2026-05-03*  
 *Inherits from: voice-revenge-vizuara-ai/AGENTS.md v2.0*
