@@ -29,7 +29,7 @@
 
 | Item | Why | Next Step |
 |---|---|---|
-| **Live deploy** | DNS A-record missing | You add `drmath.trelolabs.com → 20.193.129.119` at Namecheap |
+| **Live deploy** | DNS A-record missing | You add `drmath.trelolabs.com → 20.193.129.119` at Namecheap, then run `scripts/deploy.sh` on server |
 | **Azure OpenAI** | No model deployment exists | Create `gpt-4o-mini` deployment in Azure AI Foundry |
 | **HTTPS/SSL** | Needs live server first | Run Certbot after DNS + deploy |
 | **Student session UI** | Not built yet | Phase after manager workflow stabilizes |
@@ -110,14 +110,20 @@ No passwords. Open access.
 # Check DB health
 python3 -c "from db.database import SessionLocal; from db.models import Generation; db=SessionLocal(); print('Generations:', db.query(Generation).count())"
 
-# Start web app
+# Start web app locally
 python3 web/main.py          # localhost:8000
 
 # Test pipeline (costs API tokens)
 python3 -m pipeline.run --topic "Integers" --prompt-id <id>
 
-# Verify Docker
+# Verify Docker Compose config
 docker-compose config
+
+# Deploy to server (run ON the server)
+./scripts/deploy.sh
+
+# Enable SSL (run ON the server, after DNS works)
+./scripts/init-ssl.sh
 ```
 
 ---
@@ -130,4 +136,5 @@ docker-compose config
 | 2026-05-03 | SQLite DB layer (models, CRUD, migration) | `6e37c2e` |
 | 2026-05-03 | Pipeline DB integration + grounding logs | `e75fa70` |
 | 2026-05-03 | Manager Lab: A/B compare, ratings, leaderboard | `8f98520` |
+| 2026-05-03 | Production deploy scripts + auto-SSL | `38f7a2e` |
 | 2026-05-03 | Pre-commit hook + setup script | `7c81e4e` |
