@@ -1,20 +1,26 @@
-"""Dr. Math Web UI — FastAPI backend with prompt builder & generation tracking."""
+"""Dr. Math Web UI — FastAPI backend with prompt builder, generation tracking, and manager lab."""
 import json
 import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Depends
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from pipeline.config import OUTPUT_DIR, DATA_DIR
 from pipeline.run import run_pipeline
 from pipeline.db import list_prompts, get_prompt, save_prompt, delete_prompt, list_generations
 
-app = FastAPI(title="Dr. Math", description="Class VII Math Content Generator with Prompt Builder")
+# New SQLite database
+from db.database import get_db as get_db_session
+from db import crud
+from db.models import Generation
+
+app = FastAPI(title="Dr. Math", description="Class VII Math Content Generator with Prompt Lab")
 
 BASE_DIR = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
@@ -46,6 +52,10 @@ def _list_topics() -> List[Dict[str, Any]]:
     return topics
 
 
+# ------------------------------------------------------------------
+# Public Pages
+# ------------------------------------------------------------------
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse(request, "index.html", {
@@ -55,19 +65,56 @@ def home(request: Request):
 
 
 @app.get("/topic/{slug}", response_class=HTMLResponse)
-def topic_page(request: Request, slug: str):
+def topic_page(request: Request, slug: str, db: Session = Depends(get_db_session)):
     json_path = OUTPUT_DIR / f"{slug}_output.json"
     md_path = DATA_DIR / f"{slug}_antigravity.md"
-    if not json_path.exists():
-        return templates.TemplateResponse(request, "404.html", {}, status_code=404)
 
-    data = json.loads(json_path.read_text())
-    markdown_content = md_path.read_text() if md_path.exists() else ""
+    # Load from file (fallback) or DB
+    if json_path.exists():
+        data = json.loads(json_path.read_text())
+    else:
+        # Try DB
+        topic_obj = crud.get_topic_by_slug(db, slug)
+        if not topic_obj:
+            return templates.TemplateResponse(request, "404.html", {}, status_code=404)
+        latest_gen = (
+            db.query(Generation)
+            .filter(Generation.topic_id == topic_obj.id)
+            .order_by(Generation.created_at.desc())
+            .first()
+        )
+        if not latest_gen or not latest_gen.questions_json:
+            return templates.TemplateResponse(request, "404.html", {}, status_code=404)
+        data = {
+            "topic": topic_obj.name,
+            "questions": json.loads(latest_gen.questions_json),
+            "meta": {"total_questions": latest_gen.total_questions, "difficulty_distribution": latest_gen.difficulty_dict},
+            "source_ixl_skills": [],
+        }
+
+    markdown_content = md_path.read_text() if md_path.exists() else (latest_gen.adapted_content if 'latest_gen' in dir() else "")
+
+    # Get all generation versions for this topic
+    topic_obj = crud.get_topic_by_slug(db, slug)
+    versions = []
+    if topic_obj:
+        versions = [
+            {
+                "id": g.id,
+                "created_at": g.created_at.isoformat() if g.created_at else "",
+                "prompt_name": g.prompt.name if g.prompt else "Default",
+                "total_questions": g.total_questions,
+                "avg_rating": round(g.avg_rating, 1) if g.avg_rating else None,
+                "status": g.status,
+            }
+            for g in topic_obj.generations
+        ]
 
     return templates.TemplateResponse(request, "topic.html", {
         "topic": data,
         "markdown": markdown_content,
         "slug": slug,
+        "versions": versions,
     })
 
 
@@ -127,6 +174,74 @@ def web_generate(topic: str = Form(...), prompt_id: Optional[str] = Form(None)):
 
 
 # ------------------------------------------------------------------
+# Manager Lab (Prompt Experimentation)
+# ------------------------------------------------------------------
+
+@app.get("/lab", response_class=HTMLResponse)
+def lab_page(request: Request, db: Session = Depends(get_db_session)):
+    """Manager lab: compare prompts, rate generations, see leaderboard."""
+    generations = crud.list_generations(db)
+    prompts = crud.list_prompts(db)
+    leaderboard = crud.get_prompt_leaderboard(db)
+
+    # Enrich generations with ratings
+    gen_data = []
+    for g in generations:
+        gen_data.append({
+            "id": g.id,
+            "topic": g.topic.name if g.topic else "",
+            "slug": g.topic.slug if g.topic else "",
+            "prompt_name": g.prompt.name if g.prompt else "Default",
+            "prompt_id": g.prompt_id,
+            "status": g.status,
+            "total_questions": g.total_questions,
+            "difficulty": g.difficulty_dict,
+            "avg_rating": round(g.avg_rating, 1) if g.avg_rating else None,
+            "eval_count": len(g.evaluations),
+            "created_at": g.created_at.isoformat() if g.created_at else "",
+        })
+
+    return templates.TemplateResponse(request, "lab.html", {
+        "generations": gen_data,
+        "prompts": prompts,
+        "leaderboard": leaderboard,
+    })
+
+
+@app.get("/compare", response_class=HTMLResponse)
+def compare_page(request: Request, a: int, b: int, db: Session = Depends(get_db_session)):
+    """Side-by-side comparison of two generations."""
+    gen_a = crud.get_generation_with_details(db, a)
+    gen_b = crud.get_generation_with_details(db, b)
+    if not gen_a or not gen_b:
+        return templates.TemplateResponse(request, "404.html", {}, status_code=404)
+
+    def _enrich(g):
+        return {
+            "id": g.id,
+            "topic": g.topic.name if g.topic else "",
+            "prompt_name": g.prompt.name if g.prompt else "Default",
+            "status": g.status,
+            "total_questions": g.total_questions,
+            "difficulty": g.difficulty_dict,
+            "avg_rating": round(g.avg_rating, 1) if g.avg_rating else None,
+            "eval_count": len(g.evaluations),
+            "created_at": g.created_at.isoformat() if g.created_at else "",
+            "adapted_content": g.adapted_content or "",
+            "questions": json.loads(g.questions_json) if g.questions_json else [],
+            "grounding": [
+                {"source_type": gl.source_type, "source_url": gl.source_url}
+                for gl in g.grounding_logs
+            ],
+        }
+
+    return templates.TemplateResponse(request, "compare.html", {
+        "gen_a": _enrich(gen_a),
+        "gen_b": _enrich(gen_b),
+    })
+
+
+# ------------------------------------------------------------------
 # API
 # ------------------------------------------------------------------
 
@@ -172,6 +287,76 @@ def api_generate(topic: str = Form(...), prompt_id: Optional[str] = Form(None)):
         return {"status": "generated", "slug": slug, "redirect": f"/topic/{slug}"}
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
+
+# ------------------------------------------------------------------
+# Evaluations API
+# ------------------------------------------------------------------
+
+@app.post("/api/evaluations")
+def api_create_evaluation(
+    generation_id: int = Form(...),
+    rating: int = Form(...),
+    notes: Optional[str] = Form(None),
+    db: Session = Depends(get_db_session),
+):
+    if not 1 <= rating <= 5:
+        return JSONResponse({"error": "Rating must be 1-5"}, status_code=400)
+    ev = crud.create_evaluation(db, generation_id, rating, notes)
+    return {
+        "id": ev.id,
+        "generation_id": ev.generation_id,
+        "rating": ev.rating,
+        "notes": ev.notes,
+        "created_at": ev.created_at.isoformat() if ev.created_at else None,
+    }
+
+
+@app.get("/api/evaluations")
+def api_list_evaluations(generation_id: Optional[int] = None, db: Session = Depends(get_db_session)):
+    evaluations = crud.list_evaluations(db, generation_id=generation_id)
+    return [
+        {
+            "id": ev.id,
+            "generation_id": ev.generation_id,
+            "rating": ev.rating,
+            "notes": ev.notes,
+            "created_at": ev.created_at.isoformat() if ev.created_at else None,
+        }
+        for ev in evaluations
+    ]
+
+
+@app.get("/api/leaderboard")
+def api_leaderboard(db: Session = Depends(get_db_session)):
+    return crud.get_prompt_leaderboard(db)
+
+
+@app.get("/api/generation/{generation_id}")
+def api_get_generation(generation_id: int, db: Session = Depends(get_db_session)):
+    g = crud.get_generation_with_details(db, generation_id)
+    if not g:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    return {
+        "id": g.id,
+        "topic": g.topic.name if g.topic else None,
+        "slug": g.topic.slug if g.topic else None,
+        "prompt_id": g.prompt_id,
+        "prompt_name": g.prompt.name if g.prompt else "Default",
+        "status": g.status,
+        "total_questions": g.total_questions,
+        "difficulty": g.difficulty_dict,
+        "avg_rating": round(g.avg_rating, 1) if g.avg_rating else None,
+        "evaluations": [
+            {"id": e.id, "rating": e.rating, "notes": e.notes}
+            for e in g.evaluations
+        ],
+        "grounding_logs": [
+            {"source_type": gl.source_type, "source_url": gl.source_url, "verification_status": gl.verification_status}
+            for gl in g.grounding_logs
+        ],
+        "created_at": g.created_at.isoformat() if g.created_at else None,
+    }
 
 
 if __name__ == "__main__":

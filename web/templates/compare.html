@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare — Dr. Math</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .compare-col { background: var(--card); border: 1px solid #334155; border-radius: 10px; padding: 1.25rem; }
+        .compare-col h2 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--accent); }
+        .compare-col .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem; }
+        .diff-badges-compare { display: flex; gap: 6px; margin: 0.5rem 0; }
+        .diff-badges-compare .badge { font-size: 0.8rem; padding: 3px 10px; }
+        .content-preview { background: #0f172a; padding: 1rem; border-radius: 8px; font-size: 0.9rem; max-height: 300px; overflow-y: auto; border: 1px solid #334155; line-height: 1.6; }
+        .question-mini { background: #0f172a; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.85rem; border: 1px solid #334155; }
+        .question-mini .q-text { font-weight: 600; margin-bottom: 0.3rem; }
+        .question-mini .q-opts { color: var(--muted); }
+        .grounding-list { font-size: 0.85rem; color: var(--muted); }
+        .grounding-list a { color: var(--accent); }
+        @media (max-width: 768px) { .compare-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">🧮 Dr. Math</a>
+            <div class="nav-links">
+                <a href="/">🏠 Home</a>
+                <a href="/lab">🧪 Lab</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>⚖️ A/B Comparison</h1>
+            <p>Side-by-side view of two generation attempts for the same topic.</p>
+        </section>
+
+        <div class="compare-grid">
+            <!-- Generation A -->
+            <div class="compare-col">
+                <h2>Generation A</h2>
+                <div class="meta">
+                    <strong>{{ gen_a.topic }}</strong> — {{ gen_a.prompt_name }}<br>
+                    {{ gen_a.total_questions }} questions • 
+                    {% if gen_a.avg_rating %}⭐ {{ gen_a.avg_rating }}{% else %}Not rated{% endif %} •
+                    {{ gen_a.created_at[:16].replace('T', ' ') }}
+                </div>
+                <div class="diff-badges-compare">
+                    {% for d, count in gen_a.difficulty.items() %}
+                    <span class="badge d{{ d }}">L{{ d }}: {{ count }}</span>
+                    {% endfor %}
+                </div>
+
+                <h3 style="font-size: 0.95rem; margin: 1rem 0 0.5rem;">📖 Adapted Content</h3>
+                <div class="content-preview">{{ gen_a.adapted_content[:800] }}{% if gen_a.adapted_content|length > 800 %}...{% endif %}</div>
+
+                <h3 style="font-size: 0.95rem; margin: 1rem 0 0.5rem;">📝 Sample Questions (first 3)</h3>
+                {% for q in gen_a.questions[:3] %}
+                <div class="question-mini">
+                    <div class="q-text">{{ q.question }}</div>
+                    <div class="q-opts">{{ q.options|join(', ') }}</div>
+                </div>
+                {% endfor %}
+
+                <h3 style="font-size: 0.95rem; margin: 1rem 0 0.5rem;">🔗 Grounding</h3>
+                <div class="grounding-list">
+                    {% for gl in gen_a.grounding %}
+                    <div>{{ gl.source_type }}: <a href="{{ gl.source_url }}" target="_blank">{{ gl.source_url[:60] }}...</a></div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Generation B -->
+            <div class="compare-col">
+                <h2>Generation B</h2>
+                <div class="meta">
+                    <strong>{{ gen_b.topic }}</strong> — {{ gen_b.prompt_name }}<br>
+                    {{ gen_b.total_questions }} questions • 
+                    {% if gen_b.avg_rating %}⭐ {{ gen_b.avg_rating }}{% else %}Not rated{% endif %} •
+                    {{ gen_b.created_at[:16].replace('T', ' ') }}
+                </div>
+                <div class="diff-badges-compare">
+                    {% for d, count in gen_b.difficulty.items() %}
+                    <span class="badge d{{ d }}">L{{ d }}: {{ count }}</span>
+                    {% endfor %}
+                </div>
+
+                <h3 style="font-size: 0.95rem; margin: 1rem 0 0.5rem;">📖 Adapted Content</h3>
+                <div class="content-preview">{{ gen_b.adapted_content[:800] }}{% if gen_b.adapted_content|length > 800 %}...{% endif %}</div>
+
+                <h3 style="font-size: 0.95rem; margin: 1rem 0 0.5rem;">📝 Sample Questions (first 3)</h3>
+                {% for q in gen_b.questions[:3] %}
+                <div class="question-mini">
+                    <div class="q-text">{{ q.question }}</div>
+                    <div class="q-opts">{{ q.options|join(', ') }}</div>
+                </div>
+                {% endfor %}
+
+                <h3 style="font-size: 0.95rem; margin: 1rem 0 0.5rem;">🔗 Grounding</h3>
+                <div class="grounding-list">
+                    {% for gl in gen_b.grounding %}
+                    <div>{{ gl.source_type }}: <a href="{{ gl.source_url }}" target="_blank">{{ gl.source_url[:60] }}...</a></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <a href="/lab">← Back to Lab</a>
+        </div>
+    </footer>
+</body>
+</html>

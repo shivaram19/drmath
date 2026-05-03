@@ -23,6 +23,20 @@
             </div>
         </div>
 
+        {% if versions and versions|length > 1 %}
+        <div class="generate-box" style="margin-bottom: 1rem;">
+            <h2 style="font-size: 1rem; margin-bottom: 0.75rem;">📚 Versions</h2>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                {% for v in versions %}
+                <a href="/compare?a={{ versions[0].id }}&b={{ v.id }}" class="badge {% if loop.first %}d1{% else %}d2{% endif %}" style="text-decoration: none;">
+                    {{ v.prompt_name }} #{{ v.id }}
+                    {% if v.avg_rating %}⭐{{ v.avg_rating }}{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="tabs">
             <button class="tab-btn active" onclick="showTab('content')">📖 Lesson</button>
             <button class="tab-btn" onclick="showTab('questions')">📝 Questions ({{ topic.meta.total_questions }})</button>

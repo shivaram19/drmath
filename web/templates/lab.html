@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Lab — Dr. Math</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .lab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .lab-card { background: var(--card); border: 1px solid #334155; border-radius: 10px; padding: 1.25rem; }
+        .lab-card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--accent); }
+        .leaderboard-table { width: 100%; border-collapse: collapse; }
+        .leaderboard-table th, .leaderboard-table td { padding: 0.6rem 0.5rem; text-align: left; border-bottom: 1px solid #334155; font-size: 0.9rem; }
+        .leaderboard-table th { color: var(--muted); font-size: 0.8rem; }
+        .star-rating { color: #fbbf24; font-size: 1.1rem; }
+        .gen-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #334155; }
+        .gen-row:last-child { border-bottom: none; }
+        .gen-info { flex: 1; }
+        .gen-info strong { display: block; font-size: 0.95rem; }
+        .gen-info span { color: var(--muted); font-size: 0.8rem; }
+        .gen-actions { display: flex; gap: 0.5rem; align-items: center; }
+        .rating-form { display: flex; gap: 0.3rem; align-items: center; }
+        .rating-form select { padding: 0.3rem 0.5rem; border-radius: 6px; background: #0f172a; color: var(--text); border: 1px solid #475569; }
+        .rating-form button { padding: 0.3rem 0.7rem; border-radius: 6px; border: none; background: var(--success); color: #064e3b; font-weight: 700; cursor: pointer; font-size: 0.8rem; }
+        .badge-sm { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .compare-form { display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem; }
+        .compare-form select { padding: 0.4rem; border-radius: 6px; background: #0f172a; color: var(--text); border: 1px solid #475569; }
+        @media (max-width: 768px) { .lab-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">🧮 Dr. Math</a>
+            <div class="nav-links">
+                <a href="/">🏠 Home</a>
+                <a href="/prompts">🎨 Prompts</a>
+                <a href="/history">📜 History</a>
+                <a href="/lab" class="active">🧪 Lab</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>🧪 Manager Lab</h1>
+            <p>Evaluate generations, compare prompts, and find what works best.</p>
+        </section>
+
+        <div class="lab-grid">
+            <!-- Leaderboard -->
+            <div class="lab-card">
+                <h2>🏆 Prompt Leaderboard</h2>
+                {% if leaderboard %}
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr><th>Prompt</th><th>Avg Rating</th><th>Evals</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for row in leaderboard %}
+                        <tr>
+                            <td><strong>{{ row.prompt_name }}</strong></td>
+                            <td class="star-rating">
+                                {% if row.avg_rating %}
+                                    {{ "⭐" * (row.avg_rating | round | int) }} {{ row.avg_rating }}
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>{{ row.eval_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="empty">No evaluations yet. Rate some generations below!</p>
+                {% endif %}
+            </div>
+
+            <!-- Quick Compare -->
+            <div class="lab-card">
+                <h2>⚖️ A/B Compare</h2>
+                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                    Pick two generations of the same topic to compare side-by-side.
+                </p>
+                <form action="/compare" method="get" class="compare-form">
+                    <select name="a" required>
+                        <option value="">Select A</option>
+                        {% for g in generations %}
+                        <option value="{{ g.id }}">{{ g.topic }} #{{ g.id }} ({{ g.prompt_name }})</option>
+                        {% endfor %}
+                    </select>
+                    <select name="b" required>
+                        <option value="">Select B</option>
+                        {% for g in generations %}
+                        <option value="{{ g.id }}">{{ g.topic }} #{{ g.id }} ({{ g.prompt_name }})</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-sm">Compare</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- All Generations -->
+        <section class="lab-card" style="margin-top: 1.5rem;">
+            <h2>📊 All Generations</h2>
+            {% if generations %}
+            <div>
+                {% for g in generations %}
+                <div class="gen-row">
+                    <div class="gen-info">
+                        <strong>{{ g.topic }} — {{ g.prompt_name }}</strong>
+                        <span>
+                            #{{ g.id }} • {{ g.total_questions }} questions • 
+                            {% if g.avg_rating %}⭐ {{ g.avg_rating }} ({{ g.eval_count }} evals){% else %}Not rated{% endif %}
+                            • {{ g.created_at[:16].replace('T', ' ') }}
+                        </span>
+                    </div>
+                    <div class="gen-actions">
+                        <a href="/topic/{{ g.slug }}" class="btn-sm">View</a>
+                        <form action="/api/evaluations" method="post" class="rating-form" onsubmit="submitRating(event)">
+                            <input type="hidden" name="generation_id" value="{{ g.id }}">
+                            <select name="rating" required>
+                                <option value="">Rate</option>
+                                <option value="5">5 ⭐</option>
+                                <option value="4">4 ⭐</option>
+                                <option value="3">3 ⭐</option>
+                                <option value="2">2 ⭐</option>
+                                <option value="1">1 ⭐</option>
+                            </select>
+                            <input type="text" name="notes" placeholder="Notes (opt)" style="padding: 0.3rem 0.5rem; border-radius: 6px; background: #0f172a; color: var(--text); border: 1px solid #475569; width: 120px;">
+                            <button type="submit">Save</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty">No generations yet. Go generate some topics!</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <a href="/">← Back to topics</a>
+        </div>
+    </footer>
+
+    <script>
+        async function submitRating(event) {
+            event.preventDefault();
+            const form = event.target;
+            const data = new FormData(form);
+            const resp = await fetch('/api/evaluations', { method: 'POST', body: data });
+            if (resp.ok) {
+                form.querySelector('button').textContent = '✅ Saved';
+                setTimeout(() => location.reload(), 600);
+            } else {
+                alert('Failed to save rating');
+            }
+        }
+    </script>
+</body>
+</html>
