@@ -25,9 +25,9 @@
 | **Pipeline** | ✅ | Obscura → IXL + MathIsFun → LLM → 40 MCQs |
 | **LLM** | ✅ | OpenAI `gpt-4o-mini` (primary). Azure authenticated but **no deployment** (404). Grok exhausted. |
 | **Database** | ✅ | **SQLite** with SQLAlchemy (replaces JSON files). Tables: `prompts`, `topics`, `generations`, `evaluations`, `grounding_logs` |
-| **Prompt Builder** | ✅ | Create custom teaching personas. Saved to DB. |
-| **Manager Lab** | ✅ | `/lab` — rate generations 1–5⭐, see prompt leaderboard, A/B compare any two versions |
-| **Generation History** | ✅ | **All versions kept** (not just latest). Every prompt experiment is preserved. |
+| **Prompt Builder** | ✅ | Create custom teaching personas. **Auto-versioning** — edits create timestamped sub-versions. Full text expand/collapse. |
+| **Manager Lab** | ✅ | `/lab` — rate generations 1–5⭐, see prompt leaderboard, A/B compare, view per-generation pipeline timeline |
+| **Generation History** | ✅ | **All versions kept** (not just latest). Every generation records a 4-step timeline: scrape → adapt → generate → save. |
 | **Grounding** | ✅ | Every generation logs IXL skills + MathIsFun URL used |
 | **Web UI** | ✅ | FastAPI + Jinja2. Home, topic pages, prompt builder, history, lab, compare |
 | **Pre-commit** | ✅ | Blocks `.env`, runtime artifacts, `__pycache__`. Enforces conventional commits. |
@@ -142,6 +142,8 @@ docker-compose config
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-05-03 | Prompt versioning, expand/collapse, pipeline timestamps | `3ee765d` |
+| 2026-05-03 | Web UI: prompt families, generation timeline, Lab updates | `0bd98aa` |
 | 2026-05-03 | **LIVE: Deployed to production with HTTPS** | `e264acb` |
 | 2026-05-03 | ADR-008: SQLite for prompt experimentation | `7c80386` |
 | 2026-05-03 | SQLite DB layer (models, CRUD, migration) | `6e37c2e` |
