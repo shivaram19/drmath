@@ -16,21 +16,31 @@ from db.models import Prompt, Topic, Generation, Evaluation, GroundingLog
 
 def create_prompt(db: Session, name: str, system_prompt: str, question_prompt: str, parent_id: Optional[str] = None) -> Prompt:
     """Create a prompt. If parent_id is given, it's a new version of an existing prompt.
-    If name already exists without parent_id, auto-create as a new version."""
+    If name already exists without parent_id, auto-create as a new version.
+    If the text is identical to the parent, returns the parent instead of a useless duplicate."""
     
-    # Determine version number
-    version = 1
+    # If editing an existing prompt, check for no-op (identical text)
     if parent_id:
         parent = get_prompt(db, parent_id)
         if parent:
+            if parent.system_prompt.strip() == system_prompt.strip() and parent.question_prompt.strip() == question_prompt.strip():
+                # No actual change — return the existing prompt
+                return parent
             # Count existing children + 1
             version = len(parent.children) + 1 if parent.children else 1
+        else:
+            version = 1
     else:
         # Check if a prompt with this exact name already exists (as a root)
         existing = db.query(Prompt).filter(Prompt.name == name).filter(Prompt.parent_id.is_(None)).first()
         if existing:
+            # If text is identical to the latest root, return it (no-op)
+            if existing.system_prompt.strip() == system_prompt.strip() and existing.question_prompt.strip() == question_prompt.strip():
+                return existing
             parent_id = existing.id
             version = len(existing.children) + 1 if existing.children else 1
+        else:
+            version = 1
     
     # Auto-name with timestamp if it's a version
     display_name = name
