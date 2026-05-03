@@ -37,8 +37,11 @@ def fetch_mathisfun_page(slug: str) -> str:
     return _obscura_fetch(url)
 
 
-def search_mathisfun_topic(topic: str) -> str:
-    """Heuristic: map topic keywords to known MathIsFun slugs."""
+def search_mathisfun_topic(topic: str) -> tuple[str, str]:
+    """Heuristic: map topic keywords to known MathIsFun slugs.
+    
+    Returns (html, url_used).
+    """
     topic_lower = topic.lower()
     mapping = {
         "integer": "positive-negative-integers.html",
@@ -77,6 +80,9 @@ def search_mathisfun_topic(topic: str) -> str:
     }
     for keyword, slug in mapping.items():
         if keyword in topic_lower:
-            return fetch_mathisfun_page(slug)
+            url = f"{MATHISFUN_BASE}/{slug}"
+            return fetch_mathisfun_page(slug), url
     # Fallback: try the topic as a slug directly
-    return fetch_mathisfun_page(f"{topic_lower.replace(' ', '-')}.html")
+    slug = f"{topic_lower.replace(' ', '-')}.html"
+    url = f"{MATHISFUN_BASE}/{slug}"
+    return fetch_mathisfun_page(slug), url

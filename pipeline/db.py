@@ -1,85 +1,130 @@
-"""Simple JSON file database for prompts and generation tracking."""
+"""SQLite-backed database layer (replaces JSON files).
+
+All legacy functions keep the same signatures for backward compatibility.
+New CRUD functions are exposed for the manager lab and evaluations.
+"""
 import json
-import uuid
-from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-from pipeline.config import DATA_DIR
+# Ensure models are registered
+from db.database import SessionLocal, Base, engine
+from db import models
+from db import crud
 
-PROMPTS_DB = DATA_DIR / "prompts_db.json"
-GENERATIONS_DB = DATA_DIR / "generations_db.json"
-
-
-def _load_json(path: Path) -> List[Dict[str, Any]]:
-    if not path.exists():
-        return []
-    try:
-        return json.loads(path.read_text())
-    except Exception:
-        return []
+# Create tables on first import if they don't exist
+Base.metadata.create_all(bind=engine)
 
 
-def _save_json(path: Path, data: List[Dict[str, Any]]):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+def _session():
+    """Get a new DB session."""
+    return SessionLocal()
 
 
 # ------------------------------------------------------------------
-# Prompts
+# Legacy-compatible prompt API
 # ------------------------------------------------------------------
 
 def list_prompts() -> List[Dict[str, Any]]:
-    return _load_json(PROMPTS_DB)
+    db = _session()
+    try:
+        prompts = crud.list_prompts(db)
+        return [
+            {
+                "id": p.id,
+                "name": p.name,
+                "system_prompt": p.system_prompt,
+                "question_prompt": p.question_prompt,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in prompts
+        ]
+    finally:
+        db.close()
 
 
 def get_prompt(prompt_id: str) -> Optional[Dict[str, Any]]:
-    for p in list_prompts():
-        if p.get("id") == prompt_id:
-            return p
-    return None
+    if not prompt_id:
+        return None
+    db = _session()
+    try:
+        p = crud.get_prompt(db, prompt_id)
+        if not p:
+            return None
+        return {
+            "id": p.id,
+            "name": p.name,
+            "system_prompt": p.system_prompt,
+            "question_prompt": p.question_prompt,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+        }
+    finally:
+        db.close()
 
 
 def save_prompt(name: str, system_prompt: str, question_prompt: str) -> Dict[str, Any]:
-    prompts = list_prompts()
-    prompt = {
-        "id": str(uuid.uuid4())[:8],
-        "name": name,
-        "system_prompt": system_prompt,
-        "question_prompt": question_prompt,
-        "created_at": datetime.utcnow().isoformat(),
-    }
-    prompts.append(prompt)
-    _save_json(PROMPTS_DB, prompts)
-    return prompt
+    db = _session()
+    try:
+        p = crud.create_prompt(db, name, system_prompt, question_prompt)
+        return {
+            "id": p.id,
+            "name": p.name,
+            "system_prompt": p.system_prompt,
+            "question_prompt": p.question_prompt,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+        }
+    finally:
+        db.close()
 
 
 def delete_prompt(prompt_id: str) -> bool:
-    prompts = list_prompts()
-    filtered = [p for p in prompts if p.get("id") != prompt_id]
-    if len(filtered) == len(prompts):
-        return False
-    _save_json(PROMPTS_DB, filtered)
-    return True
+    db = _session()
+    try:
+        return crud.delete_prompt(db, prompt_id)
+    finally:
+        db.close()
 
 
 # ------------------------------------------------------------------
-# Generation tracking
+# Legacy-compatible generation API
 # ------------------------------------------------------------------
 
 def list_generations() -> List[Dict[str, Any]]:
-    return _load_json(GENERATIONS_DB)
+    db = _session()
+    try:
+        gens = crud.list_generations(db)
+        return [_gen_to_dict(g) for g in gens]
+    finally:
+        db.close()
 
 
 def log_generation(topic: str, prompt_id: Optional[str], output_path: str, status: str, meta: Dict[str, Any]):
-    gens = list_generations()
-    gens.append({
-        "id": str(uuid.uuid4())[:8],
-        "topic": topic,
-        "prompt_id": prompt_id,
-        "output_path": output_path,
-        "status": status,
-        "meta": meta,
-        "created_at": datetime.utcnow().isoformat(),
-    })
-    _save_json(GENERATIONS_DB, gens)
+    """Legacy log — creates or updates a generation record."""
+    db = _session()
+    try:
+        slug = topic.lower().replace(" ", "_")
+        topic_obj = crud.get_or_create_topic(db, slug, topic)
+        crud.create_generation(
+            db,
+            topic_id=topic_obj.id,
+            prompt_id=prompt_id,
+            status=status,
+        )
+    finally:
+        db.close()
+
+
+# ------------------------------------------------------------------
+# Internal helpers
+# ------------------------------------------------------------------
+
+def _gen_to_dict(g: models.Generation) -> Dict[str, Any]:
+    return {
+        "id": g.id,
+        "topic": g.topic.name if g.topic else "",
+        "prompt_id": g.prompt_id,
+        "output_path": g.output_path,
+        "status": g.status,
+        "meta": json.loads(g.meta) if g.meta else {},
+        "created_at": g.created_at.isoformat() if g.created_at else None,
+    }
