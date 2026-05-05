@@ -1,0 +1,419 @@
+/// Home Screen — Dashboard & Entry Point
+///
+/// Research basis:
+/// - Deci & Ryan (2000) Self-Determination Theory: Autonomy, competence, relatedness [^23].
+///   The home screen provides three autonomy-supporting entry points:
+///   (1) "Resume Lesson" — student controls pacing.
+///   (2) "Daily Practice" — student chooses when to engage.
+///   (3) "Enter Games" — student selects their engagement mode.
+///
+/// - Lally et al. (2010): Habit formation requires consistent cues [^17].
+///   The Daily Practice card displays a reset countdown, creating a
+///   predictable routine cue.
+///
+/// - Cognitive Load Theory: The bento grid limits primary actions to 3 cards.
+///   No notification badges, no scrolling ads, no interruptive modals.
+///
+/// - Blue primary color reduces math anxiety (Elliot & Maier 2014) [^12].
+///   The "Continue Learning" card uses blue to signal focus, not pressure.
+///
+/// ADR-010 Decisions: D9, D3
+
+import 'package:flutter/material.dart';
+import '../../core/constants/app_colors.dart';
+import '../../shared/widgets/bottom_nav_bar.dart';
+import '../../shared/widgets/top_app_bar.dart';
+import '../class_selection/class_selection_screen.dart';
+import '../concept/concept_content_screen.dart';
+import '../curriculum/curriculum_grid_screen.dart';
+import '../curriculum/curriculum_list_screen.dart';
+import '../curriculum/curriculum_stepper_screen.dart';
+import '../games/games_screen.dart';
+import '../practice/practice_question_screen.dart';
+import '../profile/profile_screen.dart';
+import '../topics/topic_choice_screen.dart';
+import '../../shared/data/demo_data.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  final _pages = [
+    const _HomeTab(),
+    const CurriculumListScreen(),
+    const GamesScreen(),
+    const ProfileScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const MathWiseAppBar(),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: MathWiseBottomNav(
+        currentIndex: _currentIndex,
+        onTap: (i) => setState(() => _currentIndex = i),
+      ),
+    );
+  }
+}
+
+class _HomeTab extends StatelessWidget {
+  const _HomeTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Greeting: autonomy-supporting, not prescriptive.
+          // "Ready to conquer" frames math as challenge, not threat.
+          Text('Hello \u{1F44B}', style: theme.textTheme.displayLarge),
+          const SizedBox(height: 8),
+          Text(
+            'Ready to conquer some numbers today? You\'re doing great!',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 32),
+          _buildContinueCard(context),
+          const SizedBox(height: 16),
+          _buildDailyPracticeCard(context),
+          const SizedBox(height: 16),
+          _buildGamesSummaryCard(context),
+          const SizedBox(height: 32),
+          Text('Recommended for You', style: theme.textTheme.displaySmall),
+          const SizedBox(height: 16),
+          _buildRecommendedGrid(context),
+          const SizedBox(height: 32),
+          // Dev/demo navigation to all screens.
+          Text('All Screens', style: theme.textTheme.displaySmall),
+          const SizedBox(height: 16),
+          _buildAllScreensGrid(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContinueCard(BuildContext context) {
+    // "Continue Learning" card: competence feedback + autonomy.
+    // Student sees their exact progress (68%) and decides to resume.
+    // Rationale: SDT — competence + autonomy = intrinsic motivation [^23].
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.primaryContainer.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'CONTINUE LEARNING',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: AppColors.primary,
+                letterSpacing: 0.05,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(DemoData.currentTopic, style: Theme.of(context).textTheme.displayMedium),
+          const SizedBox(height: 4),
+          Text(
+            'Mastering chords, tangents, and sectors.',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Course Progress', style: Theme.of(context).textTheme.bodyLarge),
+              Text(
+                '${(DemoData.currentTopicProgress * 100).toInt()}%',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: DemoData.currentTopicProgress,
+              minHeight: 8,
+              backgroundColor: AppColors.surfaceContainer,
+              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _navigate(context, const TopicChoiceScreen()),
+              icon: const Icon(Icons.play_arrow, size: 20),
+              label: const Text('Resume Lesson'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                textStyle: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyPracticeCard(BuildContext context) {
+    // Daily Practice: spaced repetition cue.
+    // Rationale: Ebbinghaus forgetting curve — 60% loss in 24h without retrieval [^15].
+    // Roediger & Karpicke (2006): retrieval practice > re-reading [^16].
+    // Lally et al. (2010): fixed-time cues build habits [^17].
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryContainer.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.secondaryContainer.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.secondaryContainer,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.auto_awesome, color: AppColors.secondary, size: 32),
+          ),
+          const SizedBox(height: 16),
+          Text('Daily Practice', style: Theme.of(context).textTheme.displaySmall),
+          const SizedBox(height: 4),
+          Text(
+            '10 Questions Ready',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppColors.onSecondaryContainer,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _navigate(context, const PracticeQuestionScreen()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondary,
+                foregroundColor: AppColors.onSecondary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text('Start Now'),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Resets in 4h 20m',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: AppColors.outline,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGamesSummaryCard(BuildContext context) {
+    // Games summary: competence feedback without extrinsic reward language.
+    // "Lifelines" = attempts remaining (competence signal), not coins.
+    // Rationale: Hamari et al. (2014): competence-linked gamification works;
+    // extrinsic currency crowds out intrinsic motivation [^19][^21].
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.surfaceContainerHigh),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: AppColors.tertiaryFixed,
+              borderRadius: BorderRadius.circular(36),
+            ),
+            child: const Icon(Icons.sports_esports, color: AppColors.onTertiaryFixed, size: 36),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Math Playground', style: Theme.of(context).textTheme.displaySmall),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.schedule, color: AppColors.primary, size: 18),
+                    const SizedBox(width: 4),
+                    Text(
+                      '1h 30m Today',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.star, color: AppColors.tertiary, size: 18),
+                    const SizedBox(width: 4),
+                    Text(
+                      '3 Lifelines Available',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => _navigate(context, const GamesScreen()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.surfaceContainerHighest,
+              foregroundColor: AppColors.primaryFixedDim,
+              side: const BorderSide(color: AppColors.primary, width: 0.5),
+              elevation: 0,
+            ),
+            child: const Text('Enter Games'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendedGrid(BuildContext context) {
+    final items = [
+      (Icons.functions, 'Algebra Basics', '12 Lessons', const Color(0xFFEBF4FF)),
+      (Icons.percent, 'Percentage Pro', '8 Lessons', const Color(0xFFFFF4EB)),
+      (Icons.straighten, 'Measurement', '15 Lessons', const Color(0xFFEBFFF4)),
+    ];
+    return Column(
+      children: items.map((item) {
+        return GestureDetector(
+          onTap: () => _navigate(context, const TopicChoiceScreen()),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: item.$4,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(item.$1, color: AppColors.primary),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.$2,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        item.$3,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.outline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildAllScreensGrid(BuildContext context) {
+    final screens = [
+      ('Class Selection', () => _navigate(context, const ClassSelectionScreen())),
+      ('Curriculum Grid', () => _navigate(context, const CurriculumGridScreen())),
+      ('Curriculum Stepper', () => _navigate(context, const CurriculumStepperScreen())),
+      ('Topic Choice', () => _navigate(context, const TopicChoiceScreen())),
+      ('Concept Content', () => _navigate(context, const ConceptContentScreen())),
+      ('Practice Question', () => _navigate(context, const PracticeQuestionScreen())),
+    ];
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: screens.map((s) {
+        return ActionChip(
+          label: Text(s.$1),
+          onPressed: s.$2,
+          backgroundColor: AppColors.primaryContainer.withOpacity(0.1),
+          side: BorderSide(color: AppColors.primaryContainer.withOpacity(0.3)),
+          labelStyle: const TextStyle(color: AppColors.primary),
+        );
+      }).toList(),
+    );
+  }
+
+  void _navigate(BuildContext context, Widget screen) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+  }
+}
