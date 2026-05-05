@@ -1,0 +1,93 @@
+agent:
+  name: mathwise-e2e
+  max_steps: 25
+  reasoning: true
+  streaming: true
+  after_sleep_action: 1.5
+  wait_for_stable_ui: 0.5
+  use_normalized_coordinates: false
+
+  fast_agent:
+    vision: true
+    parallel_tools: true
+    system_prompt: config/prompts/fast_agent/system.jinja2
+    user_prompt: config/prompts/fast_agent/user.jinja2
+
+  manager:
+    vision: true
+    system_prompt: config/prompts/manager/system.jinja2
+    stateless: false
+
+  executor:
+    vision: true
+    system_prompt: config/prompts/executor/system.jinja2
+
+  app_cards:
+    enabled: true
+    mode: local
+    app_cards_dir: config/app_cards
+    server_url: null
+    server_timeout: 2.0
+    server_max_retries: 2
+
+llm_profiles:
+  manager:
+    provider: GoogleGenAI
+    model: gemini-2.5-flash
+    temperature: 0.2
+    kwargs:
+      max_tokens: 8192
+
+  executor:
+    provider: GoogleGenAI
+    model: gemini-2.5-flash
+    temperature: 0.1
+    kwargs:
+      max_tokens: 4096
+
+  fast_agent:
+    provider: GoogleGenAI
+    model: gemini-2.5-flash
+    temperature: 0.2
+    kwargs:
+      max_tokens: 8192
+
+  app_opener:
+    provider: GoogleGenAI
+    model: gemini-2.5-flash
+    temperature: 0.0
+
+  structured_output:
+    provider: GoogleGenAI
+    model: gemini-2.5-flash
+    temperature: 0.0
+
+device:
+  serial: null
+  platform: android
+  use_tcp: true
+  auto_setup: true
+
+tools:
+  disabled_tools:
+    - click_at
+    - click_area
+    - long_press_at
+  stealth: false
+
+telemetry:
+  enabled: false
+
+tracing:
+  enabled: false
+  provider: phoenix
+
+logging:
+  debug: true
+  save_trajectory: step
+  trajectory_path: trajectories
+  rich_text: true
+  trajectory_gifs: true
+
+credentials:
+  enabled: false
