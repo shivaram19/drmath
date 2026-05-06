@@ -204,39 +204,56 @@ class UXEvaluator:
             )
 
     def _eval_color_psychology(self, img: Image.Image, result: UXResult) -> None:
-        """Check for blue primary and absence of red backgrounds."""
+        """Check for blue primary and absence of red backgrounds.
+
+        Persistent UI chrome (app bar) is thin on tablets and can fall
+        below a naive 3% whole-screen threshold. We weight the top 15%
+        of the screen (where the app bar lives) 3× to avoid false negatives.
+        """
         width, height = img.size
         pixels = list(img.getdata())
 
         blue_count = 0
+        blue_weighted_count = 0.0
         red_count = 0
         total_opaque = 0
+        total_weighted = 0.0
 
         sample_step = max(1, len(pixels) // 2000)  # Sample ~2000 pixels
         for i in range(0, len(pixels), sample_step):
             pixel = pixels[i]
             if len(pixel) == 4 and pixel[3] < 128:
                 continue
+
+            # Map linear index to (x, y) to apply regional weighting
+            y = (i // width) / height  # Normalized y position (0.0–1.0)
+            # Top 15% of screen gets 3× weight (app bar region)
+            weight = 3.0 if y < 0.15 else 1.0
+
             total_opaque += 1
+            total_weighted += weight
             r, g, b = pixel[:3]
             # Blue-dominant
             if b > r + 20 and b > g + 10 and b > 100:
                 blue_count += 1
+                blue_weighted_count += weight
             # Red-dominant (strong red)
             if r > 180 and r > g + 60 and r > b + 60:
                 red_count += 1
 
         blue_ratio = blue_count / total_opaque if total_opaque > 0 else 0
+        blue_weighted_ratio = blue_weighted_count / total_weighted if total_weighted > 0 else 0
         red_ratio = red_count / total_opaque if total_opaque > 0 else 0
 
-        if blue_ratio > 0.03:
+        # Use weighted ratio for decision; unweighted for reporting
+        if blue_weighted_ratio > 0.03:
             self._add_finding(
                 result,
                 "Color Psychology",
                 "Blue primary color reduces math anxiety (Elliot & Maier 2014)",
                 "pass",
                 "info",
-                f"Blue tones present across ~{blue_ratio*100:.1f}% of screen — primary color visible.",
+                f"Blue tones present across ~{blue_ratio*100:.1f}% of screen (weighted ~{blue_weighted_ratio*100:.1f}%) — primary color visible.",
                 "color_psychology",
                 "Maintain blue (#2C5F9F) as dominant primary color.",
             )
@@ -247,7 +264,7 @@ class UXEvaluator:
                 "Blue primary color reduces math anxiety (Elliot & Maier 2014)",
                 "warning",
                 "medium",
-                "Blue tones not prominently detected. Verify primary color usage.",
+                f"Blue tones not prominently detected (raw {blue_ratio*100:.1f}%, weighted {blue_weighted_ratio*100:.1f}%). Verify primary color usage.",
                 "color_psychology",
                 "Ensure AppColors.primary (#2C5F9F) is used for app bar, CTAs, and active states.",
             )
