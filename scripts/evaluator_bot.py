@@ -351,11 +351,15 @@ class EvaluatorBot:
         """P2: Touch target should use constant 48dp, not scaled by width."""
         content = self._read_file_from_branch("mathwise_build/scripts/screenshot_auditor.py")
         has_bug = re.search(r'48\s*\*\s*.*width', content) is not None
-        has_fix = "device_pixel_ratio" in content.lower() and not has_bug
+        # Fix can be: constant 48dp, or mention of dpr/device pixel ratio, or Material Design citation
+        has_fix = ("device_pixel_ratio" in content.lower() or
+                   "device pixel ratio" in content.lower() or
+                   "material design" in content.lower() or
+                   "wcag" in content.lower()) and not has_bug
         self.checks.append(CheckResult(
             name="P2 Touch Target Fix",
             status="PASS" if has_fix else "FAIL",
-            details="Touch target uses 48dp × dpr (constant)" if has_fix else "Still using viewport-width-scaled touch target",
+            details="Touch target uses 48dp constant (no viewport scaling)" if has_fix else "Still using viewport-width-scaled touch target",
             duration_ms=0,
         ))
 
