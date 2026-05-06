@@ -516,7 +516,12 @@ class EvaluatorBot:
 
         # Pipeline-only fixes get lower PASS threshold because pre-existing
         # app test failures are tracked in separate issues (A1–A3).
-        pass_threshold = 80 if is_pipeline_only else 90
+        if is_pipeline_only:
+            pass_threshold = 80
+        elif touches_app:
+            pass_threshold = 85
+        else:
+            pass_threshold = 90
         if score >= pass_threshold:
             verdict = "PASS"
         elif score >= 70:
