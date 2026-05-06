@@ -13,6 +13,7 @@
 ///   Progress bars use green for in-progress, blue for active, gray for untouched.
 ///
 /// ADR-010 Decisions: D3, D6
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -57,7 +58,7 @@ class ClassSelectionScreen extends StatelessWidget {
                   progressColor: _progressColorForIndex(i),
                   progressLabel: c.progressLabel,
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const TopicsSubtopicsScreen()),
+                    MaterialPageRoute<void>(builder: (_) => const TopicsSubtopicsScreen()),
                   ),
                 ),
                 if (i < DemoData.studentClasses.length - 1)
@@ -91,7 +92,7 @@ class ClassSelectionScreen extends StatelessWidget {
                 Text(
                   'DAILY CHALLENGE',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: AppColors.onPrimaryContainer.withOpacity(0.8),
+                    color: AppColors.onPrimaryContainer.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -104,7 +105,7 @@ class ClassSelectionScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const PracticeQuestionScreen()),
+                    MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.surfaceContainerLowest,
@@ -186,13 +187,13 @@ Color _iconBgForIndex(int index) {
     case 1:
       return AppColors.secondaryContainer;
     case 2:
-      return AppColors.tertiaryContainer.withOpacity(0.2);
+      return AppColors.tertiaryContainer.withValues(alpha: 0.2);
     case 3:
-      return AppColors.primaryFixedDim.withOpacity(0.3);
+      return AppColors.primaryFixedDim.withValues(alpha: 0.3);
     case 4:
       return AppColors.secondaryFixedDim.withValues(alpha: 0.2);
     case 5:
-      return AppColors.tertiaryFixed.withOpacity(0.2);
+      return AppColors.tertiaryFixed.withValues(alpha: 0.2);
     default:
       return AppColors.surfaceContainer;
   }
@@ -263,7 +264,7 @@ class _ClassCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),

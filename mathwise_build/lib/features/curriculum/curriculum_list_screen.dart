@@ -16,6 +16,7 @@
 ///   to expand and which sub-topic to resume.
 ///
 /// ADR-010 Decisions: D3, D6
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -119,7 +120,7 @@ class _CurriculumListScreenState extends State<CurriculumListScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -136,10 +137,10 @@ class _CurriculumListScreenState extends State<CurriculumListScreen> {
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                border: Border(
+                border: const Border(
                   bottom: BorderSide(color: AppColors.surfaceContainerLow),
                 ),
-                color: AppColors.primary.withOpacity(0.05),
+                color: AppColors.primary.withValues(alpha: 0.05),
               ),
               child: Row(
                 children: [
@@ -195,7 +196,7 @@ class _CurriculumListScreenState extends State<CurriculumListScreen> {
                       ? null
                       : () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const TopicChoiceScreen()),
+                            MaterialPageRoute<void>(builder: (_) => const TopicChoiceScreen()),
                           );
                         },
                 );
@@ -237,10 +238,10 @@ class _ChapterCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: isLocked ? AppColors.surfaceContainerLow : AppColors.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(16),
-          border: isLocked ? Border.all(color: AppColors.outlineVariant.withOpacity(0.3)) : null,
+          border: isLocked ? Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)) : null,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -280,7 +281,7 @@ class _ChapterCard extends StatelessWidget {
                   ],
                 ),
               ),
-              trailing ?? Icon(Icons.lock, color: AppColors.outline),
+              trailing ?? const Icon(Icons.lock, color: AppColors.outline),
             ],
           ),
         ),
@@ -314,8 +315,8 @@ class _SubTopicRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         margin: const EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(
-          color: isCurrent ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
-          border: isCurrent ? Border.all(color: AppColors.primary.withOpacity(0.2)) : null,
+          color: isCurrent ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
+          border: isCurrent ? Border.all(color: AppColors.primary.withValues(alpha: 0.2)) : null,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

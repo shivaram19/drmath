@@ -21,6 +21,7 @@
 ///   All interactive elements here are ≥ 48×48 dp.
 ///
 /// ADR-010 Decisions: D1, D3, D7, D8, D4
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -74,7 +75,7 @@ class _PracticeQuestionScreenState extends State<PracticeQuestionScreen> {
   void _reviewConcept() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const ConceptContentScreen()),
+      MaterialPageRoute<void>(builder: (_) => const ConceptContentScreen()),
     );
   }
 
@@ -140,7 +141,7 @@ class _PracticeQuestionScreenState extends State<PracticeQuestionScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -163,7 +164,7 @@ class _PracticeQuestionScreenState extends State<PracticeQuestionScreen> {
             decoration: BoxDecoration(
               color: AppColors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
+              border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
             ),
             child: CustomPaint(
               painter: _TrianglePainter(),
@@ -192,11 +193,11 @@ class _PracticeQuestionScreenState extends State<PracticeQuestionScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.3),
+                        color: isSelected ? AppColors.primary : AppColors.outlineVariant.withValues(alpha: 0.3),
                         width: isSelected ? 2 : 1,
                       ),
                       borderRadius: BorderRadius.circular(12),
-                      color: isSelected ? AppColors.primaryFixed.withOpacity(0.3) : Colors.transparent,
+                      color: isSelected ? AppColors.primaryFixed.withValues(alpha: 0.3) : Colors.transparent,
                     ),
                     child: Row(
                       children: [
@@ -264,13 +265,13 @@ class _PracticeQuestionScreenState extends State<PracticeQuestionScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: _isCorrect
-            ? AppColors.secondaryContainer.withOpacity(0.3)
-            : AppColors.errorContainer.withOpacity(0.3),
+            ? AppColors.secondaryContainer.withValues(alpha: 0.3)
+            : AppColors.errorContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _isCorrect
-              ? AppColors.secondary.withOpacity(0.1)
-              : AppColors.error.withOpacity(0.1),
+              ? AppColors.secondary.withValues(alpha: 0.1)
+              : AppColors.error.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -362,7 +363,7 @@ class _PracticeQuestionScreenState extends State<PracticeQuestionScreen> {
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
                     ),
                   ]
@@ -401,20 +402,20 @@ class _TrianglePainter extends CustomPainter {
     canvas.drawLine(const Offset(40, 105), const Offset(55, 105), rightAnglePaint);
     canvas.drawLine(const Offset(55, 105), const Offset(55, 120), rightAnglePaint);
 
-    final textStyle = TextStyle(
+    const textStyle = TextStyle(
       color: AppColors.primary,
       fontSize: 14,
       fontWeight: FontWeight.w500,
     );
     final textPainter = TextPainter(
-      text: TextSpan(text: '35°', style: textStyle),
+      text: const TextSpan(text: '35°', style: textStyle),
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
     textPainter.paint(canvas, const Offset(65, 95));
 
     final questionPainter = TextPainter(
-      text: TextSpan(text: '?', style: textStyle),
+      text: const TextSpan(text: '?', style: textStyle),
       textDirection: TextDirection.ltr,
     );
     questionPainter.layout();

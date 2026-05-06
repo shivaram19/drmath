@@ -13,6 +13,7 @@
 ///   as achievable.
 ///
 /// ADR-010 Decisions: D6, D3
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -34,7 +35,7 @@ class CurriculumGridScreen extends StatelessWidget {
           children: [
             _buildHero(context),
             const SizedBox(height: 32),
-            _ChapterRow(
+            const _ChapterRow(
               chapter: 'Chapter 1',
               title: 'Algebraic Thinking',
               icon: Icons.functions,
@@ -44,7 +45,7 @@ class CurriculumGridScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _ExpandedChapterGrid(),
             const SizedBox(height: 12),
-            _ChapterRow(
+            const _ChapterRow(
               chapter: 'Chapter 3',
               title: 'Statistics',
               icon: Icons.calculate,
@@ -65,7 +66,7 @@ class CurriculumGridScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.primaryContainer.withOpacity(0.2),
+            color: AppColors.primaryContainer.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -116,7 +117,7 @@ class CurriculumGridScreen extends StatelessWidget {
                     Text(
                       'Test your skills with the Weekly Geometry Battle.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -124,7 +125,7 @@ class CurriculumGridScreen extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const PracticeQuestionScreen()),
+                      MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -148,7 +149,7 @@ class CurriculumGridScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -229,7 +230,7 @@ class _ChapterRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -244,7 +245,7 @@ class _ChapterRow extends StatelessWidget {
               color: isCompleted
                   ? AppColors.secondaryContainer
                   : isLocked
-                      ? AppColors.surfaceContainerHighest.withOpacity(0.3)
+                      ? AppColors.surfaceContainerHighest.withValues(alpha: 0.3)
                       : AppColors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(12),
             ),
@@ -320,12 +321,12 @@ class _ExpandedChapterGrid extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: AppColors.primaryContainer.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primaryContainer.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -335,7 +336,7 @@ class _ExpandedChapterGrid extends StatelessWidget {
               color: AppColors.surfaceContainerLowest,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               border: Border(
-                bottom: BorderSide(color: AppColors.primaryContainer.withOpacity(0.1)),
+                bottom: BorderSide(color: AppColors.primaryContainer.withValues(alpha: 0.1)),
               ),
             ),
             child: Row(
@@ -379,11 +380,11 @@ class _ExpandedChapterGrid extends StatelessWidget {
                       width: 80,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
+                        child: const LinearProgressIndicator(
                           value: 0.45,
                           minHeight: 6,
                           backgroundColor: AppColors.outlineVariant,
-                          valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                          valueColor: AlwaysStoppedAnimation(AppColors.primary),
                         ),
                       ),
                     ),
@@ -410,7 +411,7 @@ class _ExpandedChapterGrid extends StatelessWidget {
                   isCompleted: true,
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const TopicChoiceScreen()),
+                      MaterialPageRoute<void>(builder: (_) => const TopicChoiceScreen()),
                     );
                   },
                 ),
@@ -420,7 +421,7 @@ class _ExpandedChapterGrid extends StatelessWidget {
                   isCompleted: true,
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const TopicChoiceScreen()),
+                      MaterialPageRoute<void>(builder: (_) => const TopicChoiceScreen()),
                     );
                   },
                 ),
@@ -430,11 +431,11 @@ class _ExpandedChapterGrid extends StatelessWidget {
                   isCurrent: true,
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const TopicChoiceScreen()),
+                      MaterialPageRoute<void>(builder: (_) => const TopicChoiceScreen()),
                     );
                   },
                 ),
-                _TopicTile(
+                const _TopicTile(
                   title: 'Circles',
                   icon: Icons.panorama_fish_eye,
                   isLocked: true,
@@ -476,13 +477,13 @@ class _TopicTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
           border: isCurrent
-              ? Border.all(color: AppColors.primaryContainer.withOpacity(0.3))
+              ? Border.all(color: AppColors.primaryContainer.withValues(alpha: 0.3))
               : null,
         ),
         child: Column(
@@ -498,7 +499,7 @@ class _TopicTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isCurrent
                         ? AppColors.primaryContainer
-                        : AppColors.surfaceDim.withOpacity(0.3),
+                        : AppColors.surfaceDim.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(

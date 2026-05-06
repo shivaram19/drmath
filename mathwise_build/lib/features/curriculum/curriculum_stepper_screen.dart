@@ -15,6 +15,7 @@
 ///   blue (focus); locked steps are gray (future potential, not failure) [^13].
 ///
 /// ADR-010 Decisions: D2, D6, D3
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -47,7 +48,7 @@ class CurriculumStepperScreen extends StatelessWidget {
                     title: 'Study Tip',
                     description: 'Geometry is visual! Try sketching each concept in your notebook to strengthen your spatial reasoning skills.',
                     color: AppColors.primaryFixed,
-                    borderColor: AppColors.primaryContainer.withOpacity(0.2),
+                    borderColor: AppColors.primaryContainer.withValues(alpha: 0.2),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -56,8 +57,8 @@ class CurriculumStepperScreen extends StatelessWidget {
                     icon: Icons.workspace_premium,
                     title: 'Milestone Reward',
                     description: 'Finish the "Angles" module to unlock the "Protractor Pro" badge and 50 bonus wisdom points.',
-                    color: AppColors.tertiaryFixed.withOpacity(0.2),
-                    borderColor: AppColors.tertiaryFixed.withOpacity(0.3),
+                    color: AppColors.tertiaryFixed.withValues(alpha: 0.2),
+                    borderColor: AppColors.tertiaryFixed.withValues(alpha: 0.3),
                   ),
                 ),
               ],
@@ -112,7 +113,7 @@ class CurriculumStepperScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -122,9 +123,9 @@ class CurriculumStepperScreen extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.surfaceContainerLow,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
@@ -168,11 +169,11 @@ class CurriculumStepperScreen extends StatelessWidget {
                       width: 100,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
+                        child: const LinearProgressIndicator(
                           value: 0.25,
                           minHeight: 6,
                           backgroundColor: AppColors.outlineVariant,
-                          valueColor: const AlwaysStoppedAnimation(AppColors.secondary),
+                          valueColor: AlwaysStoppedAnimation(AppColors.secondary),
                         ),
                       ),
                     ),
@@ -196,7 +197,7 @@ class CurriculumStepperScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       border: Border(
                         left: BorderSide(
-                          color: AppColors.primaryContainer.withOpacity(0.3),
+                          color: AppColors.primaryContainer.withValues(alpha: 0.3),
                           width: 2,
                           style: BorderStyle.solid,
                         ),
@@ -204,7 +205,7 @@ class CurriculumStepperScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                Column(
+                const Column(
                   children: [
                     _StepItem(
                       title: 'Lines',
@@ -279,7 +280,7 @@ class _StepItem extends StatelessWidget {
               boxShadow: [
                 if (isCurrent)
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 20,
                   ),
               ],
@@ -302,16 +303,16 @@ class _StepItem extends StatelessWidget {
                 color: isCurrent
                     ? Colors.white
                     : isCompleted
-                        ? AppColors.surfaceContainerHigh.withOpacity(0.3)
+                        ? AppColors.surfaceContainerHigh.withValues(alpha: 0.3)
                         : AppColors.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(16),
                 border: isCurrent
-                    ? Border.all(color: AppColors.primaryContainer.withOpacity(0.2))
+                    ? Border.all(color: AppColors.primaryContainer.withValues(alpha: 0.2))
                     : null,
                 boxShadow: isCurrent
                     ? [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
+                          color: Colors.black.withValues(alpha: 0.06),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -338,7 +339,7 @@ class _StepItem extends StatelessWidget {
                             color: isCompleted
                                 ? AppColors.secondaryContainer
                                 : isCurrent
-                                    ? AppColors.primaryContainer.withOpacity(0.2)
+                                    ? AppColors.primaryContainer.withValues(alpha: 0.2)
                                     : AppColors.outlineVariant,
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -373,7 +374,7 @@ class _StepItem extends StatelessWidget {
                       TextButton.icon(
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const ConceptContentScreen()),
+                            MaterialPageRoute<void>(builder: (_) => const ConceptContentScreen()),
                           );
                         },
                         icon: const Icon(Icons.arrow_forward, size: 16),
@@ -391,7 +392,7 @@ class _StepItem extends StatelessWidget {
                           ElevatedButton(
                             onPressed: () {
                               Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const TopicChoiceScreen()),
+                                MaterialPageRoute<void>(builder: (_) => const TopicChoiceScreen()),
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -405,7 +406,7 @@ class _StepItem extends StatelessWidget {
                           OutlinedButton(
                             onPressed: () {
                               Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const PracticeQuestionScreen()),
+                                MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
                               );
                             },
                             style: OutlinedButton.styleFrom(

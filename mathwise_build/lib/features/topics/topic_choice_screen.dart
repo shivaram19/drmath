@@ -12,12 +12,14 @@
 ///   others are ready for abstract retrieval. Two paths respect individual differences [^5].
 ///
 /// ADR-010 Decisions: D2, D3
+library;
 
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../shared/widgets/top_app_bar.dart';
-import '../practice/practice_question_screen.dart';
 import '../concept/concept_content_screen.dart';
+import '../practice/practice_question_screen.dart';
 
 class TopicChoiceScreen extends StatelessWidget {
   const TopicChoiceScreen({super.key});
@@ -42,7 +44,7 @@ class TopicChoiceScreen extends StatelessWidget {
                     buttonText: 'START LEARNING',
                     color: AppColors.primary,
                     onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ConceptContentScreen()),
+                      MaterialPageRoute<void>(builder: (_) => const ConceptContentScreen()),
                     ),
                   ),
                 ),
@@ -55,7 +57,7 @@ class TopicChoiceScreen extends StatelessWidget {
                     buttonText: 'START PRACTICE',
                     color: AppColors.secondary,
                     onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const PracticeQuestionScreen()),
+                      MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
                     ),
                   ),
                 ),
@@ -64,7 +66,7 @@ class TopicChoiceScreen extends StatelessWidget {
             const SizedBox(height: 40),
             // Decorative element: low-opacity pictorial cue.
             // Rationale: Priming effect — triangle icon activates relevant schemas.
-            Opacity(
+            const Opacity(
               opacity: 0.2,
               child: Icon(
                 Icons.change_history,
@@ -129,11 +131,11 @@ class TopicChoiceScreen extends StatelessWidget {
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
+                child: const LinearProgressIndicator(
                   value: 0.65,
                   minHeight: 10,
                   backgroundColor: AppColors.surfaceContainer,
-                  valueColor: const AlwaysStoppedAnimation(AppColors.primaryContainer),
+                  valueColor: AlwaysStoppedAnimation(AppColors.primaryContainer),
                 ),
               ),
               const SizedBox(height: 8),
@@ -181,7 +183,7 @@ class _ModeCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -193,7 +195,7 @@ class _ModeCard extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 40, color: color),

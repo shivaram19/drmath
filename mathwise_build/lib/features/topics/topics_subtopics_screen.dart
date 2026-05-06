@@ -16,6 +16,7 @@
 ///   to expand and which sub-topic to engage.
 ///
 /// ADR-010 Decisions: D6, D2
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -47,13 +48,13 @@ class _TopicsSubtopicsScreenState extends State<TopicsSubtopicsScreen> {
   void _navigateToTopicChoice(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const TopicChoiceScreen()),
+      MaterialPageRoute<void>(builder: (_) => const TopicChoiceScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final curriculum = DemoData.grade7Curriculum;
+    const curriculum = DemoData.grade7Curriculum;
 
     return Scaffold(
       appBar: const MathWiseAppBar(showBackButton: true),
@@ -146,7 +147,7 @@ class _TopicsSubtopicsScreenState extends State<TopicsSubtopicsScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -182,11 +183,11 @@ class _TopicsSubtopicsScreenState extends State<TopicsSubtopicsScreen> {
                 const SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
+                  child: const LinearProgressIndicator(
                     value: 0.64,
                     minHeight: 8,
                     backgroundColor: AppColors.surfaceContainerLow,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.primaryContainer),
+                    valueColor: AlwaysStoppedAnimation(AppColors.primaryContainer),
                   ),
                 ),
               ],
@@ -210,6 +211,7 @@ class _TopicsSubtopicsScreenState extends State<TopicsSubtopicsScreen> {
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -307,12 +309,12 @@ class _ChapterAccordion extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
         ],
-        border: isActive ? Border.all(color: AppColors.primary.withOpacity(0.1)) : null,
+        border: isActive ? Border.all(color: AppColors.primary.withValues(alpha: 0.1)) : null,
       ),
       child: Column(
         children: [
@@ -325,7 +327,7 @@ class _ChapterAccordion extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: isActive ? AppColors.primary.withOpacity(0.05) : Colors.transparent,
+                color: isActive ? AppColors.primary.withValues(alpha: 0.05) : Colors.transparent,
                 borderRadius: BorderRadius.vertical(
                   top: const Radius.circular(16),
                   bottom: isExpanded ? Radius.zero : const Radius.circular(16),
@@ -385,7 +387,7 @@ class _ChapterAccordion extends StatelessWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
               decoration: BoxDecoration(
-                color: isActive ? AppColors.primary.withOpacity(0.05) : Colors.transparent,
+                color: isActive ? AppColors.primary.withValues(alpha: 0.05) : Colors.transparent,
                 borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
               ),
               child: Column(
@@ -433,12 +435,12 @@ class _SubtopicItem extends StatelessWidget {
           color: isCurrent ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: isCurrent
-              ? Border.all(color: AppColors.primaryContainer.withOpacity(0.2))
+              ? Border.all(color: AppColors.primaryContainer.withValues(alpha: 0.2))
               : null,
           boxShadow: isCurrent
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -478,7 +480,7 @@ class _SubtopicItem extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer.withOpacity(0.1),
+                  color: AppColors.primaryContainer.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(

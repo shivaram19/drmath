@@ -16,6 +16,7 @@
 ///   Rationale: WCAG 2.1 — information must not rely on color alone.
 ///
 /// ADR-010 Decision: D5
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -34,13 +35,13 @@ class MathWiseBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         border: const Border(
           top: BorderSide(color: Color(0xFFF1F5F9)),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -77,7 +78,7 @@ class MathWiseBottomNav extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isActive
-                ? AppColors.primaryContainer.withOpacity(0.1)
+                ? AppColors.primaryContainer.withValues(alpha: 0.1)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),

@@ -18,9 +18,11 @@
 ///   The "Continue Learning" card uses blue to signal focus, not pressure.
 ///
 /// ADR-010 Decisions: D9, D3
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../shared/data/demo_data.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
 import '../../shared/widgets/top_app_bar.dart';
 import '../class_selection/class_selection_screen.dart';
@@ -32,7 +34,6 @@ import '../games/games_screen.dart';
 import '../practice/practice_question_screen.dart';
 import '../profile/profile_screen.dart';
 import '../topics/topic_choice_screen.dart';
-import '../../shared/data/demo_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -116,7 +117,7 @@ class _HomeTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -128,7 +129,7 @@ class _HomeTab extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primaryContainer.withOpacity(0.2),
+              color: AppColors.primaryContainer.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -165,11 +166,11 @@ class _HomeTab extends StatelessWidget {
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
+            child: const LinearProgressIndicator(
               value: DemoData.currentTopicProgress,
               minHeight: 8,
               backgroundColor: AppColors.surfaceContainer,
-              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+              valueColor: AlwaysStoppedAnimation(AppColors.primary),
             ),
           ),
           const SizedBox(height: 20),
@@ -200,9 +201,9 @@ class _HomeTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.secondaryContainer.withOpacity(0.1),
+        color: AppColors.secondaryContainer.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.secondaryContainer.withOpacity(0.2)),
+        border: Border.all(color: AppColors.secondaryContainer.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -342,7 +343,7 @@ class _HomeTab extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -405,8 +406,8 @@ class _HomeTab extends StatelessWidget {
         return ActionChip(
           label: Text(s.$1),
           onPressed: s.$2,
-          backgroundColor: AppColors.primaryContainer.withOpacity(0.1),
-          side: BorderSide(color: AppColors.primaryContainer.withOpacity(0.3)),
+          backgroundColor: AppColors.primaryContainer.withValues(alpha: 0.1),
+          side: BorderSide(color: AppColors.primaryContainer.withValues(alpha: 0.3)),
           labelStyle: const TextStyle(color: AppColors.primary),
         );
       }).toList(),
@@ -414,6 +415,6 @@ class _HomeTab extends StatelessWidget {
   }
 
   void _navigate(BuildContext context, Widget screen) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
   }
 }

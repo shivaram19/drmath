@@ -17,6 +17,7 @@
 ///   Each badge maps to a specific, achievable behavior (Perfect Week, Fast Learner).
 ///
 /// ADR-010 Decisions: D9, D4
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -51,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileHeader(BuildContext context) {
-    final user = DemoData.currentUser;
+    const user = DemoData.currentUser;
     return Row(
       children: [
         Stack(
@@ -65,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
                 border: Border.all(color: Colors.white, width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 12,
                   ),
                 ],
@@ -74,6 +75,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Image.network(
                   user.avatarUrl,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.person),
                 ),
               ),
             ),
@@ -108,9 +110,9 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _Badge(label: 'Level ${user.level}', color: AppColors.primaryContainer.withOpacity(0.1), textColor: AppColors.primary),
+                  _Badge(label: 'Level ${user.level}', color: AppColors.primaryContainer.withValues(alpha: 0.1), textColor: AppColors.primary),
                   const SizedBox(width: 8),
-                  _Badge(label: user.rank, color: AppColors.secondaryContainer.withOpacity(0.2), textColor: AppColors.secondary),
+                  _Badge(label: user.rank, color: AppColors.secondaryContainer.withValues(alpha: 0.2), textColor: AppColors.secondary),
                 ],
               ),
             ],
@@ -125,10 +127,10 @@ class ProfileScreen extends StatelessWidget {
     // Rationale: Deci & Ryan (2000) — competence feedback must be specific [^23].
     return Row(
       children: [
-        Expanded(
+        const Expanded(
           child: _StatBox(
             icon: Icons.schedule,
-            iconBg: const Color(0xFFEBF4FF),
+            iconBg: Color(0xFFEBF4FF),
             iconColor: AppColors.primary,
             label: 'Total Study Hours',
             value: '24h',
@@ -138,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
         Expanded(
           child: _StatBox(
             icon: Icons.task_alt,
-            iconBg: AppColors.secondaryContainer.withOpacity(0.2),
+            iconBg: AppColors.secondaryContainer.withValues(alpha: 0.2),
             iconColor: AppColors.secondary,
             label: 'Topics Completed',
             value: '12',
@@ -148,7 +150,7 @@ class ProfileScreen extends StatelessWidget {
         Expanded(
           child: _StatBox(
             icon: Icons.analytics,
-            iconBg: AppColors.tertiaryContainer.withOpacity(0.1),
+            iconBg: AppColors.tertiaryContainer.withValues(alpha: 0.1),
             iconColor: AppColors.tertiary,
             label: 'Accuracy Rate',
             value: '85%',
@@ -190,7 +192,7 @@ class ProfileScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -250,8 +252,8 @@ class ProfileScreen extends StatelessWidget {
                   final badge = entry.value;
                   final colors = [
                     AppColors.primaryContainer,
-                    AppColors.secondaryContainer.withOpacity(0.3),
-                    AppColors.tertiaryContainer.withOpacity(0.2),
+                    AppColors.secondaryContainer.withValues(alpha: 0.3),
+                    AppColors.tertiaryContainer.withValues(alpha: 0.2),
                     const Color(0xFFFFEBEE),
                   ];
                   return _BadgeItem(
@@ -284,7 +286,7 @@ class ProfileScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -339,7 +341,7 @@ class ProfileScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const TopicChoiceScreen()),
+                      MaterialPageRoute<void>(builder: (_) => const TopicChoiceScreen()),
                     );
                   },
                   icon: const Icon(Icons.arrow_forward, size: 18),
@@ -424,7 +426,7 @@ class _StatBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),

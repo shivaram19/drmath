@@ -50,18 +50,15 @@ class MathWiseAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
       actions: actions ??
           [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
               child: CircleAvatar(
                 radius: 18,
                 backgroundColor: AppColors.primaryContainer,
-                child: ClipOval(
-                  child: Image.network(
-                    'https://i.pravatar.cc/150?img=12',
-                    width: 36,
-                    height: 36,
-                    fit: BoxFit.cover,
-                  ),
+                child: Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 20,
                 ),
               ),
             ),

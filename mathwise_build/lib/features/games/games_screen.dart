@@ -16,6 +16,7 @@
 ///   in children under 14 [^20]. We avoid leaderboards entirely.
 ///
 /// ADR-010 Decisions: D9, D8
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -73,7 +74,7 @@ class GamesScreen extends StatelessWidget {
   }
 
   Widget _buildStatsRow(BuildContext context) {
-    final stats = DemoData.currentGameStats;
+    const stats = DemoData.currentGameStats;
     final studyHours = stats.studyMinutesToday ~/ 60;
     final studyMins = (stats.studyMinutesToday % 60).toInt();
     return Row(
@@ -81,7 +82,7 @@ class GamesScreen extends StatelessWidget {
         Expanded(
           child: _StatCard(
             icon: Icons.schedule,
-            iconBg: AppColors.primaryContainer.withOpacity(0.1),
+            iconBg: AppColors.primaryContainer.withValues(alpha: 0.1),
             iconColor: AppColors.primary,
             label: 'Study Time Today',
             value: '${studyHours}h ${studyMins}m',
@@ -92,7 +93,7 @@ class GamesScreen extends StatelessWidget {
         Expanded(
           child: _StatCard(
             icon: Icons.stars,
-            iconBg: AppColors.tertiaryFixed.withOpacity(0.2),
+            iconBg: AppColors.tertiaryFixed.withValues(alpha: 0.2),
             iconColor: AppColors.tertiary,
             label: 'Lifelines',
             value: '${stats.lifelines} Stars',
@@ -111,7 +112,7 @@ class GamesScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.secondaryContainer.withOpacity(0.3),
+        color: AppColors.secondaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white),
       ),
@@ -153,7 +154,7 @@ class GamesScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const PracticeQuestionScreen()),
+                MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
               );
             },
             style: ElevatedButton.styleFrom(
@@ -199,7 +200,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -278,7 +279,7 @@ class _GameCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -295,6 +296,7 @@ class _GameCard extends StatelessWidget {
                 height: 180,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
               ),
               // Star cost badge: competence signal ("you have earned 2 stars"),
               // not currency ("this costs 2 coins").
@@ -304,7 +306,7 @@ class _GameCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(

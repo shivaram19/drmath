@@ -17,6 +17,7 @@
 ///   All representations are vertically stacked; no lateral eye movement.
 ///
 /// ADR-010 Decisions: D2, D10
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
@@ -39,7 +40,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
   void _navigateToPractice(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const PracticeQuestionScreen()),
+      MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
     );
   }
 
@@ -52,7 +53,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final concept = DemoData.trianglesConcept;
+    const concept = DemoData.trianglesConcept;
 
     return Scaffold(
       appBar: const MathWiseAppBar(showBackButton: true),
@@ -160,7 +161,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.secondaryContainer.withOpacity(0.3),
+                      color: AppColors.secondaryContainer.withValues(alpha: 0.3),
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(12),
                         bottomRight: Radius.circular(12),
@@ -196,6 +197,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
                       Image.network(
                         section.imageUrl ?? 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=600',
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
                       ),
                       Container(
                         decoration: BoxDecoration(
@@ -204,7 +206,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              AppColors.onSurface.withOpacity(0.6),
+                              AppColors.onSurface.withValues(alpha: 0.6),
                             ],
                           ),
                         ),
@@ -218,7 +220,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
                             Text(
                               'CASE STUDY',
                               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                               ),
                             ),
                             Text(
@@ -253,7 +255,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -273,7 +275,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
+          const Row(
             children: [
               Expanded(
                 child: _TriangleTypeCard(
@@ -282,7 +284,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
                   color: AppColors.surface,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: _TriangleTypeCard(
                   title: 'Right-Angled',
@@ -290,7 +292,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
                   color: AppColors.surface,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: _TriangleTypeCard(
                   title: 'Scalene',
@@ -349,7 +351,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.white),
                     ),
@@ -379,7 +381,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHighest.withOpacity(0.5),
+        color: AppColors.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(color: AppColors.surfaceContainer),
       ),
@@ -393,7 +395,7 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -451,8 +453,8 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: _selectedOption == quickCheck.correctIndex
-                    ? Colors.green.withOpacity(0.1)
-                    : AppColors.errorContainer.withOpacity(0.3),
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : AppColors.errorContainer.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: _selectedOption == quickCheck.correctIndex
