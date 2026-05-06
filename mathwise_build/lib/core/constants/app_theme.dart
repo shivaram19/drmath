@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../shared/theme/pedagogy_tokens.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -128,6 +129,7 @@ class AppTheme {
         selectedItemColor: AppColors.primaryContainer,
         unselectedItemColor: AppColors.outline,
       ),
+      extensions: const [PedagogyTokens.light],
     );
   }
 }
