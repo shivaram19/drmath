@@ -1,6 +1,7 @@
 #!/bin/bash
 # Dr. Math Pre-Commit Hook
-# Validates research-backed development practices
+# Validates the snapshot about to be committed.
+# Commit message format is validated by the commit-msg hook.
 
 set -e
 
@@ -32,26 +33,7 @@ if echo "$STAGED_FILES" | grep -q '__pycache__'; then
 fi
 echo "✅ No __pycache__ staged"
 
-# 4. Check conventional commit format
-COMMIT_MSG_FILE=$(git rev-parse --git-dir)/COMMIT_EDITMSG
-if [ -f "$COMMIT_MSG_FILE" ]; then
-    FIRST_LINE=$(head -1 "$COMMIT_MSG_FILE")
-    if ! echo "$FIRST_LINE" | grep -qE '^(feat|fix|docs|test|refactor|chore|research): '; then
-        echo "⚠️  WARNING: Commit message does not follow conventional commits."
-        echo "   Expected: feat:|fix:|docs:|test:|refactor:|chore:|research:"
-        echo "   Got: $FIRST_LINE"
-        echo ""
-        echo "   Continue anyway? (y/n)"
-        read -r RESPONSE
-        if [ "$RESPONSE" != "y" ]; then
-            exit 1
-        fi
-    else
-        echo "✅ Conventional commit format"
-    fi
-fi
-
-# 5. Check for ADR reference if pipeline/web code changed
+# 4. Check for ADR reference if pipeline/web code changed
 if echo "$STAGED_FILES" | grep -qE '^(pipeline/|web/)'; then
     if ! echo "$STAGED_FILES" | grep -q '^docs/adrs/'; then
         echo "⚠️  NOTE: Pipeline or web code changed but no ADR updated."
@@ -65,4 +47,4 @@ if echo "$STAGED_FILES" | grep -qE '^(pipeline/|web/)'; then
 fi
 
 echo "=============================="
-echo "✅ All checks passed. Committing..."
+echo "✅ Pre-commit checks passed. Committing..."

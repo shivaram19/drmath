@@ -38,3 +38,8 @@ Thumbs.db
 
 # Docker
 .dockerignore
+
+# Dead Flutter scaffold files from failed first setup
+/lib/
+/mathwise_app/
+/pubspec.yaml
