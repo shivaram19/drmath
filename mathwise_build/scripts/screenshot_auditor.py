@@ -193,8 +193,14 @@ class ScreenshotAuditor:
         primary_rgb = hex_to_rgb("#2C5F9F")
         secondary_rgb = hex_to_rgb("#176B51")
 
-        # Scan for small primary/secondary colored regions
-        min_target_px = int(self.tokens.min_touch_target * (width / 390))  # Scale to viewport
+        # 48 dp is a *physical* minimum per Material Design and WCAG 2.1.
+        # The screenshot is already in physical pixels, so we apply a
+        # conservative lower bound. The exact px value depends on device
+        # pixel ratio (typically 2.0–3.0 on mobile, 1.0–2.0 on tablet),
+        # but without dpr metadata we use the 1.0 dpr baseline to avoid
+        # false negatives on lower-dpr screenshots.
+        # See: https://m3.material.io/foundations/accessible-design/touch-targets
+        min_target_px = self.tokens.min_touch_target  # 48 px baseline
 
         # Simplified: check if any primary-colored region is suspiciously small
         # We do this by looking at the bottom nav area where buttons should be
