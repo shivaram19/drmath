@@ -26,6 +26,19 @@ from typing import Optional
 from PIL import Image
 
 
+# ── Color Utilities (shared with screenshot_auditor) ─────────────────────────
+
+def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
+    hex_color = hex_color.lstrip("#")
+    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+
+
+def color_distance(c1: tuple[int, ...], c2: tuple[int, ...]) -> float:
+    """Euclidean distance in RGB space."""
+    import math
+    return math.sqrt(sum((a - b) ** 2 for a, b in zip(c1[:3], c2[:3])))
+
+
 # ── Data Structures ──────────────────────────────────────────────────────────
 
 @dataclass
@@ -100,7 +113,7 @@ class UXEvaluator:
         self._eval_cognitive_load(img, result)
         self._eval_color_psychology(img, result)
         self._eval_touch_targets(img, result)
-        self._eval_navigation(img, result)
+        self._eval_navigation(img, result, screen_name)
         self._eval_accessibility(img, result)
         self._eval_pedagogy(img, result, screen_name)
         self._eval_responsiveness(img, result, viewport)
@@ -325,11 +338,56 @@ class UXEvaluator:
                 "Increase touch target size to 48dp minimum. Children have lower fine motor precision.",
             )
 
-    def _eval_navigation(self, img: Image.Image, result: UXResult) -> None:
-        """Check for visible, persistent navigation (bottom tabs preferred)."""
+    # Screens pushed via Navigator.push legitimately lack bottom nav
+    SUB_SCREENS = {
+        "class_selection", "topic_choice", "topics_subtopics",
+        "curriculum_grid", "curriculum_list", "curriculum_stepper",
+        "concept_content", "practice_question",
+    }
+
+    def _eval_navigation(self, img: Image.Image, result: UXResult, screen_name: str) -> None:
+        """Check for visible, persistent navigation (bottom tabs preferred).
+
+        Tab-root screens (home, games, profile) must have bottom nav.
+        Sub-screens pushed via Navigator.push legitimately lack it.
+        """
         width, height = img.size
 
-        # Check bottom area for navigation-like structure
+        # Sub-screens: verify back button / AppBar instead of bottom nav
+        if screen_name in self.SUB_SCREENS:
+            # Check for top app bar (back button / title) as wayfinding substitute
+            top_area = img.crop((0, 0, width, int(height * 0.12)))
+            top_pixels = list(top_area.getdata())
+            primary_rgb = hex_to_rgb("#2C5F9F")
+            primary_count = sum(
+                1 for p in top_pixels
+                if len(p) >= 3 and color_distance(p[:3], primary_rgb) < 40
+            )
+            if primary_count > len(top_pixels) * 0.1:
+                self._add_finding(
+                    result,
+                    "Navigation",
+                    "Persistent visible navigation (Nielsen 2016)",
+                    "pass",
+                    "info",
+                    f"Sub-screen '{screen_name}' has app-bar wayfinding — bottom nav not expected.",
+                    "navigation",
+                    "Sub-screens should provide AppBar with back button for wayfinding.",
+                )
+            else:
+                self._add_finding(
+                    result,
+                    "Navigation",
+                    "Persistent visible navigation (Nielsen 2016)",
+                    "warning",
+                    "low",
+                    f"Sub-screen '{screen_name}' lacks clear app-bar wayfinding.",
+                    "navigation",
+                    "Ensure AppBar with back button is visible on all sub-screens.",
+                )
+            return
+
+        # Tab-root screens: check bottom area for navigation-like structure
         bottom_area = img.crop((0, int(height * 0.85), width, height))
         bw, bh = bottom_area.size
 
