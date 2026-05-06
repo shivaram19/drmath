@@ -19,7 +19,6 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -74,8 +73,8 @@ class EvaluatorBot:
         # 1. Fetch issue details from GitHub
         self._check_issue_exists()
 
-        # 2. Verify branch exists and check it out
-        self._checkout_branch()
+        # 2. Verify branch exists (do NOT checkout — evaluator stays on dev)
+        self._verify_branch()
 
         # 3. Semantic check: read diff and validate against issue
         self._validate_diff_semantics()
@@ -86,14 +85,14 @@ class EvaluatorBot:
         # 5. Run pipeline (if applicable)
         self._run_pipeline_if_applicable()
 
-        # 6. Issue-specific validation
+        # 6. Issue-specific validation (reads files from branch via git show)
         self._run_issue_specific_checks()
 
         # 7. Compute verdict
         return self._compute_verdict()
 
     def _exec(self, cmd: list, cwd: Optional[Path] = None, timeout: int = 120) -> tuple:
-        """Run a command and return (stdout, stderr, returncode)."""
+        """Run a command and return (stdout, stderr, returncode, duration_ms)."""
         start = datetime.now()
         try:
             result = subprocess.run(
@@ -142,7 +141,7 @@ class EvaluatorBot:
             ))
             self.issue_body = ""
 
-    def _checkout_branch(self):
+    def _verify_branch(self):
         """Verify branch exists but DO NOT checkout — evaluator must stay on dev."""
         _, stderr, rc, dur = self._exec(["git", "fetch", "origin"])
         if rc != 0:
@@ -154,7 +153,6 @@ class EvaluatorBot:
             ))
             return
 
-        # Check if branch exists remotely or locally
         stdout, _, rc, _ = self._exec(["git", "branch", "-r", "--list", f"origin/{self.branch}"])
         local_out, _, _, _ = self._exec(["git", "branch", "--list", self.branch])
         if not stdout.strip() and not local_out.strip():
@@ -202,7 +200,6 @@ class EvaluatorBot:
         semantic_hits = 0
         for f in changed_files:
             f_base = os.path.basename(f).lower()
-            # Check if filename appears in issue body
             if f_base.replace("_", " ") in body_lower or f_base in body_lower:
                 semantic_hits += 1
 
@@ -232,15 +229,16 @@ class EvaluatorBot:
         print("  → Running flutter test...")
         flutter_cwd = self.project_root / "mathwise_build"
         if not (flutter_cwd / "pubspec.yaml").exists():
-            flutter_cwd = self.project_root  # fallback
+            flutter_cwd = self.project_root
+
         stdout, stderr, rc, dur = self._exec(
             ["flutter", "test"],
             cwd=flutter_cwd,
             timeout=300,
         )
         output = stdout + stderr
+
         # Parse test results — Flutter format: "+31 -45: Some tests failed."
-        # or dart test format: "31 passed, 45 failed"
         passed = re.search(r'\+(\d+)', output) or re.search(r'(\d+) passed', output)
         failed = re.search(r'-(\d+)', output) or re.search(r'(\d+) failed', output)
         n_passed = int(passed.group(1)) if passed else 0
@@ -325,8 +323,6 @@ class EvaluatorBot:
                 duration_ms=0,
             ))
 
-    # --- Issue-specific validators ---
-
     def _read_file_from_branch(self, rel_path: str) -> str:
         """Read a file from the target branch without checking it out."""
         stdout, stderr, rc, _ = self._exec(
@@ -337,6 +333,8 @@ class EvaluatorBot:
         # Fallback: read from working tree if same as branch
         path = self.project_root / rel_path
         return path.read_text() if path.exists() else ""
+
+    # --- Issue-specific validators ---
 
     def _check_p1_background(self):
         """P1: Auditor should not flag #000000 on widget test screenshots."""
@@ -386,7 +384,6 @@ class EvaluatorBot:
 
     def _check_a1_overflow(self):
         """A1: No horizontal overflow stripes on tablet viewports."""
-        # This requires visual validation; flag for manual review
         self.checks.append(CheckResult(
             name="A1 Overflow Fix",
             status="WARN",
