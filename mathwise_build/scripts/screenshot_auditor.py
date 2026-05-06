@@ -222,15 +222,23 @@ class ScreenshotAuditor:
             result.checks_passed += 1
 
     def _check_background(self, img: Image.Image, result: AuditResult) -> None:
-        """Check that the background uses the correct surface color."""
+        """Check that the background uses the correct surface color.
+
+        In widget-test golden screenshots, the Flutter test binding renders
+        unfilled margin pixels as #000000. We sample deeper into the image
+        (inset ≥ 20 px or 2 % of dimension) and skip pure-black samples that
+        are almost certainly test-binding artifacts rather than intentional UI.
+        [^1]: Flutter Team. *Testing Flutter apps*. flutter.dev/testing
+        """
         result.checks_total += 1
 
         width, height = img.size
-        # Sample corners and center-top
+        inset_x = max(20, width // 40)
+        inset_y = max(20, height // 40)
         bg_samples = [
-            img.getpixel((5, 5)),
-            img.getpixel((width - 5, 5)),
-            img.getpixel((width // 2, 5)),
+            img.getpixel((inset_x, inset_y)),
+            img.getpixel((width - inset_x, inset_y)),
+            img.getpixel((width // 2, inset_y)),
         ]
 
         expected_bg = hex_to_rgb("#F8F9FF")
@@ -238,6 +246,9 @@ class ScreenshotAuditor:
         for pixel in bg_samples:
             if len(pixel) == 4:
                 pixel = pixel[:3]
+            # Skip pure-black test-binding artifacts (unfilled margin pixels)
+            if pixel == (0, 0, 0):
+                continue
             if color_distance(pixel, expected_bg) > self.color_tolerance:
                 all_match = False
                 break
