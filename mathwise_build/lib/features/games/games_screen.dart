@@ -38,12 +38,25 @@ class GamesScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Play & Learn', style: Theme.of(context).textTheme.displayMedium),
-              Text(
-                'Unlocked by your effort',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Text(
+                  'Play & Learn',
+                  style: Theme.of(context).textTheme.displayMedium,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Unlocked by your effort',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.end,
                 ),
               ),
             ],
@@ -77,31 +90,44 @@ class GamesScreen extends StatelessWidget {
     const stats = DemoData.currentGameStats;
     final studyHours = stats.studyMinutesToday ~/ 60;
     final studyMins = (stats.studyMinutesToday % 60).toInt();
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            icon: Icons.schedule,
-            iconBg: AppColors.primaryContainer.withValues(alpha: 0.1),
-            iconColor: AppColors.primary,
-            label: 'Study Time Today',
-            value: '${studyHours}h ${studyMins}m',
-            progress: stats.studyProgress,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.stars,
-            iconBg: AppColors.tertiaryFixed.withValues(alpha: 0.2),
-            iconColor: AppColors.tertiary,
-            label: 'Lifelines',
-            value: '${stats.lifelines} Stars',
-            showStars: true,
-            starCount: stats.lifelines,
-          ),
-        ),
-      ],
+    final cards = [
+      _StatCard(
+        icon: Icons.schedule,
+        iconBg: AppColors.primaryContainer.withValues(alpha: 0.1),
+        iconColor: AppColors.primary,
+        label: 'Study Time',
+        value: '${studyHours}h ${studyMins}m',
+        progress: stats.studyProgress,
+      ),
+      _StatCard(
+        icon: Icons.stars,
+        iconBg: AppColors.tertiaryFixed.withValues(alpha: 0.2),
+        iconColor: AppColors.tertiary,
+        label: 'Lifelines',
+        value: '${stats.lifelines} Stars',
+        showStars: true,
+        starCount: stats.lifelines,
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 360) {
+          return Row(
+            children: [
+              Expanded(child: cards[0]),
+              const SizedBox(width: 12),
+              Expanded(child: cards[1]),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            cards[0],
+            const SizedBox(height: 12),
+            cards[1],
+          ],
+        );
+      },
     );
   }
 
@@ -116,55 +142,73 @@ class GamesScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.emoji_events, color: AppColors.secondary, size: 40),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Weekly Challenge', style: Theme.of(context).textTheme.displayMedium),
-                const SizedBox(height: 4),
-                Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 400;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: isWide ? 72 : 48,
+                height: isWide ? 72 : 48,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(Icons.emoji_events, color: AppColors.secondary, size: isWide ? 40 : 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.timer, color: AppColors.secondary, size: 16),
-                    const SizedBox(width: 4),
                     Text(
-                      'Next Competition starts in 5 Hours',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      'Weekly Challenge',
+                      style: isWide
+                          ? Theme.of(context).textTheme.displayMedium
+                          : Theme.of(context).textTheme.displaySmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.timer, color: AppColors.secondary, size: 16),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            'Next Competition starts in 5 Hours',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
+              ),
+              if (isWide) ...[
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: AppColors.onSecondary,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  ),
+                  child: const Text('Join Competition'),
+                ),
               ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary,
-              foregroundColor: AppColors.onSecondary,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            ),
-            child: const Text('Join Competition'),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -193,65 +237,79 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 160;
+        final iconSize = isNarrow ? 36.0 : 48.0;
+        final pad = isNarrow ? 16.0 : 20.0;
+        return Container(
+          padding: EdgeInsets.all(pad),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
               ),
-              const Spacer(),
-              if (showStars)
-                Row(
-                  children: List.generate(
-                    starCount,
-                    (i) => const Icon(Icons.star, color: AppColors.tertiary, size: 18),
-                  ),
-                )
-              else if (progress != null)
-                SizedBox(
-                  width: 64,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 6,
-                      backgroundColor: AppColors.surfaceContainerLow,
-                      valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-                    ),
-                  ),
-                ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelLarge,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: iconSize,
+                    height: iconSize,
+                    decoration: BoxDecoration(
+                      color: iconBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: iconColor, size: isNarrow ? 20 : 24),
+                  ),
+                  const Spacer(),
+                  if (showStars)
+                    Row(
+                      children: List.generate(
+                        starCount,
+                        (i) => Icon(Icons.star, color: AppColors.tertiary, size: isNarrow ? 14 : 18),
+                      ),
+                    )
+                  else if (progress != null)
+                    SizedBox(
+                      width: isNarrow ? 48 : 64,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: AppColors.surfaceContainerLow,
+                          valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.displaySmall,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(value, style: Theme.of(context).textTheme.displaySmall),
-        ],
-      ),
+        );
+      },
     );
   }
 }

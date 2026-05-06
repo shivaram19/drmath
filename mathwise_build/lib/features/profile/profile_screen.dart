@@ -38,13 +38,28 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 32),
           _buildStatsGrid(context),
           const SizedBox(height: 32),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _buildAchievements(context)),
-              const SizedBox(width: 24),
-              Expanded(child: _buildTopicProgress(context)),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 400;
+              if (isWide) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildAchievements(context)),
+                    const SizedBox(width: 24),
+                    Expanded(child: _buildTopicProgress(context)),
+                  ],
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildAchievements(context),
+                  const SizedBox(height: 24),
+                  _buildTopicProgress(context),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -108,10 +123,11 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _Badge(label: 'Level ${user.level}', color: AppColors.primaryContainer.withValues(alpha: 0.1), textColor: AppColors.primary),
-                  const SizedBox(width: 8),
                   _Badge(label: user.rank, color: AppColors.secondaryContainer.withValues(alpha: 0.2), textColor: AppColors.secondary),
                 ],
               ),
@@ -125,38 +141,53 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildStatsGrid(BuildContext context) {
     // Three competence metrics: time, volume, accuracy.
     // Rationale: Deci & Ryan (2000) — competence feedback must be specific [^23].
-    return Row(
-      children: [
-        const Expanded(
-          child: _StatBox(
-            icon: Icons.schedule,
-            iconBg: Color(0xFFEBF4FF),
-            iconColor: AppColors.primary,
-            label: 'Total Study Hours',
-            value: '24h',
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatBox(
-            icon: Icons.task_alt,
-            iconBg: AppColors.secondaryContainer.withValues(alpha: 0.2),
-            iconColor: AppColors.secondary,
-            label: 'Topics Completed',
-            value: '12',
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatBox(
-            icon: Icons.analytics,
-            iconBg: AppColors.tertiaryContainer.withValues(alpha: 0.1),
-            iconColor: AppColors.tertiary,
-            label: 'Accuracy Rate',
-            value: '85%',
-          ),
-        ),
-      ],
+    final stats = [
+      const _StatBox(
+        icon: Icons.schedule,
+        iconBg: Color(0xFFEBF4FF),
+        iconColor: AppColors.primary,
+        label: 'Study Hours',
+        value: '24h',
+      ),
+      _StatBox(
+        icon: Icons.task_alt,
+        iconBg: AppColors.secondaryContainer.withValues(alpha: 0.2),
+        iconColor: AppColors.secondary,
+        label: 'Topics Done',
+        value: '12',
+      ),
+      _StatBox(
+        icon: Icons.analytics,
+        iconBg: AppColors.tertiaryContainer.withValues(alpha: 0.1),
+        iconColor: AppColors.tertiary,
+        label: 'Accuracy',
+        value: '85%',
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 360;
+        if (isWide) {
+          return Row(
+            children: [
+              Expanded(child: stats[0]),
+              const SizedBox(width: 12),
+              Expanded(child: stats[1]),
+              const SizedBox(width: 12),
+              Expanded(child: stats[2]),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            stats[0],
+            const SizedBox(height: 12),
+            stats[1],
+            const SizedBox(height: 12),
+            stats[2],
+          ],
+        );
+      },
     );
   }
 
@@ -167,7 +198,13 @@ class ProfileScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Achievements', style: Theme.of(context).textTheme.displaySmall),
+            Expanded(
+              child: Text(
+                'Achievements',
+                style: Theme.of(context).textTheme.displaySmall,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             GestureDetector(
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -201,7 +238,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(12),
@@ -209,15 +246,15 @@ class ProfileScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 40,
+                      height: 40,
                       decoration: const BoxDecoration(
                         color: AppColors.tertiaryFixed,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.emoji_events, color: AppColors.tertiary),
+                      child: const Icon(Icons.emoji_events, color: AppColors.tertiary, size: 20),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,10 +264,14 @@ class ProfileScreen extends StatelessWidget {
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                           Text(
                             '3 First Place Trophies',
                             style: Theme.of(context).textTheme.bodyMedium,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ],
                       ),
@@ -246,8 +287,10 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 12),
               // Competence-linked badges: each maps to a specific behavior.
               // Rationale: Hamari et al. (2014) [^19]; Deci (1971) anti-crowding [^21].
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.spaceAround,
                 children: DemoData.badges.asMap().entries.map((entry) {
                   final badge = entry.value;
                   final colors = [
@@ -299,10 +342,13 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.trending_up, color: AppColors.secondary, size: 18),
                   const SizedBox(width: 8),
-                  Text(
-                    'Strong Topics'.toUpperCase(),
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppColors.secondary,
+                  Expanded(
+                    child: Text(
+                      'Strong Topics'.toUpperCase(),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: AppColors.secondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -319,10 +365,13 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.trending_down, color: AppColors.error, size: 18),
                   const SizedBox(width: 8),
-                  Text(
-                    'Needs Focus'.toUpperCase(),
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppColors.error,
+                  Expanded(
+                    child: Text(
+                      'Needs Focus'.toUpperCase(),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: AppColors.error,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -506,32 +555,67 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 140;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: Theme.of(context).textTheme.bodyLarge),
-            Text(
-              '${(value * 100).toInt()}%',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
+            if (isNarrow)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  Text(
+                    '${(value * 100).toInt()}%',
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${(value * 100).toInt()}%',
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: value,
+                minHeight: 6,
+                backgroundColor: AppColors.surfaceContainerLow,
+                valueColor: AlwaysStoppedAnimation(color),
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: value,
-            minHeight: 6,
-            backgroundColor: AppColors.surfaceContainerLow,
-            valueColor: AlwaysStoppedAnimation(color),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

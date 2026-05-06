@@ -43,3 +43,8 @@ Thumbs.db
 /lib/
 /mathwise_app/
 /pubspec.yaml
+
+# Visual testing pipeline generated artifacts
+mathwise_build/reports/
+mathwise_build/screenshots/
+mathwise_build/test/goldens/
