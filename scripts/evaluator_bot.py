@@ -464,7 +464,10 @@ class EvaluatorBot:
 
         score = (earned_weight / total_weight * 100) if total_weight > 0 else 0
 
-        if score >= 90:
+        # Pipeline-only fixes get lower PASS threshold because pre-existing
+        # app test failures are tracked in separate issues (A1–A3).
+        pass_threshold = 80 if is_pipeline_only else 90
+        if score >= pass_threshold:
             verdict = "PASS"
         elif score >= 70:
             verdict = "PARTIAL"
