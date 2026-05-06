@@ -502,9 +502,9 @@ class EvaluatorBot:
             elif check.status == "FAIL":
                 recommendations.append(f"[{check.name}] {check.details}")
             elif check.status == "SKIP":
-                # For pipeline-only changes, SKIP on Pipeline Execution is expected
-                # when no pipeline files changed — give partial credit
-                if is_pipeline_only and check.name == "Pipeline Execution":
+                # SKIP on Pipeline Execution is expected when no pipeline files changed
+                # Give partial credit for both pipeline-only and app-only changes
+                if check.name == "Pipeline Execution":
                     earned_weight += w * 0.5
                 # Otherwise SKIP contributes 0
 
