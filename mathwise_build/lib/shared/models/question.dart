@@ -5,6 +5,20 @@ class QuizOption {
   const QuizOption({required this.label, required this.text});
 }
 
+/// Domain entity representing a single quiz question.
+///
+/// TODO: This is currently an anemic domain model (data bag only).
+/// Per `architecture/layers.md` and Reso Coder's DDD guidance, domain
+/// models should contain behavior and enforce invariants.
+///
+/// Next evolution (when backed by real repository):
+/// - Add `isCorrect(int selectedIndex)` method
+/// - Add `calculateScore({bool usedHint})` method
+/// - Add assertions for `correctIndex` bounds in constructor
+/// - Move scoring logic from `QuizSession` into `Question`
+///
+/// Blocked on: Real backend + repository pattern implementation.
+/// Current demo data does not justify the abstraction overhead.
 class Question {
   final String id;
   final String topic;
