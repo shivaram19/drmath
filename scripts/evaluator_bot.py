@@ -261,6 +261,10 @@ class EvaluatorBot:
         cmd = ["flutter", "test"]
         if screen_filter:
             cmd.extend(["--plain-name", screen_filter])
+            # Visual screenshot tests use golden files which are gitignored;
+            # --update-goldens ensures we test for render exceptions (overflows)
+            # rather than stale pixel comparisons across branches.
+            cmd.append("--update-goldens")
 
         stdout, stderr, rc, dur = self._exec(
             cmd,
