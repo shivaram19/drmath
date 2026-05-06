@@ -4,8 +4,8 @@ set -e
 
 cd "$(dirname "$0")"
 
-# Load env
-export $(grep -v '^#' .env | xargs)
+# Load env silently (do NOT export to shell — python-dotenv reads it)
+# .env is read by pipeline/config.py via load_dotenv()
 
 echo "🚀 Starting Dr. Math on port 8000..."
 python3 -m uvicorn web.main:app --host 0.0.0.0 --port 8000 &

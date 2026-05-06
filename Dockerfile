@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+# Create non-root user with same UID as host (1000) so bind mounts work
+RUN groupadd -r -g 1000 appgroup && useradd -r -u 1000 -g appgroup appuser
+
 WORKDIR /app
 
 # Install system deps
@@ -21,8 +24,11 @@ COPY data/ ./data/
 COPY output/ ./output/
 COPY test_pipeline.py ./
 
-# Ensure data dir exists (for SQLite DB)
-RUN mkdir -p data output
+# Ensure data dir exists and is owned by appuser
+RUN mkdir -p data output && chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
 
 # Expose port
 EXPOSE 8000
