@@ -244,6 +244,20 @@ class EvaluatorBot:
                 elif "curriculum_list" in f.lower():
                     screen_filter = "curriculum_list @"
 
+        # For app changes, temporarily checkout the feature branch to run tests
+        # against the actual fix, then switch back to dev
+        original_branch = "dev"
+        if touches_app:
+            _, _, rc_branch, _ = self._exec(["git", "checkout", self.branch])
+            if rc_branch != 0:
+                self.checks.append(CheckResult(
+                    name="Flutter Tests",
+                    status="FAIL",
+                    details=f"Could not checkout {self.branch} to run tests",
+                    duration_ms=0,
+                ))
+                return
+
         cmd = ["flutter", "test"]
         if screen_filter:
             cmd.extend(["--plain-name", screen_filter])
@@ -253,6 +267,10 @@ class EvaluatorBot:
             cwd=flutter_cwd,
             timeout=300,
         )
+
+        # Switch back to dev if we checked out the feature branch
+        if touches_app:
+            self._exec(["git", "checkout", original_branch])
         output = stdout + stderr
 
         # Parse test results — Flutter format: "+31 -45: Some tests failed."
