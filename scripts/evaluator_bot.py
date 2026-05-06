@@ -454,7 +454,7 @@ class EvaluatorBot:
 
     def _check_a3_games(self):
         """A3: Games screen should adapt to tablet viewports."""
-        content = self._read_file_from_branch("mathwise_build/lib/screens/games_screen.dart")
+        content = self._read_file_from_branch("mathwise_build/lib/features/games/games_screen.dart")
         has_responsive = "LayoutBuilder" in content or "MediaQuery" in content or "GridView" in content
         self.checks.append(CheckResult(
             name="A3 Games Tablet Fix",
