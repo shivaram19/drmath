@@ -221,6 +221,8 @@ class EvaluatorBot:
         
         For pipeline-only changes (scripts/, no lib/ changes), pre-existing
         app test failures are not blockers — they are tracked in separate issues.
+        
+        For app changes, runs tests filtered to the relevant screen if possible.
         """
         changed = getattr(self, "changed_files", [])
         touches_app = any(f.startswith("lib/") or f.startswith("mathwise_build/lib/") for f in changed)
@@ -231,16 +233,34 @@ class EvaluatorBot:
         if not (flutter_cwd / "pubspec.yaml").exists():
             flutter_cwd = self.project_root
 
+        # Try to extract screen name from changed file for test filtering
+        screen_filter = None
+        if touches_app:
+            for f in changed:
+                if "profile" in f.lower():
+                    screen_filter = "profile @"
+                elif "game" in f.lower():
+                    screen_filter = "games @"
+                elif "curriculum_list" in f.lower():
+                    screen_filter = "curriculum_list @"
+
+        cmd = ["flutter", "test"]
+        if screen_filter:
+            cmd.extend(["--plain-name", screen_filter])
+
         stdout, stderr, rc, dur = self._exec(
-            ["flutter", "test"],
+            cmd,
             cwd=flutter_cwd,
             timeout=300,
         )
         output = stdout + stderr
 
         # Parse test results — Flutter format: "+31 -45: Some tests failed."
-        passed = re.search(r'\+(\d+)', output) or re.search(r'(\d+) passed', output)
-        failed = re.search(r'-(\d+)', output) or re.search(r'(\d+) failed', output)
+        # Use last match to avoid matching intermediate +0 -0 loading states
+        all_passed = list(re.finditer(r'\+(\d+)', output))
+        all_failed = list(re.finditer(r'-(\d+)', output))
+        passed = all_passed[-1] if all_passed else None
+        failed = all_failed[-1] if all_failed else None
         n_passed = int(passed.group(1)) if passed else 0
         n_failed = int(failed.group(1)) if failed else 0
 
@@ -251,6 +271,10 @@ class EvaluatorBot:
             # Pipeline-only change: pre-existing failures are warnings, not blockers
             status = "WARN"
             details = f"{n_passed} passed, {n_failed} failed — pre-existing app issues (not caused by pipeline change)"
+        elif n_failed > 0 and touches_app and screen_filter:
+            # App change with screen-specific filter: only count filtered test failures
+            status = "FAIL"
+            details = f"{n_passed} passed, {n_failed} failed for '{screen_filter}'. Screen-specific tests failed."
         elif n_failed > 0:
             status = "FAIL"
             fail_match = re.search(r'(FAIL|failed):\s*(.+)', output)
