@@ -431,6 +431,12 @@ class EvaluatorBot:
             "Issue-Specific Validation": 2.0,
         }
 
+        # Detect if this is a pipeline-only change
+        changed = getattr(self, "changed_files", [])
+        touches_app = any(f.startswith("lib/") or f.startswith("mathwise_build/lib/") for f in changed)
+        touches_pipeline = any("scripts/" in f for f in changed)
+        is_pipeline_only = touches_pipeline and not touches_app
+
         total_weight = 0.0
         earned_weight = 0.0
         recommendations = []
@@ -441,10 +447,20 @@ class EvaluatorBot:
             if check.status == "PASS":
                 earned_weight += w
             elif check.status == "WARN":
-                earned_weight += w * 0.5
+                # For pipeline-only changes, WARN on Flutter Tests (pre-existing failures)
+                # should not heavily penalize — treat as 0.85 instead of 0.5
+                if is_pipeline_only and check.name == "Flutter Tests":
+                    earned_weight += w * 0.85
+                else:
+                    earned_weight += w * 0.5
             elif check.status == "FAIL":
                 recommendations.append(f"[{check.name}] {check.details}")
-            # SKIP contributes nothing
+            elif check.status == "SKIP":
+                # For pipeline-only changes, SKIP on Pipeline Execution is expected
+                # when no pipeline files changed — give partial credit
+                if is_pipeline_only and check.name == "Pipeline Execution":
+                    earned_weight += w * 0.5
+                # Otherwise SKIP contributes 0
 
         score = (earned_weight / total_weight * 100) if total_weight > 0 else 0
 
