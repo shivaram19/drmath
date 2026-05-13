@@ -301,7 +301,30 @@
         <header>
             <h1>📝 PM Review: {{ topic.name }}</h1>
             <p>Rate each question on thought direction, playfulness, and guidance quality. Your feedback shapes how children learn.</p>
+            {% if prompt_name %}
+            <p style="margin-top: 8px; font-size: 0.95rem; opacity: 0.9;">🎨 Current dimension: <strong>{{ prompt_name }}</strong></p>
+            {% endif %}
         </header>
+
+        {% if available_dimensions and available_dimensions|length > 1 %}
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px;">
+            <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Switch Pedagogical Dimension</p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                {% for dim in available_dimensions %}
+                <a href="/review/{{ slug }}?prompt={{ dim.slug }}" 
+                   style="text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+                          {% if current_prompt == dim.slug %}
+                          background: var(--primary); color: white;
+                          {% else %}
+                          background: #f1f5f9; color: var(--text); border: 1px solid var(--border);
+                          {% endif %}">
+                    {{ dim.name }}
+                    {% if current_prompt == dim.slug %}✓{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
 
         <div class="stats-bar">
             <div class="stat-card">

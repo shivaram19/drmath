@@ -38,20 +38,58 @@ def _unslugify(name: str) -> str:
 
 
 def _list_topics() -> List[Dict[str, Any]]:
-    topics = []
+    """List all topics, grouping multi-prompt versions under the same topic."""
+    topic_map = {}
     for f in sorted(OUTPUT_DIR.glob("*_output.json")):
+        if f.name.startswith("batch_report") or f.name.startswith("multi_prompt_report"):
+            continue
         try:
             data = json.loads(f.read_text())
-            topics.append({
-                "slug": f.stem.replace("_output", ""),
-                "name": data.get("topic", _unslugify(f.stem.replace("_output", ""))),
+            # Parse filename: {slug}_{prompt}_output.json or {slug}_output.json
+            parts = f.stem.replace("_output", "").split("_")
+            
+            # Detect if it's a multi-prompt file
+            prompt_slug = None
+            base_slug = "_".join(parts)
+            if len(parts) >= 2 and parts[-1] in ("default", "storyteller", "visual", "zpd"):
+                prompt_slug = parts[-1]
+                base_slug = "_".join(parts[:-1])
+            
+            topic_name = data.get("topic", _unslugify(base_slug))
+            prompt_name = data.get("prompt_name", "Default")
+            
+            if base_slug not in topic_map:
+                topic_map[base_slug] = {
+                    "slug": base_slug,
+                    "name": topic_name,
+                    "total_questions": data.get("meta", {}).get("total_questions", 0),
+                    "difficulty": data.get("meta", {}).get("difficulty_distribution", {}),
+                    "prompt_name": prompt_name,
+                    "versions": [],
+                }
+            
+            topic_map[base_slug]["versions"].append({
+                "file": f.name,
+                "prompt_slug": prompt_slug or "default",
+                "prompt_name": prompt_name,
                 "total_questions": data.get("meta", {}).get("total_questions", 0),
-                "difficulty": data.get("meta", {}).get("difficulty_distribution", {}),
-                "prompt_name": data.get("prompt_name", "Default"),
             })
         except Exception:
             continue
-    return topics
+    
+    # Return topics with version count
+    result = []
+    for slug, data in sorted(topic_map.items()):
+        result.append({
+            "slug": slug,
+            "name": data["name"],
+            "total_questions": data["total_questions"],
+            "difficulty": data["difficulty"],
+            "prompt_name": data["prompt_name"],
+            "version_count": len(data["versions"]),
+            "versions": data["versions"],
+        })
+    return result
 
 
 # ------------------------------------------------------------------
@@ -67,9 +105,18 @@ def home(request: Request):
 
 
 @app.get("/topic/{slug}", response_class=HTMLResponse)
-def topic_page(request: Request, slug: str, db: Session = Depends(get_db_session)):
-    json_path = OUTPUT_DIR / f"{slug}_output.json"
-    md_path = DATA_DIR / f"{slug}_antigravity.md"
+def topic_page(request: Request, slug: str, prompt: Optional[str] = None, db: Session = Depends(get_db_session)):
+    # Determine which file to load
+    if prompt and prompt in ("default", "storyteller", "visual", "zpd"):
+        json_path = OUTPUT_DIR / f"{slug}_{prompt}_output.json"
+        md_path = DATA_DIR / f"{slug}_{prompt}_antigravity.md"
+        if not json_path.exists():
+            # Fallback to default
+            json_path = OUTPUT_DIR / f"{slug}_output.json"
+            md_path = DATA_DIR / f"{slug}_antigravity.md"
+    else:
+        json_path = OUTPUT_DIR / f"{slug}_output.json"
+        md_path = DATA_DIR / f"{slug}_antigravity.md"
 
     # Load from file (fallback) or DB
     if json_path.exists():
@@ -112,11 +159,25 @@ def topic_page(request: Request, slug: str, db: Session = Depends(get_db_session
             for g in topic_obj.generations
         ]
 
+    # Discover available prompt dimensions from output files
+    available_dimensions = []
+    for dim in [("default", "Default"), ("storyteller", "Cultural Storyteller"), ("visual", "Visual-First"), ("zpd", "ZPD Adaptive")]:
+        dim_slug, dim_name = dim
+        dim_path = OUTPUT_DIR / f"{slug}_{dim_slug}_output.json"
+        if dim_path.exists():
+            available_dimensions.append({"slug": dim_slug, "name": dim_name})
+    # Also check for default without suffix
+    if (OUTPUT_DIR / f"{slug}_output.json").exists():
+        if not any(d["slug"] == "default" for d in available_dimensions):
+            available_dimensions.insert(0, {"slug": "default", "name": "Default"})
+
     return templates.TemplateResponse(request, "topic.html", {
         "topic": data,
         "markdown": markdown_content,
         "slug": slug,
         "versions": versions,
+        "current_prompt": prompt or "default",
+        "available_dimensions": available_dimensions,
     })
 
 
@@ -350,25 +411,61 @@ def api_list_evaluations(generation_id: Optional[int] = None, db: Session = Depe
 # ------------------------------------------------------------------
 
 @app.get("/review/{slug}", response_class=HTMLResponse)
-def review_page(request: Request, slug: str, db: Session = Depends(get_db_session)):
+def review_page(request: Request, slug: str, prompt: Optional[str] = None, db: Session = Depends(get_db_session)):
     """PM review page: see all questions for a topic and rate them."""
     topic_obj = crud.get_topic_by_slug(db, slug)
     if not topic_obj:
         return templates.TemplateResponse(request, "404.html", {}, status_code=404)
     
-    # Get latest generation
+    # Load questions from the appropriate output file
+    if prompt and prompt in ("default", "storyteller", "visual", "zpd"):
+        json_path = OUTPUT_DIR / f"{slug}_{prompt}_output.json"
+        if not json_path.exists():
+            json_path = OUTPUT_DIR / f"{slug}_output.json"
+    else:
+        json_path = OUTPUT_DIR / f"{slug}_output.json"
+    
+    if json_path.exists():
+        data = json.loads(json_path.read_text())
+        questions = data.get("questions", [])
+        prompt_name = data.get("prompt_name", "Default")
+    else:
+        # Fallback to DB
+        latest_gen = (
+            db.query(Generation)
+            .filter(Generation.topic_id == topic_obj.id)
+            .order_by(Generation.created_at.desc())
+            .first()
+        )
+        if not latest_gen or not latest_gen.questions_json:
+            return templates.TemplateResponse(request, "404.html", {"message": "No questions generated yet"}, status_code=404)
+        questions = json.loads(latest_gen.questions_json)
+        prompt_name = latest_gen.prompt.name if latest_gen.prompt else "Default"
+    
+    # Get generation ID for review storage (use latest DB generation for this topic)
     latest_gen = (
         db.query(Generation)
         .filter(Generation.topic_id == topic_obj.id)
         .order_by(Generation.created_at.desc())
         .first()
     )
-    if not latest_gen or not latest_gen.questions_json:
-        return templates.TemplateResponse(request, "404.html", {"message": "No questions generated yet"}, status_code=404)
+    generation_id = latest_gen.id if latest_gen else 0
     
-    questions = json.loads(latest_gen.questions_json)
-    reviews = {r.question_index: r for r in latest_gen.question_reviews}
-    stats = get_question_review_stats(db, latest_gen.id)
+    # For now, reviews are tied to the latest generation regardless of prompt dimension
+    # In future, we may want per-prompt-dimension review tables
+    reviews = {r.question_index: r for r in (latest_gen.question_reviews if latest_gen else [])}
+    stats = get_question_review_stats(db, generation_id) if generation_id else {"total_reviewed": 0}
+    
+    # Discover available dimensions
+    available_dimensions = []
+    for dim in [("default", "Default"), ("storyteller", "Cultural Storyteller"), ("visual", "Visual-First"), ("zpd", "ZPD Adaptive")]:
+        dim_slug, dim_name = dim
+        dim_path = OUTPUT_DIR / f"{slug}_{dim_slug}_output.json"
+        if dim_path.exists():
+            available_dimensions.append({"slug": dim_slug, "name": dim_name})
+    if (OUTPUT_DIR / f"{slug}_output.json").exists():
+        if not any(d["slug"] == "default" for d in available_dimensions):
+            available_dimensions.insert(0, {"slug": "default", "name": "Default"})
     
     # Enrich questions with review data
     enriched = []
@@ -393,10 +490,13 @@ def review_page(request: Request, slug: str, db: Session = Depends(get_db_sessio
     return templates.TemplateResponse(request, "review.html", {
         "topic": topic_obj,
         "slug": slug,
-        "generation_id": latest_gen.id,
+        "generation_id": generation_id,
         "questions": enriched,
         "stats": stats,
         "total_questions": len(questions),
+        "current_prompt": prompt or "default",
+        "prompt_name": prompt_name,
+        "available_dimensions": available_dimensions,
     })
 
 
