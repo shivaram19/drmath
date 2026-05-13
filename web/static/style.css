@@ -608,3 +608,157 @@ footer a {
   opacity: 1;
   visibility: visible;
 }
+
+/* ============================================
+   MOBILE RESPONSIVENESS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  .hero {
+    padding: 2rem 0.75rem 1.5rem;
+  }
+  .hero h1 {
+    font-size: 1.5rem;
+  }
+  .hero p {
+    font-size: 0.95rem;
+  }
+
+  .navbar .container {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .nav-links {
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+  .nav-links a {
+    font-size: 0.9rem;
+  }
+
+  .topic-grid {
+    grid-template-columns: 1fr;
+  }
+  .prompt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topic-header h1 {
+    font-size: 1.4rem;
+  }
+  .stats {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .stat {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+  }
+
+  .options {
+    grid-template-columns: 1fr;
+  }
+
+  .history-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .history-table th,
+  .history-table td {
+    padding: 0.7rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .q-card {
+    padding: 1rem;
+  }
+  .q-text {
+    font-size: 1rem;
+  }
+  .option {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .gen-form input,
+  .gen-form select {
+    min-width: 100%;
+    font-size: 16px; /* prevent iOS zoom on focus */
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .tab-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .floating-help {
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+    bottom: 16px;
+    right: 16px;
+  }
+  .floating-help .tooltip {
+    display: none; /* tooltips awkward on touch */
+  }
+
+  .download-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .download-buttons .btn {
+    text-align: center;
+  }
+
+  .filter-bar {
+    gap: 0.4rem;
+  }
+  .filter-btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .markdown-box pre,
+  .json-box {
+    padding: 1rem;
+    font-size: 0.8rem;
+  }
+
+  .prompt-form button {
+    align-self: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 1.25rem;
+  }
+  .logo {
+    font-size: 1.2rem;
+  }
+  .topic-header h1 {
+    font-size: 1.2rem;
+  }
+  .q-header {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .explanation {
+    font-size: 0.85rem;
+  }
+  footer {
+    font-size: 0.8rem;
+    padding: 1.5rem 0.5rem;
+  }
+}
