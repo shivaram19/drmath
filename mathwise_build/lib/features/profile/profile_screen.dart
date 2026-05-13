@@ -20,6 +20,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../../core/constants/app_breakpoints.dart';
 import '../../core/constants/app_colors.dart';
 import '../../shared/data/demo_data.dart';
 import '../topics/topic_choice_screen.dart';
@@ -164,30 +165,19 @@ class ProfileScreen extends StatelessWidget {
         value: '85%',
       ),
     ];
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 360;
-        if (isWide) {
-          return Row(
-            children: [
-              Expanded(child: stats[0]),
-              const SizedBox(width: 12),
-              Expanded(child: stats[1]),
-              const SizedBox(width: 12),
-              Expanded(child: stats[2]),
-            ],
-          );
-        }
-        return Column(
-          children: [
-            stats[0],
-            const SizedBox(height: 12),
-            stats[1],
-            const SizedBox(height: 12),
-            stats[2],
-          ],
-        );
-      },
+    // Always use Row; each _StatBox adapts internally via its own
+    // LayoutBuilder. This is the flexbox pattern: the parent distributes
+    // space, children adapt to their allocation. No outer threshold needed.
+    // Research: Flutter Docs (2026) — prefer constraint-relative layouts
+    // over breakpoint switching at every level.
+    return Row(
+      children: [
+        Expanded(child: stats[0]),
+        const SizedBox(width: 12),
+        Expanded(child: stats[1]),
+        const SizedBox(width: 12),
+        Expanded(child: stats[2]),
+      ],
     );
   }
 
@@ -468,49 +458,90 @@ class _StatBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < ContentMinWidths.statBoxRowLayout;
+        final iconSize = isNarrow ? 32.0 : 48.0;
+        final pad = isNarrow ? 12.0 : 20.0;
+        return Container(
+          padding: EdgeInsets.all(pad),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelLarge,
+          child: isNarrow
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: iconSize,
+                          height: iconSize,
+                          decoration: BoxDecoration(
+                            color: iconBg,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(icon, color: iconColor, size: isNarrow ? 18 : 24),
+                        ),
+                        Text(
+                          value,
+                          style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: isNarrow ? 18 : 24),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: isNarrow ? 10 : 12),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Container(
+                      width: iconSize,
+                      height: iconSize,
+                      decoration: BoxDecoration(
+                        color: iconBg,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(icon, color: iconColor, size: isNarrow ? 18 : 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            label,
+                            style: Theme.of(context).textTheme.labelLarge,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            value,
+                            style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 24),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 24),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

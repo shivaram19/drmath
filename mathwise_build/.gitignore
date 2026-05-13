@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.env
+# Build artifacts - do not commit binaries or generated web builds
+web/static/mathwise.apk
+web/static/mathwise-web/

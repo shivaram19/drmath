@@ -35,6 +35,20 @@ class CurriculumListScreen extends StatefulWidget {
 class _CurriculumListScreenState extends State<CurriculumListScreen> {
   String? _expandedChapterId;
 
+  @override
+  void initState() {
+    super.initState();
+    // Auto-expand the first in-progress or unlocked chapter.
+    // Rationale: Gobet et al. (2001) — present the active chunk first.
+    // A collapsed accordion is invisible; the student cannot discover
+    // sub-topics without first guessing the tap affordance.
+    final firstOpen = DemoData.grade7Curriculum.firstWhere(
+      (ch) => ch.status != TopicStatus.locked,
+      orElse: () => DemoData.grade7Curriculum.first,
+    );
+    _expandedChapterId = firstOpen.id;
+  }
+
   IconData _iconFromString(String name) {
     return switch (name) {
       'pin_drop' => Icons.pin_drop,
