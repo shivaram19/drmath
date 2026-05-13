@@ -516,3 +516,30 @@ footer a {
   border-radius: 8px;
   font-weight: 700;
 }
+
+/* Download buttons */
+.download-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+.download-buttons .btn {
+  padding: 0.9rem 1.8rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  transition: transform .15s, box-shadow .15s;
+}
+.download-buttons .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+.btn-android {
+  background: #34d399;
+  color: #064e3b;
+}
+.btn-ios {
+  background: #a78bfa;
+  color: #2e1065;
+}

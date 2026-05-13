@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 from fastapi import FastAPI, Request, Form, Depends
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -24,6 +24,7 @@ app = FastAPI(title="Dr. Math", description="Class VII Math Content Generator wi
 
 BASE_DIR = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+app.mount("/mathwise-web", StaticFiles(directory=BASE_DIR / "static" / "mathwise-web"), name="mathwise-web")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
@@ -341,6 +342,27 @@ def api_list_evaluations(generation_id: Optional[int] = None, db: Session = Depe
         }
         for ev in evaluations
     ]
+
+
+# ------------------------------------------------------------------
+# APK Download
+# ------------------------------------------------------------------
+
+APK_PATH = Path(__file__).parent / "static" / "mathwise.apk"
+
+@app.get("/mathwise.apk")
+def download_apk():
+    """Download the latest MathWise Android APK."""
+    if not APK_PATH.exists():
+        return JSONResponse(
+            {"error": "APK not built yet. Please check back in a few minutes."},
+            status_code=404
+        )
+    return FileResponse(
+        path=str(APK_PATH),
+        media_type="application/vnd.android.package-archive",
+        filename="mathwise.apk"
+    )
 
 
 @app.get("/api/leaderboard")
