@@ -573,6 +573,12 @@ def api_question_review_stats(generation_id: int, db: Session = Depends(get_db_s
     return get_question_review_stats(db, generation_id)
 
 
+@app.get("/instructions", response_class=HTMLResponse)
+def instructions_page(request: Request):
+    """PM Instructions page — how to review content and use the system."""
+    return templates.TemplateResponse(request, "instructions.html", {})
+
+
 @app.get("/status", response_class=HTMLResponse)
 def status_page(request: Request):
     """Generation status dashboard — real-time view of all topic × dimension combinations."""

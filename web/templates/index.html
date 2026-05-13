@@ -82,5 +82,38 @@
             <p>Built for Bill — Trelo Labs</p>
         </div>
     </footer>
+<div id="draggable-floating" class="floating-help" aria-label="PM Instructions"><a href="/instructions" style="color:inherit;text-decoration:none;">❓</a><span class="tooltip">PM Instructions</span></div>
+<script>
+(function(){
+  var el=document.getElementById("draggable-floating");
+  if(!el)return;
+  var stored=localStorage.getItem("floatingHelpPos");
+  if(stored){
+    var p=JSON.parse(stored);
+    el.style.left=p.x+"px";el.style.top=p.y+"px";el.style.right="auto";el.style.bottom="auto";
+  }
+  var dragging=false,offsetX=0,offsetY=0;
+  el.addEventListener("mousedown",function(e){
+    if(e.target.closest("a"))return;
+    dragging=true;
+    offsetX=e.clientX-el.offsetLeft;
+    offsetY=e.clientY-el.offsetTop;
+    el.style.transition="none";
+    e.preventDefault();
+  });
+  document.addEventListener("mousemove",function(e){
+    if(!dragging)return;
+    el.style.left=(e.clientX-offsetX)+"px";
+    el.style.top=(e.clientY-offsetY)+"px";
+    el.style.right="auto";el.style.bottom="auto";
+  });
+  document.addEventListener("mouseup",function(){
+    if(!dragging)return;
+    dragging=false;
+    el.style.transition="transform 0.2s, box-shadow 0.2s";
+    localStorage.setItem("floatingHelpPos",JSON.stringify({x:el.offsetLeft,y:el.offsetTop}));
+  });
+})();
+</script>
 </body>
 </html>
