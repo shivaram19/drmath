@@ -573,6 +573,54 @@ def api_question_review_stats(generation_id: int, db: Session = Depends(get_db_s
     return get_question_review_stats(db, generation_id)
 
 
+@app.get("/status", response_class=HTMLResponse)
+def status_page(request: Request):
+    """Generation status dashboard — real-time view of all topic × dimension combinations."""
+    from datetime import datetime
+
+    status_file = OUTPUT_DIR / "generation_status.json"
+    status_data = {"jobs": []}
+    if status_file.exists():
+        try:
+            status_data = json.loads(status_file.read_text())
+        except Exception:
+            pass
+
+    # Build matrix
+    topics = sorted({j["topic"] for j in status_data.get("jobs", [])})
+    prompts = ["default", "storyteller", "visual", "zpd"]
+    prompt_icons = {"default": "🧮", "storyteller": "📖", "visual": "👁️", "zpd": "🎯"}
+
+    matrix = []
+    for topic in topics:
+        row = {"topic": topic, "cells": []}
+        for pk in prompts:
+            job = next((j for j in status_data.get("jobs", []) if j["topic"] == topic and j["prompt_key"] == pk), None)
+            if job:
+                row["cells"].append({"status": job.get("status", "pending"), "message": job.get("message", "")})
+            else:
+                row["cells"].append({"status": "pending", "message": "Not queued"})
+        matrix.append(row)
+
+    # Summary counts
+    jobs = status_data.get("jobs", [])
+    total = len(jobs)
+    success = len([j for j in jobs if j.get("status") == "success"])
+    skipped = len([j for j in jobs if j.get("status") == "skipped"])
+    errors = len([j for j in jobs if j.get("status") == "error"])
+    pending = total - success - skipped - errors
+
+    return templates.TemplateResponse(request, "status.html", {
+        "matrix": matrix,
+        "total": total,
+        "success": success,
+        "skipped": skipped,
+        "errors": errors,
+        "pending": pending,
+        "now": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+    })
+
+
 # ------------------------------------------------------------------
 # APK Download
 # ------------------------------------------------------------------

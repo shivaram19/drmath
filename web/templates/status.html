@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generation Status — Dr. Math</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --success: #34d399;
+            --warn: #fbbf24;
+            --danger: #f87171;
+            --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+        header { margin-bottom: 32px; }
+        header h1 { font-size: 1.75rem; margin-bottom: 8px; }
+        header p { color: var(--muted); }
+        .dim-legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .dim-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .dim-item .icon { font-size: 1.2rem; }
+        .dim-item .name { font-weight: 600; }
+        .dim-item .theory { color: var(--muted); font-size: 0.8rem; }
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .matrix-table th {
+            background: #0f172a;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+        .matrix-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+        .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .topic-name { font-weight: 600; }
+        .status-cell {
+            text-align: center;
+            font-size: 1.3rem;
+        }
+        .status-success { color: var(--success); }
+        .status-skipped { color: var(--muted); opacity: 0.6; }
+        .status-error { color: var(--danger); }
+        .status-pending { color: var(--warn); }
+        .status-running { animation: pulse 1.5s infinite; color: var(--accent); }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .summary-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .summary-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .summary-card .label {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .progress-outer {
+            background: var(--border);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        .nav { margin-bottom: 24px; }
+        .nav a { color: var(--accent); text-decoration: none; font-weight: 500; }
+        .nav a:hover { text-decoration: underline; }
+        .refresh-hint {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: 16px;
+        }
+        .actions {
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #0f172a;
+        }
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+    </style>
+    <meta http-equiv="refresh" content="10">
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/">← All Topics</a>
+        </div>
+
+        <header>
+            <h1>🔬 Generation Status Dashboard</h1>
+            <p>Real-time view of content generation across all pedagogical dimensions. Auto-refreshes every 10s.</p>
+        </header>
+
+        <div class="dim-legend">
+            <div class="dim-item">
+                <span class="icon">🧮</span>
+                <div>
+                    <div class="name">Default</div>
+                    <div class="theory">Scaffolded explanations</div>
+                </div>
+            </div>
+            <div class="dim-item">
+                <span class="icon">📖</span>
+                <div>
+                    <div class="name">Storyteller</div>
+                    <div class="theory">Indian context stories</div>
+                </div>
+            </div>
+            <div class="dim-item">
+                <span class="icon">👁️</span>
+                <div>
+                    <div class="name">Visual-First</div>
+                    <div class="theory">CPA method</div>
+                </div>
+            </div>
+            <div class="dim-item">
+                <span class="icon">🎯</span>
+                <div>
+                    <div class="name">ZPD Adaptive</div>
+                    <div class="theory">Vygotsky's just-right challenge</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-bar">
+            <div class="summary-card">
+                <div class="value" style="color: var(--accent);">{{ total }}</div>
+                <div class="label">Total Jobs</div>
+                <div class="progress-outer">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="value" style="color: var(--success);">{{ success }}</div>
+                <div class="label">Generated</div>
+                <div class="progress-outer">
+                    <div class="progress-fill" style="width: {{ (success / total * 100) if total else 0 }}%"></div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="value" style="color: var(--warn);">{{ pending }}</div>
+                <div class="label">Pending</div>
+                <div class="progress-outer">
+                    <div class="progress-fill" style="width: {{ (pending / total * 100) if total else 0 }}%"></div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="value" style="color: var(--danger);">{{ errors }}</div>
+                <div class="label">Failed</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">🏠 Home</a>
+            <a href="/lab" class="btn btn-secondary">🧪 Manager Lab</a>
+        </div>
+
+        <table class="matrix-table">
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th style="text-align:center">🧮 Default</th>
+                    <th style="text-align:center">📖 Story</th>
+                    <th style="text-align:center">👁️ Visual</th>
+                    <th style="text-align:center">🎯 ZPD</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in matrix %}
+                <tr>
+                    <td class="topic-name">{{ row.topic }}</td>
+                    {% for cell in row.cells %}
+                    <td class="status-cell">
+                        {% if cell.status == 'success' %}
+                            <span class="status-success" title="{{ cell.message }}">✅</span>
+                        {% elif cell.status == 'skipped' %}
+                            <span class="status-skipped" title="{{ cell.message }}">⏭️</span>
+                        {% elif cell.status == 'error' %}
+                            <span class="status-error" title="{{ cell.message }}">❌</span>
+                        {% elif cell.status == 'running' %}
+                            <span class="status-running" title="{{ cell.message }}">🔄</span>
+                        {% else %}
+                            <span class="status-pending" title="Pending">⏳</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <p class="refresh-hint">⏱️ Auto-refreshing every 10 seconds. Last updated: {{ now }}</p>
+    </div>
+</body>
+</html>

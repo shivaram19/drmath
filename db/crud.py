@@ -7,6 +7,8 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
+from sqlalchemy.exc import IntegrityError
+
 from db.models import Prompt, Topic, Generation, Evaluation, GroundingLog, QuestionReview
 
 
@@ -117,9 +119,17 @@ def get_or_create_topic(db: Session, slug: str, name: str) -> Topic:
         return topic
     topic = Topic(slug=slug, name=name)
     db.add(topic)
-    db.commit()
-    db.refresh(topic)
-    return topic
+    try:
+        db.commit()
+        db.refresh(topic)
+        return topic
+    except IntegrityError:
+        db.rollback()
+        # Another thread created it; fetch the existing one
+        topic = db.query(Topic).filter(Topic.slug == slug).first()
+        if topic:
+            return topic
+        raise
 
 
 def get_topic_by_slug(db: Session, slug: str) -> Optional[Topic]:
