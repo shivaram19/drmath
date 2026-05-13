@@ -25,3 +25,9 @@
 18. Murray, T., & Arroyo, I. (2002). Toward Measuring and Maintaining the Zone of Proximal Development in Adaptive Instructional Systems. *Intelligent Tutoring Systems*.
 19. Origenes et al. (2025). Effects of Gamification Strategies on Learning Mathematics: A Meta-Analysis. *Multi Research Journal*.
 20. Steenbergen-Hu, S., & Cooper, H. (2014). A Meta-Analysis of the Effectiveness of Intelligent Tutoring Systems on College Students' Academic Learning. *Journal of Educational Psychology*.
+
+## LLM Evaluation & Content Generation
+
+21. EQGBench — From Answers to Questions: Evaluating LLMs' Educational Question Generation. ACL Anthology Findings, 2025.
+22. OpenLearnLM Benchmark: A Unified Framework for Evaluating Knowledge, Skill, and Attitude in Educational Large Language Models. arXiv:2601.13882, 2025.
+23. Automated Educational Question Generation at Different Bloom's Skill Levels using Large Language Models: Strategies and Evaluation. arXiv:2408.04394, 2024.
