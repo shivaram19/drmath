@@ -40,3 +40,16 @@ We provide **two distribution channels**:
 1. Flutter Docs — Web support: https://docs.flutter.dev/platform-integration/web
 2. Can I Use — PWA on iOS Safari: https://caniuse.com/?search=pwa%20ios
 3. Apple Developer Program pricing: https://developer.apple.com/programs/
+
+## Implementation Notes
+
+### StaticFiles html=True
+
+FastAPI's `StaticFiles` mount for `/mathwise-web` requires `html=True` to serve `index.html` when a trailing slash is requested (e.g., `/mathwise-web/`). Without this parameter, Starlette returns 404 for directory-style URLs, breaking the iOS "Play in Browser" button which uses `/mathwise-web/` as its href.
+
+**Code:**
+```python
+app.mount("/mathwise-web", StaticFiles(directory=..., html=True), name="mathwise-web")
+```
+
+**Verification:** `curl -I https://drmath.trelolabs.com/mathwise-web/` → HTTP 200

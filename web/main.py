@@ -24,7 +24,7 @@ app = FastAPI(title="Dr. Math", description="Class VII Math Content Generator wi
 
 BASE_DIR = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-app.mount("/mathwise-web", StaticFiles(directory=BASE_DIR / "static" / "mathwise-web"), name="mathwise-web")
+app.mount("/mathwise-web", StaticFiles(directory=BASE_DIR / "static" / "mathwise-web", html=True), name="mathwise-web")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
