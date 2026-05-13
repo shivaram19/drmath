@@ -179,10 +179,32 @@ body {
   text-decoration: none;
   color: inherit;
   transition: transform .15s, border-color .15s;
+  position: relative;
 }
 .topic-card:hover {
   transform: translateY(-2px);
   border-color: var(--accent);
+}
+.topic-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.review-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 4px 12px;
+  background: #4c1d95;
+  color: #c4b5fd;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.review-link:hover {
+  background: #5b21b6;
+  color: #ddd6fe;
 }
 .topic-card h3 {
   font-size: 1.1rem;

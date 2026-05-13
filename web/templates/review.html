@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM Review — {{ topic.name }}</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 24px; }
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 32px 24px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+        }
+        header h1 { font-size: 1.75rem; margin-bottom: 8px; }
+        header p { opacity: 0.9; font-size: 0.95rem; }
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+        .progress-bar {
+            background: var(--border);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .progress-bar .fill {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .question-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        .question-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        .question-card.reviewed {
+            border-left: 4px solid var(--success);
+        }
+        .question-header {
+            padding: 20px 24px;
+            background: #fafafa;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .question-number {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .difficulty-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .difficulty-1 { background: #dcfce7; color: #166534; }
+        .difficulty-2 { background: #dbeafe; color: #1e40af; }
+        .difficulty-3 { background: #fef3c7; color: #92400e; }
+        .difficulty-4 { background: #fee2e2; color: #991b1b; }
+        .question-body { padding: 24px; }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+        .options-list {
+            list-style: none;
+            margin-bottom: 16px;
+        }
+        .options-list li {
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            background: var(--bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .options-list li.correct {
+            background: #dcfce7;
+            border-color: #86efac;
+            font-weight: 600;
+        }
+        .options-list li .opt-label {
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 28px;
+        }
+        .explanation-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .explanation-box strong {
+            color: #0369a1;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .review-section {
+            padding: 20px 24px;
+            background: #fafafa;
+            border-top: 1px solid var(--border);
+        }
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .rating-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .rating-group label .desc {
+            font-weight: 400;
+            text-transform: none;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            display: block;
+            margin-top: 2px;
+        }
+        .star-rating {
+            display: flex;
+            gap: 6px;
+        }
+        .star-rating button {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.15s;
+        }
+        .star-rating button:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .star-rating button.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        .star-rating button.saved {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        .notes-area {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 80px;
+        }
+        .notes-area:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .save-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.15s;
+        }
+        .save-btn:hover { background: var(--primary-dark); }
+        .save-btn:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .nav-links {
+            margin-bottom: 24px;
+        }
+        .nav-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .nav-links a:hover { text-decoration: underline; }
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="/">← All Topics</a> | <a href="/topic/{{ slug }}">View Topic Page</a> | <a href="/lab">Manager Lab</a>
+        </div>
+
+        <header>
+            <h1>📝 PM Review: {{ topic.name }}</h1>
+            <p>Rate each question on thought direction, playfulness, and guidance quality. Your feedback shapes how children learn.</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="value">{{ total_questions }}</div>
+                <div class="label">Total Questions</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">{{ stats.total_reviewed }}</div>
+                <div class="label">Reviewed</div>
+                <div class="progress-bar">
+                    <div class="fill" style="width: {{ (stats.total_reviewed / total_questions * 100) if total_questions else 0 }}%"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="value">{{ stats.avg_thought_direction or '—' }}</div>
+                <div class="label">Avg Thought Direction</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">{{ stats.avg_playfulness or '—' }}</div>
+                <div class="label">Avg Playfulness</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">{{ stats.avg_guidance_quality or '—' }}</div>
+                <div class="label">Avg Guidance</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">{{ stats.avg_curiosity_building or '—' }}</div>
+                <div class="label">Avg Curiosity</div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterQuestions('all')">All</button>
+            <button class="filter-btn" onclick="filterQuestions('unreviewed')">Unreviewed</button>
+            <button class="filter-btn" onclick="filterQuestions('reviewed')">Reviewed</button>
+            <button class="filter-btn" onclick="filterQuestions('difficulty-1')">Difficulty 1</button>
+            <button class="filter-btn" onclick="filterQuestions('difficulty-2')">Difficulty 2</button>
+            <button class="filter-btn" onclick="filterQuestions('difficulty-3')">Difficulty 3</button>
+            <button class="filter-btn" onclick="filterQuestions('difficulty-4')">Difficulty 4</button>
+        </div>
+
+        {% for q in questions %}
+        <div class="question-card {{ 'reviewed' if q.review else '' }}" data-index="{{ q.index }}" data-difficulty="{{ q.difficulty }}" data-reviewed="{{ 'true' if q.review else 'false' }}">
+            <div class="question-header">
+                <span class="question-number">Question {{ q.index + 1 }}</span>
+                <span class="difficulty-badge difficulty-{{ q.difficulty }}">Difficulty {{ q.difficulty }}</span>
+            </div>
+            <div class="question-body">
+                <div class="question-text">{{ q.question }}</div>
+                <ul class="options-list">
+                    {% for opt in q.options %}
+                    <li class="{{ 'correct' if (opt.startswith(q.correct_answer + ')') or opt.startswith(q.correct_answer + ')')) else '' }}">
+                        <span class="opt-label">{{ opt[0] }}</span>
+                        <span>{{ opt[3:] if opt|length > 3 else opt }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class="explanation-box">
+                    <strong>💡 Explanation</strong>
+                    {{ q.explanation }}
+                </div>
+            </div>
+            <div class="review-section">
+                <div class="review-grid">
+                    <div class="rating-group">
+                        <label>
+                            Thought Direction
+                            <span class="desc">Does it guide toward the right thinking?</span>
+                        </label>
+                        <div class="star-rating" data-metric="thought_direction" data-index="{{ q.index }}">
+                            {% for i in range(1, 6) %}
+                            <button class="{{ 'saved' if q.review and q.review.thought_direction == i else '' }}" onclick="rate(this, {{ q.index }}, 'thought_direction', {{ i }})">{{ i }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="rating-group">
+                        <label>
+                            Playfulness
+                            <span class="desc">Is it engaging and fun?</span>
+                        </label>
+                        <div class="star-rating" data-metric="playfulness" data-index="{{ q.index }}">
+                            {% for i in range(1, 6) %}
+                            <button class="{{ 'saved' if q.review and q.review.playfulness == i else '' }}" onclick="rate(this, {{ q.index }}, 'playfulness', {{ i }})">{{ i }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="rating-group">
+                        <label>
+                            Guidance Quality
+                            <span class="desc">How well does it scaffold learning?</span>
+                        </label>
+                        <div class="star-rating" data-metric="guidance_quality" data-index="{{ q.index }}">
+                            {% for i in range(1, 6) %}
+                            <button class="{{ 'saved' if q.review and q.review.guidance_quality == i else '' }}" onclick="rate(this, {{ q.index }}, 'guidance_quality', {{ i }})">{{ i }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="rating-group">
+                        <label>
+                            Curiosity Building
+                            <span class="desc">Does it spark wonder?</span>
+                        </label>
+                        <div class="star-rating" data-metric="curiosity_building" data-index="{{ q.index }}">
+                            {% for i in range(1, 6) %}
+                            <button class="{{ 'saved' if q.review and q.review.curiosity_building == i else '' }}" onclick="rate(this, {{ q.index }}, 'curiosity_building', {{ i }})">{{ i }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <textarea class="notes-area" data-index="{{ q.index }}" placeholder="Notes on this question (optional)...">{{ q.review.notes if q.review else '' }}</textarea>
+                <button class="save-btn" onclick="saveReview({{ q.index }})">Save Review</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="toast" id="toast">✅ Review saved</div>
+
+    <script>
+        const generationId = {{ generation_id }};
+        let pendingReviews = {};
+
+        function rate(btn, index, metric, value) {
+            const container = btn.parentElement;
+            container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if (!pendingReviews[index]) pendingReviews[index] = {};
+            pendingReviews[index][metric] = value;
+        }
+
+        async function saveReview(index) {
+            const data = pendingReviews[index] || {};
+            const notes = document.querySelector(`textarea[data-index="${index}"]`).value;
+            if (notes) data.notes = notes;
+            
+            const formData = new URLSearchParams();
+            formData.append('generation_id', generationId);
+            formData.append('question_index', index);
+            if (data.thought_direction) formData.append('thought_direction', data.thought_direction);
+            if (data.playfulness) formData.append('playfulness', data.playfulness);
+            if (data.guidance_quality) formData.append('guidance_quality', data.guidance_quality);
+            if (data.curiosity_building) formData.append('curiosity_building', data.curiosity_building);
+            if (data.notes) formData.append('notes', data.notes);
+
+            try {
+                const res = await fetch('/api/question-reviews', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData,
+                });
+                if (res.ok) {
+                    showToast('✅ Review saved');
+                    const card = document.querySelector(`.question-card[data-index="${index}"]`);
+                    card.classList.add('reviewed');
+                    card.dataset.reviewed = 'true';
+                    // Mark buttons as saved
+                    card.querySelectorAll('.star-rating button.active').forEach(b => {
+                        b.classList.remove('active');
+                        b.classList.add('saved');
+                    });
+                    delete pendingReviews[index];
+                } else {
+                    showToast('❌ Failed to save');
+                }
+            } catch (e) {
+                showToast('❌ Network error');
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function filterQuestions(filter) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.question-card').forEach(card => {
+                let show = true;
+                if (filter === 'unreviewed') show = card.dataset.reviewed === 'false';
+                else if (filter === 'reviewed') show = card.dataset.reviewed === 'true';
+                else if (filter.startsWith('difficulty-')) show = card.dataset.difficulty === filter.split('-')[1];
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from db.models import Prompt, Topic, Generation, Evaluation, GroundingLog
+from db.models import Prompt, Topic, Generation, Evaluation, GroundingLog, QuestionReview
 
 
 # ------------------------------------------------------------------
@@ -329,3 +329,94 @@ def get_generation_with_details(db: Session, generation_id: int) -> Optional[Gen
         .filter(Generation.id == generation_id)
         .first()
     )
+
+
+# ------------------------------------------------------------------
+# Question Reviews (PM Review System)
+# ------------------------------------------------------------------
+
+def create_or_update_question_review(
+    db: Session,
+    generation_id: int,
+    question_index: int,
+    thought_direction: Optional[int] = None,
+    playfulness: Optional[int] = None,
+    guidance_quality: Optional[int] = None,
+    curiosity_building: Optional[int] = None,
+    notes: Optional[str] = None,
+    reviewer_name: Optional[str] = "PM",
+) -> QuestionReview:
+    """Create or update a review for a specific question."""
+    existing = (
+        db.query(QuestionReview)
+        .filter(QuestionReview.generation_id == generation_id)
+        .filter(QuestionReview.question_index == question_index)
+        .first()
+    )
+    if existing:
+        if thought_direction is not None:
+            existing.thought_direction = thought_direction
+        if playfulness is not None:
+            existing.playfulness = playfulness
+        if guidance_quality is not None:
+            existing.guidance_quality = guidance_quality
+        if curiosity_building is not None:
+            existing.curiosity_building = curiosity_building
+        if notes is not None:
+            existing.notes = notes
+        if reviewer_name is not None:
+            existing.reviewer_name = reviewer_name
+        existing.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(existing)
+        return existing
+
+    review = QuestionReview(
+        generation_id=generation_id,
+        question_index=question_index,
+        thought_direction=thought_direction,
+        playfulness=playfulness,
+        guidance_quality=guidance_quality,
+        curiosity_building=curiosity_building,
+        notes=notes,
+        reviewer_name=reviewer_name,
+    )
+    db.add(review)
+    db.commit()
+    db.refresh(review)
+    return review
+
+
+def get_question_review(db: Session, generation_id: int, question_index: int) -> Optional[QuestionReview]:
+    return (
+        db.query(QuestionReview)
+        .filter(QuestionReview.generation_id == generation_id)
+        .filter(QuestionReview.question_index == question_index)
+        .first()
+    )
+
+
+def list_question_reviews(db: Session, generation_id: Optional[int] = None) -> List[QuestionReview]:
+    q = db.query(QuestionReview)
+    if generation_id:
+        q = q.filter(QuestionReview.generation_id == generation_id)
+    return q.order_by(QuestionReview.question_index.asc()).all()
+
+
+def get_question_review_stats(db: Session, generation_id: int) -> dict:
+    """Return aggregate stats for all reviews on a generation."""
+    reviews = list_question_reviews(db, generation_id)
+    if not reviews:
+        return {"total_reviewed": 0, "avg_thought_direction": None, "avg_playfulness": None}
+    
+    def avg(field):
+        vals = [getattr(r, field) for r in reviews if getattr(r, field) is not None]
+        return round(sum(vals) / len(vals), 2) if vals else None
+    
+    return {
+        "total_reviewed": len(reviews),
+        "avg_thought_direction": avg("thought_direction"),
+        "avg_playfulness": avg("playfulness"),
+        "avg_guidance_quality": avg("guidance_quality"),
+        "avg_curiosity_building": avg("curiosity_building"),
+    }

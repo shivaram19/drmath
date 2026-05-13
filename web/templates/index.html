@@ -53,19 +53,22 @@
             {% if topics %}
             <div class="topic-grid">
                 {% for t in topics %}
-                <a href="/topic/{{ t.slug }}" class="topic-card">
-                    <h3>{{ t.name }}</h3>
-                    <div class="meta">
-                        <span>{{ t.total_questions }} questions</span>
-                        <span class="prompt-badge">{{ t.prompt_name }}</span>
-                    </div>
-                    <div class="diff-badges">
-                        <span class="badge d1">{{ t.difficulty.get('1',0) }}</span>
-                        <span class="badge d2">{{ t.difficulty.get('2',0) }}</span>
-                        <span class="badge d3">{{ t.difficulty.get('3',0) }}</span>
-                        <span class="badge d4">{{ t.difficulty.get('4',0) }}</span>
-                    </div>
-                </a>
+                <div class="topic-card">
+                    <a href="/topic/{{ t.slug }}" class="topic-link">
+                        <h3>{{ t.name }}</h3>
+                        <div class="meta">
+                            <span>{{ t.total_questions }} questions</span>
+                            <span class="prompt-badge">{{ t.prompt_name }}</span>
+                        </div>
+                        <div class="diff-badges">
+                            <span class="badge d1">{{ t.difficulty.get('1',0) }}</span>
+                            <span class="badge d2">{{ t.difficulty.get('2',0) }}</span>
+                            <span class="badge d3">{{ t.difficulty.get('3',0) }}</span>
+                            <span class="badge d4">{{ t.difficulty.get('4',0) }}</span>
+                        </div>
+                    </a>
+                    <a href="/review/{{ t.slug }}" class="review-link" title="PM Review">📝 Review</a>
+                </div>
                 {% endfor %}
             </div>
             {% else %}

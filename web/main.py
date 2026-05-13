@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from pipeline.config import OUTPUT_DIR, DATA_DIR
 from pipeline.run import run_pipeline
 from pipeline.db import list_prompts, get_prompt, save_prompt, delete_prompt, list_generations, _session
+from db.crud import create_or_update_question_review, get_question_review, list_question_reviews, get_question_review_stats
 
 # New SQLite database
 from db.database import get_db as get_db_session
@@ -342,6 +343,134 @@ def api_list_evaluations(generation_id: Optional[int] = None, db: Session = Depe
         }
         for ev in evaluations
     ]
+
+
+# ------------------------------------------------------------------
+# Question Reviews (PM Review System)
+# ------------------------------------------------------------------
+
+@app.get("/review/{slug}", response_class=HTMLResponse)
+def review_page(request: Request, slug: str, db: Session = Depends(get_db_session)):
+    """PM review page: see all questions for a topic and rate them."""
+    topic_obj = crud.get_topic_by_slug(db, slug)
+    if not topic_obj:
+        return templates.TemplateResponse(request, "404.html", {}, status_code=404)
+    
+    # Get latest generation
+    latest_gen = (
+        db.query(Generation)
+        .filter(Generation.topic_id == topic_obj.id)
+        .order_by(Generation.created_at.desc())
+        .first()
+    )
+    if not latest_gen or not latest_gen.questions_json:
+        return templates.TemplateResponse(request, "404.html", {"message": "No questions generated yet"}, status_code=404)
+    
+    questions = json.loads(latest_gen.questions_json)
+    reviews = {r.question_index: r for r in latest_gen.question_reviews}
+    stats = get_question_review_stats(db, latest_gen.id)
+    
+    # Enrich questions with review data
+    enriched = []
+    for i, q in enumerate(questions):
+        r = reviews.get(i)
+        enriched.append({
+            "index": i,
+            "question": q.get("question", ""),
+            "options": q.get("options", []),
+            "correct_answer": q.get("correct_answer", ""),
+            "explanation": q.get("explanation", ""),
+            "difficulty": q.get("difficulty", 0),
+            "review": {
+                "thought_direction": r.thought_direction if r else None,
+                "playfulness": r.playfulness if r else None,
+                "guidance_quality": r.guidance_quality if r else None,
+                "curiosity_building": r.curiosity_building if r else None,
+                "notes": r.notes if r else None,
+            } if r else None,
+        })
+    
+    return templates.TemplateResponse(request, "review.html", {
+        "topic": topic_obj,
+        "slug": slug,
+        "generation_id": latest_gen.id,
+        "questions": enriched,
+        "stats": stats,
+        "total_questions": len(questions),
+    })
+
+
+@app.post("/api/question-reviews")
+def api_create_question_review(
+    generation_id: int = Form(...),
+    question_index: int = Form(...),
+    thought_direction: Optional[int] = Form(None),
+    playfulness: Optional[int] = Form(None),
+    guidance_quality: Optional[int] = Form(None),
+    curiosity_building: Optional[int] = Form(None),
+    notes: Optional[str] = Form(None),
+    reviewer_name: Optional[str] = Form("PM"),
+    db: Session = Depends(get_db_session),
+):
+    """Submit or update a review for a specific question."""
+    # Validate ratings are 1-5
+    for field, val in [
+        ("thought_direction", thought_direction),
+        ("playfulness", playfulness),
+        ("guidance_quality", guidance_quality),
+        ("curiosity_building", curiosity_building),
+    ]:
+        if val is not None and not (1 <= val <= 5):
+            return JSONResponse({"error": f"{field} must be 1-5"}, status_code=400)
+    
+    review = create_or_update_question_review(
+        db, generation_id, question_index,
+        thought_direction=thought_direction,
+        playfulness=playfulness,
+        guidance_quality=guidance_quality,
+        curiosity_building=curiosity_building,
+        notes=notes,
+        reviewer_name=reviewer_name,
+    )
+    return {
+        "id": review.id,
+        "generation_id": review.generation_id,
+        "question_index": review.question_index,
+        "thought_direction": review.thought_direction,
+        "playfulness": review.playfulness,
+        "guidance_quality": review.guidance_quality,
+        "curiosity_building": review.curiosity_building,
+        "notes": review.notes,
+        "reviewer_name": review.reviewer_name,
+        "created_at": review.created_at.isoformat() if review.created_at else None,
+        "updated_at": review.updated_at.isoformat() if review.updated_at else None,
+    }
+
+
+@app.get("/api/question-reviews")
+def api_list_question_reviews(generation_id: int, db: Session = Depends(get_db_session)):
+    """List all reviews for a generation."""
+    reviews = list_question_reviews(db, generation_id=generation_id)
+    return [
+        {
+            "id": r.id,
+            "question_index": r.question_index,
+            "thought_direction": r.thought_direction,
+            "playfulness": r.playfulness,
+            "guidance_quality": r.guidance_quality,
+            "curiosity_building": r.curiosity_building,
+            "notes": r.notes,
+            "reviewer_name": r.reviewer_name,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reviews
+    ]
+
+
+@app.get("/api/question-reviews/stats/{generation_id}")
+def api_question_review_stats(generation_id: int, db: Session = Depends(get_db_session)):
+    """Get aggregate review stats for a generation."""
+    return get_question_review_stats(db, generation_id)
 
 
 # ------------------------------------------------------------------

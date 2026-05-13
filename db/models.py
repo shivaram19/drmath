@@ -61,6 +61,7 @@ class Generation(Base):
     topic: Mapped["Topic"] = relationship("Topic", back_populates="generations")
     prompt: Mapped[Optional["Prompt"]] = relationship("Prompt", back_populates="generations")
     evaluations: Mapped[List["Evaluation"]] = relationship("Evaluation", back_populates="generation", cascade="all, delete-orphan")
+    question_reviews: Mapped[List["QuestionReview"]] = relationship("QuestionReview", back_populates="generation", cascade="all, delete-orphan")
     grounding_logs: Mapped[List["GroundingLog"]] = relationship("GroundingLog", back_populates="generation", cascade="all, delete-orphan")
 
     @property
@@ -101,6 +102,27 @@ class Evaluation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     generation: Mapped["Generation"] = relationship("Generation", back_populates="evaluations")
+
+
+class QuestionReview(Base):
+    __tablename__ = "question_reviews"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    generation_id: Mapped[int] = mapped_column(Integer, ForeignKey("generations.id"), nullable=False)
+    question_index: Mapped[int] = mapped_column(Integer, nullable=False)  # 0-based index in questions array
+    
+    # Pedagogical quality metrics (1-5 scale)
+    thought_direction: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Guides toward right thinking
+    playfulness: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Engaging, curiosity-building
+    guidance_quality: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Scaffolding quality
+    curiosity_building: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Sparks wonder
+    
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    reviewer_name: Mapped[Optional[str]] = mapped_column(String, nullable=True, default="PM")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    generation: Mapped["Generation"] = relationship("Generation", back_populates="question_reviews")
 
 
 class GroundingLog(Base):
