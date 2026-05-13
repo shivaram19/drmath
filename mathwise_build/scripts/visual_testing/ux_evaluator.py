@@ -8,7 +8,7 @@ citations, and remediation guidance.
 
 Usage:
     cd mathwise_build
-    python3 scripts/ux_evaluator.py --screenshots screenshots/YYYY-MM-DD_HH-MM-SS/
+    python3 scripts/visual_testing/ux_evaluator.py --screenshots screenshots/YYYY-MM-DD_HH-MM-SS/
 
 Output:
     reports/YYYY-MM-DD_HH-MM-SS/<screen_name>/ux_report.md

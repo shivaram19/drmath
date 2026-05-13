@@ -8,7 +8,7 @@ comparison matrix.
 
 Usage:
     cd mathwise_build
-    python3 scripts/report_builder.py --reports reports/YYYY-MM-DD_HH-MM-SS/
+    python3 scripts/visual_testing/report_builder.py --reports reports/YYYY-MM-DD_HH-MM-SS/
 
 Output:
     reports/YYYY-MM-DD_HH-MM-SS/summary.md

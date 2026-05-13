@@ -7,7 +7,7 @@ Produces per-screen audit reports with pass/fail verdicts.
 
 Usage:
     cd mathwise_build
-    python3 scripts/screenshot_auditor.py --screenshots screenshots/YYYY-MM-DD_HH-MM-SS/
+    python3 scripts/visual_testing/screenshot_auditor.py --screenshots screenshots/YYYY-MM-DD_HH-MM-SS/
 
 Output:
     reports/YYYY-MM-DD_HH-MM-SS/<screen_name>/audit_report.md
