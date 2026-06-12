@@ -26,8 +26,20 @@
 19. Origenes et al. (2025). Effects of Gamification Strategies on Learning Mathematics: A Meta-Analysis. *Multi Research Journal*.
 20. Steenbergen-Hu, S., & Cooper, H. (2014). A Meta-Analysis of the Effectiveness of Intelligent Tutoring Systems on College Students' Academic Learning. *Journal of Educational Psychology*.
 
+## Educational Data Models & Knowledge Tracing
+
+21. Chaudhry, R., et al. (2018). Modeling Hint-Taking Behavior and Knowledge State of Students. *Proceedings of the 11th International Conference on Educational Data Mining (EDM 2018)*. https://educationaldatamining.org/files/conferences/EDM2018/papers/EDM2018_paper_100.pdf
+22. Gowda, S. M., et al. (2011). Ensembling Student Knowledge Models in ASSISTments. *Proceedings of the 17th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD 2011)*. https://pslcdatashop.web.cmu.edu/KDD2011/papers/C-kddined2011.pdf
+23. IEEE DataPort. (2026). ASSISTments Dataset 2009-2010. https://ieee-dataport.org/documents/assistments-dataset-2009-2010
+24. Settles, B., & Meeder, B. (2016). A Trainable Spaced Repetition Model for Language Learning. *Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (ACL 2016)*. https://www.cs.cmu.edu/~bsr/SettlesMeeder_ACL_2016.pdf
+
+## Platform Engineering References
+
+25. edX Engineering Blog. (2018). XBlock Lessons: Plugin Performance and Grading. https://engineering.edx.org/xblock-lessons-plugin-performance-and-grading-2f85a1d6fb2a
+26. edX Research Guide. (2021). User Info and Learner Progress Data — SQL Schema. https://docs.openedx.org/en/ulmo/developers/references/internal_data_formats/data_references/sql_schema.html
+
 ## LLM Evaluation & Content Generation
 
-21. EQGBench — From Answers to Questions: Evaluating LLMs' Educational Question Generation. ACL Anthology Findings, 2025.
-22. OpenLearnLM Benchmark: A Unified Framework for Evaluating Knowledge, Skill, and Attitude in Educational Large Language Models. arXiv:2601.13882, 2025.
-23. Automated Educational Question Generation at Different Bloom's Skill Levels using Large Language Models: Strategies and Evaluation. arXiv:2408.04394, 2024.
+27. EQGBench — From Answers to Questions: Evaluating LLMs' Educational Question Generation. ACL Anthology Findings, 2025.
+28. OpenLearnLM Benchmark: A Unified Framework for Evaluating Knowledge, Skill, and Attitude in Educational Large Language Models. arXiv:2601.13882, 2025.
+29. Automated Educational Question Generation at Different Bloom's Skill Levels using Large Language Models: Strategies and Evaluation. arXiv:2408.04394, 2024.
