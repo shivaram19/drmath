@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dr. Math — Adaptive AI Math Learning for Indian Class VII Students</title>
+  <meta name="description" content="Dr. Math is a research-backed adaptive math learning platform that generates curriculum-aligned questions via AI and adapts to each child's thinking." />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent2: #a78bfa;
+      --success: #34d399;
+      --warn: #fbbf24;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 1.25rem; }
+    header {
+      padding: 4rem 0 2.5rem;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(56,189,248,0.08) 0%, rgba(15,23,42,0) 100%);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(56,189,248,0.15);
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    h1 { font-size: 2.6rem; margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+    h2 { font-size: 1.6rem; margin: 2.5rem 0 1rem; color: var(--accent); }
+    h3 { font-size: 1.2rem; margin: 1.5rem 0 0.5rem; color: var(--text); }
+    .subtitle { font-size: 1.15rem; color: var(--muted); max-width: 640px; margin: 0 auto; }
+    .cta {
+      margin-top: 1.75rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.6rem;
+      border-radius: 10px;
+      font-weight: 700;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); text-decoration: none; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0f172a;
+      box-shadow: 0 4px 20px rgba(56,189,248,0.3);
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid #334155;
+    }
+    section { padding: 2rem 0; }
+    .card {
+      background: var(--card);
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .metric {
+      background: var(--card);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .metric .value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+    }
+    .metric .label { font-size: 0.85rem; color: var(--muted); }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #334155;
+      color: var(--muted);
+      margin-right: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+    .tag.accent { background: rgba(56,189,248,0.15); color: var(--accent); }
+    ul { padding-left: 1.25rem; }
+    li { margin-bottom: 0.5rem; }
+    .roadmap {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .roadmap-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .roadmap-item .status {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .status.done { background: var(--success); }
+    .status.todo { background: #334155; border: 2px solid #475569; }
+    footer {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--muted);
+      border-top: 1px solid #334155;
+      margin-top: 2rem;
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 1.9rem; }
+      h2 { font-size: 1.3rem; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="badge">Engineering Portfolio Case Study</div>
+      <h1>Dr. Math</h1>
+      <p class="subtitle">An adaptive, AI-powered math learning platform for Indian Class VII students. Every decision is backed by peer-reviewed learning science.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://drmath.trelolabs.com" target="_blank" rel="noopener">🚀 Live Demo</a>
+        <a class="btn btn-secondary" href="https://github.com/shivaram19/drmath" target="_blank" rel="noopener">💻 GitHub</a>
+        <a class="btn btn-secondary" href="case-study.md">📄 Read Case Study</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>The Problem</h2>
+      <div class="card">
+        <p>Most math apps for Indian middle-schoolers fall into two traps:</p>
+        <ul style="margin-top: 0.75rem;">
+          <li><strong>Rigid difficulty levels</strong> force kids into fixed "easy/medium/hard" buckets that ignore their actual thinking.</li>
+          <li><strong>Generic worksheets</strong> generate endless practice without understanding <em>why</em> a child struggles.</li>
+        </ul>
+        <p style="margin-top: 0.75rem;">The result: children get bored or anxious, and never develop the reasoning flexibility that real math learning requires.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>The Product Vision</h2>
+      <div class="card">
+        <p>Build an adaptive math companion that reads how a child's brain is evolving — not just whether they got the answer right — and continuously selects the next question, hint, or explanation to move them into their Zone of Proximal Development.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Key Outcomes</h2>
+      <div class="metrics">
+        <div class="metric"><span class="value">10</span><span class="label">CBSE Class VII Topics</span></div>
+        <div class="metric"><span class="value">4</span><span class="label">Pedagogical Dimensions</span></div>
+        <div class="metric"><span class="value">~1,680</span><span class="label">AI-Generated Questions</span></div>
+        <div class="metric"><span class="value">0</span><span class="label">Invalid Questions</span></div>
+        <div class="metric"><span class="value">17+</span><span class="label">ADRs Written</span></div>
+        <div class="metric"><span class="value">Live</span><span class="label">Docker + HTTPS Deploy</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Pedagogical Dimensions</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>🧮 Default (Anti-Gravity)</h3>
+          <p>Clear scaffolding and progressive difficulty via Rosenshine's Principles of Instruction.</p>
+        </div>
+        <div class="card">
+          <h3>📖 Cultural Storyteller</h3>
+          <p>Math embedded in Indian cultural contexts using Situated Learning theory.</p>
+        </div>
+        <div class="card">
+          <h3>👁️ Visual-First Thinker</h3>
+          <p>Diagrams, number lines, and spatial reasoning based on Bruner's CPA approach.</p>
+        </div>
+        <div class="card">
+          <h3>🎯 ZPD Adaptive Tutor</h3>
+          <p>Just-harder-than-comfortable problems with fading support via Vygotsky's ZPD.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Architecture</h2>
+      <div class="card">
+        <pre style="background:#0f172a; padding:1rem; border-radius:8px; overflow-x:auto; font-size:0.85rem; border:1px solid #334155;">
+Flutter Client / Web UI
+        │ HTTPS
+        ▼
+   FastAPI Backend
+   • Adaptive selection
+   • Session / attempt / hint logging
+   • Mark state updates
+   • Content pipeline API
+        │
+   ┌────┴────┐
+   ▼         ▼
+PostgreSQL   Redis
+(persistent) (sessions, cache, SR queue)
+   │
+   ▼
+Content Pipeline (Python)
+• IXL + MathIsFun scraping
+• LLM adaptation & generation
+• Prompt versioning & grounding</pre>
+      </div>
+    </section>
+
+    <section>
+      <h2>Engineering Rigor</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Research-First Covenant</h3>
+          <p>Decompose → BFS → DFS → ADR → Code. Every architectural decision is documented and cited.</p>
+        </div>
+        <div class="card">
+          <h3>Council of Ten Consensus</h3>
+          <p>Non-trivial decisions are deliberated across 10 expert personas before code is written.</p>
+        </div>
+        <div class="card">
+          <h3>Deterministic AI Rails</h3>
+          <p>LLM outputs are constrained by structured generation, prompt versioning, and grounding logs.</p>
+        </div>
+        <div class="card">
+          <h3>Privacy by Default</h3>
+          <p>Pseudonymous student IDs, minimal PII, encrypted state at rest, child-safety-first design.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tech Stack</h2>
+      <div class="card">
+        <p>
+          <span class="tag accent">Python 3.11</span>
+          <span class="tag accent">FastAPI</span>
+          <span class="tag accent">SQLAlchemy 2.0</span>
+          <span class="tag accent">PostgreSQL</span>
+          <span class="tag accent">Redis</span>
+          <span class="tag accent">Docker</span>
+          <span class="tag accent">nginx</span>
+          <span class="tag accent">OpenAI GPT-4o-mini</span>
+          <span class="tag accent">Flutter</span>
+          <span class="tag accent">Obscura Headless Browser</span>
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Skills Demonstrated</h2>
+      <div class="card">
+        <ul>
+          <li><strong>Product Architecture:</strong> Translated a vague vision into a concrete state machine and data model.</li>
+          <li><strong>AI/LLM Engineering:</strong> Built a deterministic pipeline around a non-deterministic model.</li>
+          <li><strong>Backend Engineering:</strong> Designed schemas for adaptive learning, spaced repetition, and game integration.</li>
+          <li><strong>Research Synthesis:</strong> Converted learning-science papers into engineering specs and evaluation rubrics.</li>
+          <li><strong>DevOps:</strong> Dockerized, deployed, and secured with nginx + HTTPS.</li>
+          <li><strong>Ethical Technology:</strong> Designed for child privacy by default.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Roadmap</h2>
+      <div class="card">
+        <div class="roadmap">
+          <div class="roadmap-item"><div class="status done"></div><span>Research-backed content pipeline</span></div>
+          <div class="roadmap-item"><div class="status done"></div><span>PM review system & batch generation</span></div>
+          <div class="roadmap-item"><div class="status todo"></div><span>Student authentication & pseudonymous identity</span></div>
+          <div class="roadmap-item"><div class="status todo"></div><span>Adaptive question runtime</span></div>
+          <div class="roadmap-item"><div class="status todo"></div><span>Spaced repetition engine</span></div>
+          <div class="roadmap-item"><div class="status todo"></div><span>Parent / teacher progress dashboard</span></div>
+          <div class="roadmap-item"><div class="status todo"></div><span>Math mini-games integrated with the Mark system</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What I Learned</h2>
+      <div class="card">
+        <ul>
+          <li><strong>AI is not the product; pedagogy is.</strong> The best technical demo fails if it does not serve how children actually learn.</li>
+          <li><strong>Deterministic rails matter for kids.</strong> LLMs must be constrained by structured output and explicit taxonomies.</li>
+          <li><strong>Data models outlive code.</strong> Separating events from derived state pays off across every future feature.</li>
+          <li><strong>Research-first engineering is slower but safer.</strong> Writing ADRs before code prevented expensive pivots.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Built by <strong>Shivaram Goud</strong></p>
+      <p>
+        <a href="https://github.com/shivaram19/drmath" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="https://drmath.trelolabs.com" target="_blank" rel="noopener">Live Demo</a> ·
+        <a href="case-study.md">Case Study</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
