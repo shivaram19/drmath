@@ -98,7 +98,17 @@ def _list_topics() -> List[Dict[str, Any]]:
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
+    """Marketing homepage for students, parents, and educators."""
     return templates.TemplateResponse(request, "index.html", {
+        "topics": _list_topics(),
+        "prompts": list_prompts(),
+    })
+
+
+@app.get("/manager", response_class=HTMLResponse)
+def manager_page(request: Request):
+    """Internal manager dashboard for content generation and review."""
+    return templates.TemplateResponse(request, "manager.html", {
         "topics": _list_topics(),
         "prompts": list_prompts(),
     })
