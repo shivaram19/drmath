@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/attempt.dart';
 import '../models/capability.dart';
+import '../services/nursing_api_exception.dart';
 import '../services/nursing_api_service.dart';
 import '../services/nursing_storage_service.dart';
 import '../widgets/capability_bar.dart';
@@ -25,6 +26,7 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
   bool _loading = true;
   String? _error;
   CapabilityAnalysis? _analysis;
+  bool _pendingSync = false;
 
   @override
   void initState() {
@@ -33,7 +35,24 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
   }
 
   Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+      _pendingSync = false;
+    });
+
     try {
+      // If a previous session was queued while offline, try to sync it now.
+      final pending = await _storage.loadPendingAnalysis();
+      if (pending.isNotEmpty) {
+        try {
+          await _api.analyzeAttempts(pending);
+          await _storage.clearPendingAnalysis();
+        } on NursingApiException catch (_) {
+          // Still offline; leave the previous queue intact.
+        }
+      }
+
       final analysis = await _api.analyzeAttempts(widget.attempts);
       await _storage.saveCapabilityMap({
         'subject_capabilities': analysis.subjectCapabilities
@@ -57,9 +76,49 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
           _loading = false;
         });
       }
+    } on NursingApiException catch (e) {
+      if (e.isOffline) {
+        await _storage.queuePendingAnalysis(widget.attempts);
+        if (mounted) {
+          setState(() {
+            _analysis = _localAnalysisFromAttempts(widget.attempts);
+            _pendingSync = true;
+            _loading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _error = e.message);
+      }
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     }
+  }
+
+  /// Builds a simple local capability analysis when the backend is offline.
+  CapabilityAnalysis _localAnalysisFromAttempts(List<Attempt> attempts) {
+    final byTopic = <String, List<Attempt>>{};
+    for (final attempt in attempts) {
+      byTopic.putIfAbsent(attempt.topicId, () => []).add(attempt);
+    }
+
+    final topicCapabilities = byTopic.entries.map((entry) {
+      final list = entry.value;
+      final correct = list.where((a) => a.isCorrect).length;
+      return Capability(
+        accuracy: correct / list.length,
+        speedScore: 0.5,
+        confidenceGap: 0.0,
+        consistencyScore: 0.5,
+        priorityScore: 1 - (correct / list.length),
+        topicId: entry.key,
+      );
+    }).toList();
+
+    return CapabilityAnalysis(
+      subjectCapabilities: const [],
+      topicCapabilities: topicCapabilities,
+      dimensionCapabilities: const [],
+    );
   }
 
   @override
@@ -91,6 +150,26 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
                         ),
                       ),
                     ),
+                    if (_pendingSync) ...[
+                      const SizedBox(height: 12),
+                      Card(
+                        color: Colors.orange.shade50,
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Icon(Icons.cloud_off, size: 18),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'You are offline. Weak-area analysis will sync when you reconnect.',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Text(
                       'Weak Areas',
