@@ -77,6 +77,7 @@ Add a self-contained `/nursing` module to the Dr. Math FastAPI application with 
 - 2026-05-13: `JsonFileQuestionRepository` added with filtering by subject, topic, cognitive level, context, difficulty, and concept tag.
 - 2026-05-13: Adaptive queue service added for accuracy/speed/confidence/consistency scoring.
 - 2026-05-13: `web/nursing/README.md` added documenting package conventions.
+- 2026-05-13: `web/services/nursing_service.py` added with diagnostic, practice, mock, capability, PDF export, and report services.
 
 ## References
 
