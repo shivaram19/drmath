@@ -35,25 +35,28 @@ class GamesScreen extends StatelessWidget {
         children: [
           _buildStatsRow(context),
           const SizedBox(height: 32),
-          // Header: Wrap uses available constraints natively — no thresholds,
-          // no font scaling surprises. When width is sufficient, both texts
-          // share a row; when constrained, the subtitle wraps below.
-          // Research: Flutter Docs (2026) — Wrap is constraint-native;
-          // FittedBox overrides textScaleFactor and can produce illegibly
-          // small fonts on narrow devices (WCAG 2.2 minimum text size).
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Play & Learn',
-                style: Theme.of(context).textTheme.displayMedium,
+              Expanded(
+                child: Text(
+                  'Play & Learn',
+                  style: Theme.of(context).textTheme.displayMedium,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
-              Text(
-                'Unlocked by your effort',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w500,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Unlocked by your effort',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.end,
                 ),
               ),
             ],

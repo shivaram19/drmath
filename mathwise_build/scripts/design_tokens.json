@@ -1,0 +1,82 @@
+{
+  "name": "MathWise Design Tokens",
+  "version": "1.0.0",
+  "source": "lib/core/constants/app_colors.dart, lib/core/constants/app_theme.dart, lib/shared/theme/pedagogy_tokens.dart",
+  "colors": {
+    "primary": "#2C5F9F",
+    "onPrimary": "#FFFFFF",
+    "primaryContainer": "#6C9ADE",
+    "onPrimaryContainer": "#003160",
+    "primaryFixed": "#D5E3FF",
+    "primaryFixedDim": "#A7C8FF",
+    "secondary": "#176B51",
+    "onSecondary": "#FFFFFF",
+    "secondaryContainer": "#A2EFCF",
+    "onSecondaryContainer": "#1D6F56",
+    "tertiary": "#6E5D00",
+    "onTertiary": "#FFFFFF",
+    "tertiaryContainer": "#C1AB47",
+    "onTertiaryContainer": "#4B3F00",
+    "tertiaryFixed": "#FBE278",
+    "onTertiaryFixed": "#221B00",
+    "secondaryFixedDim": "#89D6B7",
+    "error": "#BA1A1A",
+    "errorContainer": "#FFDAD6",
+    "onErrorContainer": "#93000A",
+    "surface": "#F8F9FF",
+    "onSurface": "#0B1C30",
+    "surfaceVariant": "#D3E4FE",
+    "onSurfaceVariant": "#424750",
+    "surfaceContainer": "#E5EEFF",
+    "surfaceContainerLow": "#EFF4FF",
+    "surfaceContainerLowest": "#FFFFFF",
+    "surfaceContainerHigh": "#DCE9FF",
+    "surfaceContainerHighest": "#D3E4FE",
+    "surfaceDim": "#CBDBF5",
+    "background": "#F8F9FF",
+    "onBackground": "#0B1C30",
+    "outline": "#737781",
+    "outlineVariant": "#C2C6D2",
+    "inverseSurface": "#213145",
+    "inverseOnSurface": "#EAF1FF"
+  },
+  "pedagogy": {
+    "successGreen": "#4CAF50",
+    "hintAmber": "#FF9800",
+    "errorRose": "#E91E63",
+    "minTouchTarget": 48,
+    "cardRadius": 16,
+    "buttonRadius": 12
+  },
+  "typography": {
+    "families": {
+      "display": "Lexend",
+      "body": "Plus Jakarta Sans"
+    },
+    "sizes": {
+      "displayLarge": 40,
+      "displayMedium": 32,
+      "displaySmall": 24,
+      "headlineMedium": 18,
+      "bodyLarge": 16,
+      "bodyMedium": 14,
+      "labelLarge": 14,
+      "labelMedium": 12
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32,
+    "touchTarget": 48
+  },
+  "viewports": [
+    {"name": "small_phone", "width": 375, "height": 812, "device": "iPhone SE"},
+    {"name": "standard_phone", "width": 390, "height": 844, "device": "iPhone 14 Pro"},
+    {"name": "large_phone", "width": 430, "height": 932, "device": "iPhone 15 Pro Max"},
+    {"name": "tablet_portrait", "width": 768, "height": 1024, "device": "iPad Mini"},
+    {"name": "tablet_landscape", "width": 1024, "height": 768, "device": "iPad"}
+  ]
+}
