@@ -75,6 +75,7 @@ Add a self-contained `/nursing` module to the Dr. Math FastAPI application with 
 
 - 2026-05-13: Domain models and constants added with `cognitive_level`, `context`, and `format` dimension tags.
 - 2026-05-13: `JsonFileQuestionRepository` added with filtering by subject, topic, cognitive level, context, difficulty, and concept tag.
+- 2026-05-13: Adaptive queue service added for accuracy/speed/confidence/consistency scoring.
 
 ## References
 
