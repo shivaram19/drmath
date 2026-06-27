@@ -24,9 +24,10 @@ Add a self-contained `/nursing` module to the Dr. Math FastAPI application with 
 2. **Target exam pattern:** MHSRB Telangana Staff Nurse / Nursing Officer (80 MCQs, 80 marks, 60 min, English only, no negative marking), with syllabus expansion for TSPSC if needed later.
 
 3. **Content strategy:**
-   - Phase 1: 100 hand-curated, reviewed MCQs sourced from the INC GNM syllabus.
+   - Phase 1: 100+ hand-curated, reviewed MCQs sourced from the INC GNM syllabus.
    - Phase 2: LLM-generated questions with mandatory review before promotion to verified.
-   - Every question carries `verification_status`, `source`, and `concept_tag`.
+   - Every question carries `verification_status`, `source`, `concept_tag`, `verified_by`, and `last_reviewed`.
+   - Questions are tagged with `cognitive_level` (remember/understand/apply/analyze) and `context` (theory/scenario/calculation) to support topic-wise practice in different dimensions.
 
 4. **Adaptive assessment:**
    - Multi-dimensional diagnostic measuring accuracy, speed, confidence, and consistency.
@@ -75,5 +76,7 @@ Add a self-contained `/nursing` module to the Dr. Math FastAPI application with 
 - `docs/research/bfs/bfs-06-telangana-staff-nurse-landscape.md`
 - `docs/research/dfs/dfs-05-nursing-diagnostic-model.md`
 - `docs/research/dfs/dfs-06-nursing-content-verification.md`
+- `docs/research/dfs/dfs-08-nursing-question-dimensions.md`
+- `docs/research/bfs/bfs-09-phase-0-granular-plan.md`
 - `docs/decisions/DECISION-20260513-004-council-nursing-module.md`
 - Indian Nursing Council, *GNM Syllabus*, 2015. https://www.iminursing.in/gnm-syllabus.pdf
