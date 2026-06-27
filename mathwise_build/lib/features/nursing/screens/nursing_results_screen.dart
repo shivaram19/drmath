@@ -4,6 +4,7 @@ import '../models/attempt.dart';
 import '../models/capability.dart';
 import '../services/nursing_api_service.dart';
 import '../services/nursing_storage_service.dart';
+import '../widgets/capability_bar.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/nursing_app_bar.dart';
 import 'nursing_quiz_screen.dart';
@@ -97,13 +98,10 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
                     ),
                     const SizedBox(height: 8),
                     ...?_analysis?.topicCapabilities.take(5).map(
-                          (c) => Card(
-                            child: ListTile(
-                              title: Text(c.topicId?.replaceAll('_', ' ') ?? ''),
-                              subtitle: Text(
-                                'Accuracy: ${(c.accuracy * 100).round()}%',
-                              ),
-                            ),
+                          (c) => CapabilityBar(
+                            label: c.topicId?.replaceAll('_', ' ') ?? '',
+                            value: c.accuracy,
+                            color: c.accuracy < 0.5 ? Colors.red : Colors.orange,
                           ),
                         ),
                     const SizedBox(height: 24),

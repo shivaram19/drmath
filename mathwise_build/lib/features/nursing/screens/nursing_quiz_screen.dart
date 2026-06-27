@@ -7,6 +7,8 @@ import '../services/nursing_api_service.dart';
 import '../services/nursing_storage_service.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/nursing_app_bar.dart';
+import '../widgets/question_card.dart';
+import '../widgets/timer_widget.dart';
 import 'nursing_results_screen.dart';
 
 enum QuizMode { diagnostic, mock, practice }
@@ -109,12 +111,6 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
     }
   }
 
-  String _formatTime(int seconds) {
-    final m = (seconds ~/ 60).toString().padLeft(2, '0');
-    final s = (seconds % 60).toString().padLeft(2, '0');
-    return '$m:$s';
-  }
-
   @override
   Widget build(BuildContext context) {
     return PopScope<Object?>(
@@ -124,21 +120,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
         appBar: NursingAppBar(
           title: _title,
           actions: widget.mode == QuizMode.mock
-              ? [
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Text(
-                        _formatTime(_remainingSeconds),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ),
-                  ),
-                ]
+              ? [TimerWidget(seconds: _remainingSeconds)]
               : null,
         ),
         body: _loading
@@ -165,7 +147,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
 
   Widget _buildBody() {
     final q = _questions[_currentIndex];
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,26 +158,16 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
             value: (_currentIndex + 1) / _questions.length,
           ),
           const SizedBox(height: 16),
-          Text(
-            q.question,
-            style: Theme.of(context).textTheme.titleMedium,
+          QuestionCard(
+            question: q,
+            questionNumber: _currentIndex + 1,
+            totalQuestions: _questions.length,
+            selectedAnswer: _selectedAnswers[_currentIndex],
+            onSelect: (value) => setState(
+              () => _selectedAnswers[_currentIndex] = value,
+            ),
           ),
-          const SizedBox(height: 16),
-          ...q.options.map((opt) => _buildOption(opt)),
         ],
-      ),
-    );
-  }
-
-  Widget _buildOption(String option) {
-    final value = option[0];
-    final isSelected = _selectedAnswers[_currentIndex] == value;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      color: isSelected ? Colors.blue.shade50 : null,
-      child: ListTile(
-        title: Text(option),
-        onTap: () => setState(() => _selectedAnswers[_currentIndex] = value),
       ),
     );
   }
