@@ -71,6 +71,11 @@ Add a self-contained `/nursing` module to the Dr. Math FastAPI application with 
 - Follows Research-First Covenant: BFS (`bfs-06`), DFS (`dfs-05`, `dfs-06`), Council decision (`DECISION-20260513-004`), then code.
 - Follows 10-Persona Filter: privacy (anonymous), observability (logging), TCO (reuse), safety (verification), clarity (ADR + README).
 
+## Implementation Notes
+
+- 2026-05-13: Domain models and constants added with `cognitive_level`, `context`, and `format` dimension tags.
+- 2026-05-13: `JsonFileQuestionRepository` added with filtering by subject, topic, cognitive level, context, difficulty, and concept tag.
+
 ## References
 
 - `docs/research/bfs/bfs-06-telangana-staff-nurse-landscape.md`
