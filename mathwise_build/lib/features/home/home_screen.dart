@@ -32,6 +32,7 @@ import '../curriculum/curriculum_grid_screen.dart';
 import '../curriculum/curriculum_list_screen.dart';
 import '../curriculum/curriculum_stepper_screen.dart';
 import '../games/games_screen.dart';
+import '../nursing/screens/nursing_home_screen.dart';
 import '../practice/practice_question_screen.dart';
 import '../profile/profile_screen.dart';
 import '../topics/topic_choice_screen.dart';
@@ -145,6 +146,11 @@ class _HomeTab extends StatelessWidget {
               );
             },
           ),
+          const SizedBox(height: 32),
+          // Nursing practice entry point for adult learners.
+          Text('Nursing Practice', style: theme.textTheme.displaySmall),
+          const SizedBox(height: 16),
+          _buildNursingCard(context),
           const SizedBox(height: 32),
           // Dev/demo navigation to all screens.
           Text('All Screens', style: theme.textTheme.displaySmall),
@@ -368,6 +374,55 @@ class _HomeTab extends StatelessWidget {
               elevation: 0,
             ),
             child: const Text('Enter Games'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNursingCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.primaryContainer,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.local_hospital, color: AppColors.primary),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Telangana Staff Nurse', style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 4),
+                Text(
+                  'Topic-wise practice for ANM/GNM recruitment',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => _navigate(context, const NursingHomeScreen()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            ),
+            child: const Text('Open'),
           ),
         ],
       ),
