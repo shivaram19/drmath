@@ -82,6 +82,7 @@ Add a self-contained `/nursing` module to the Dr. Math FastAPI application with 
 - 2026-05-13: Phase 3 UI added: Jinja2 templates, mobile-first CSS, vanilla JS session logic, Telugu glossary tooltips, and `localStorage` progress.
 - 2026-05-13: Phase 4 E2E test added covering diagnostic → analysis → weak-area practice → mock → PDF → report.
 - 2026-05-13: Phase 5 deploy verified: Docker image builds, `scripts/deploy.sh` generates nursing seed bank, `/api/nursing/status` and `/nursing` reachable in container.
+- 2026-05-13: Phase 6 started: question bank expanded from 104 to 130; monitoring and correlation experiment plan documented.
 
 ## References
 

@@ -717,6 +717,173 @@ QUESTIONS = [
       ["A) Back blows only", "B) Heimlich manoeuvre", "C) Finger sweep", "D) Chest thrusts only"],
       "B",
       "Abdominal thrusts (Heimlich manoeuvre) are used for adult choking."),
+    # --- Phase 6 expansion ---
+# Anatomy & Physiology — underrepresented topics
+    q(105, "anatomy_physiology", "ap_cells_tissues", "cell membrane", 2,
+      "Which structure controls what enters and leaves the cell?",
+      ["A) Nucleus", "B) Cytoplasm", "C) Cell membrane", "D) Ribosome"],
+      "C",
+      "The cell membrane regulates the movement of substances into and out of the cell."),
+
+    q(106, "anatomy_physiology", "ap_skeletal", "joint types", 2,
+      "Which type of joint allows the widest range of movement?",
+      ["A) Fibrous joint", "B) Cartilaginous joint", "C) Synovial joint", "D) Suture joint"],
+      "C",
+      "Synovial joints, such as the shoulder and knee, allow free movement."),
+
+    q(107, "anatomy_physiology", "ap_muscular", "muscle contraction", 2,
+      "What is the basic functional unit of skeletal muscle contraction?",
+      ["A) Neuron", "B) Sarcomere", "C) Nephron", "D) Axon"],
+      "B",
+      "The sarcomere is the basic contractile unit of muscle fiber."),
+
+    q(108, "anatomy_physiology", "ap_digestive", "absorption", 2,
+      "Where are most nutrients absorbed in the digestive tract?",
+      ["A) Stomach", "B) Large intestine", "C) Small intestine", "D) Esophagus"],
+      "C",
+      "Most nutrient absorption occurs in the small intestine."),
+
+    q(109, "anatomy_physiology", "ap_endocrine", "thyroid hormone", 2,
+      "Which hormone is produced by the thyroid gland?",
+      ["A) Insulin", "B) Thyroxine", "C) Cortisol", "D) Estrogen"],
+      "B",
+      "The thyroid gland produces thyroxine (T4) and triiodothyronine (T3)."),
+
+    q(110, "anatomy_physiology", "ap_reproductive", "fertilization", 2,
+      "Where does fertilization normally occur in the female reproductive system?",
+      ["A) Uterus", "B) Ovary", "C) Fallopian tube", "D) Vagina"],
+      "C",
+      "Fertilization usually occurs in the fallopian tube."),
+
+    # Fundamentals of Nursing
+    q(111, "fundamentals_nursing", "fn_hygiene", "bed bath", 2,
+      "When giving a bed bath, which body part should be washed last?",
+      ["A) Face", "B) Arms", "C) Chest", "D) Perineal area"],
+      "D",
+      "The perineal area is washed last to prevent transferring microorganisms to cleaner areas."),
+
+    q(112, "fundamentals_nursing", "fn_positioning", "semi fowler", 2,
+      "Semi-Fowler's position is used mainly for:",
+      ["A) Shock", "B) Respiratory distress", "C) Pelvic surgery", "D) Spinal anesthesia"],
+      "B",
+      "Semi-Fowler's position (head elevated 30-45 degrees) eases breathing."),
+
+    q(113, "fundamentals_nursing", "fn_wound_care", "signs of infection", 3,
+      "Which finding indicates a wound infection?",
+      ["A) Dry scab formation", "B) Pink granulation tissue", "C) Purulent drainage", "D) Decreased warmth"],
+      "C",
+      "Purulent (pus-like) drainage is a sign of wound infection."),
+
+    # Medical-Surgical Nursing
+    q(114, "medical_surgical", "ms_assessment", "signs of dehydration", 2,
+      "Which sign is most indicative of severe dehydration?",
+      ["A) Bounding pulse", "B) Moist mucous membranes", "C) Sunken eyes", "D) Hypertension"],
+      "C",
+      "Sunken eyes, dry mucous membranes, and decreased skin turgor indicate dehydration."),
+
+    q(115, "medical_surgical", "ms_respiratory", "oxygen therapy", 2,
+      "Which oxygen delivery device delivers the highest concentration of oxygen?",
+      ["A) Nasal cannula", "B) Simple face mask", "C) Non-rebreather mask", "D) Venturi mask"],
+      "C",
+      "A non-rebreather mask can deliver up to 90% oxygen."),
+
+    q(116, "medical_surgical", "ms_cardiovascular", "myocardial infarction", 3,
+      "A patient with chest pain is given aspirin. What is the primary reason?",
+      ["A) To relieve pain", "B) To reduce fever", "C) To inhibit platelet aggregation", "D) To lower blood pressure"],
+      "C",
+      "Aspirin inhibits platelet aggregation and is given in suspected myocardial infarction."),
+
+    q(117, "medical_surgical", "ms_gi", "ng tube", 2,
+      "Before administering feedings through an NG tube, what must the nurse verify?",
+      ["A) Tube length", "B) Tube placement", "C) Patient weight", "D) Urine output"],
+      "B",
+      "Tube placement must be verified before every feeding to prevent aspiration."),
+
+    q(118, "medical_surgical", "ms_renal", "urinary catheter care", 2,
+      "Which action is correct when caring for a patient with an indwelling urinary catheter?",
+      ["A) Pull the catheter gently to test placement", "B) Keep the drainage bag above bladder level", "C) Secure the tubing to prevent tension on the catheter", "D) Disconnect the tubing frequently for cleaning"],
+      "C",
+      "The catheter tubing should be secured to prevent tension and trauma."),
+
+    q(119, "medical_surgical", "ms_neuro", "glasgow coma scale", 2,
+      "The Glasgow Coma Scale assesses:",
+      ["A) Motor strength only", "B) Eye opening, verbal response, and motor response", "C) Pupil reaction only", "D) Blood pressure and pulse"],
+      "B",
+      "The GCS assesses eye opening, verbal response, and motor response."),
+
+    q(120, "medical_surgical", "ms_oncology", "chemotherapy safety", 3,
+      "When handling chemotherapy drugs, which PPE is essential?",
+      ["A) Gloves only", "B) Gown and double gloves", "C) Face shield only", "D) Mask only"],
+      "B",
+      "Chemotherapy handling requires a gown and double gloves for safety."),
+
+    # Mental Health Nursing
+    q(121, "mental_health", "mh_psychiatric", "antipsychotic side effects", 3,
+      "Which extrapyramidal symptom is associated with antipsychotic medications?",
+      ["A) Hypotension", "B) Tardive dyskinesia", "C) Diarrhea", "D) Bradycardia"],
+      "B",
+      "Tardive dyskinesia is a long-term extrapyramidal side effect of antipsychotics."),
+
+    # Midwifery
+    q(122, "midwifery", "mw_gynecology", "contraception", 2,
+      "Which contraceptive method also provides protection against sexually transmitted infections?",
+      ["A) Oral contraceptive pills", "B) Intrauterine device", "C) Condom", "D) Injectable hormones"],
+      "C",
+      "Condoms are the only listed method that reduces STI transmission risk."),
+
+    q(123, "midwifery", "mw_anatomy", "pelvic inlet", 2,
+      "The normal fetal head position at the onset of labour is:",
+      ["A) Breech", "B) Transverse lie", "C) Cephalic presentation", "D) Face presentation"],
+      "C",
+      "Cephalic presentation (head down) is the normal position for labour."),
+
+    # First Aid
+    q(124, "first_aid", "fa_emergency", "fracture", 2,
+      "What is the first aid management of a suspected fracture?",
+      ["A) Massage the area", "B) Immobilize the affected part", "C) Apply heat immediately", "D) Attempt to straighten the limb"],
+      "B",
+      "The affected part should be immobilized to prevent further injury."),
+
+    # Community Health
+    q(125, "community_health", "chn_concepts", "primary health care", 2,
+      "Which is a principle of primary health care?",
+      ["A) Specialized hospital care", "B) Community participation", "C) Expensive technology", "D) Urban-focused services"],
+      "B",
+      "Community participation is a core principle of primary health care."),
+
+    # Child Health
+    q(126, "child_health", "ch_growth", "growth chart", 2,
+      "Which parameter is most commonly used to assess a child's growth?",
+      ["A) Head circumference only", "B) Weight for age", "C) Blood pressure", "D) Temperature"],
+      "B",
+      "Weight for age is a standard growth monitoring indicator."),
+
+    # Nutrition
+    q(127, "nutrition", "nut_basics", "balanced diet", 2,
+      "Which food group is the best source of dietary fiber?",
+      ["A) Meat", "B) Dairy", "C) Fruits and vegetables", "D) Fats"],
+      "C",
+      "Fruits, vegetables, and whole grains are good sources of dietary fiber."),
+
+    # Microbiology
+    q(128, "microbiology", "micro_organisms", "virus", 2,
+      "Which disease is caused by a virus?",
+      ["A) Tuberculosis", "B) Tetanus", "C) Measles", "D) Typhoid"],
+      "C",
+      "Measles is caused by the measles virus."),
+
+    # Pharmacology
+    q(129, "pharmacology", "pharma_basics", "drug interactions", 3,
+      "Which route of administration avoids first-pass metabolism?",
+      ["A) Oral", "B) Intravenous", "C) Subcutaneous", "D) Both B and C"],
+      "D",
+      "Parenteral routes such as intravenous and subcutaneous avoid first-pass hepatic metabolism."),
+
+    q(130, "pharmacology", "pharma_common", "insulin", 2,
+      "Which condition is treated with insulin?",
+      ["A) Hypertension", "B) Diabetes mellitus", "C) Asthma", "D) Epilepsy"],
+      "B",
+      "Insulin is used to manage diabetes mellitus."),
 ]
 
 
