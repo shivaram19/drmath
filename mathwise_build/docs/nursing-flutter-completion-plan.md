@@ -633,15 +633,15 @@ Add `androidTapTargetGuideline` and `iOSTapTargetGuideline` assertions in widget
 
 ## 10. Execution Order
 
-1. **Update ADR-018** (already drafted) and get approval.
-2. **Fix compile issues** (Phase 1) — SDK constraint, `PopScope`.
-3. **Generate fallback asset** (Phase 3 offline-first) — run `scripts/generate_nursing_flutter_assets.sh`.
+1. **Update ADR-018** (already drafted) and get approval. ✅
+2. **Fix compile issues** (Phase 1) — SDK constraint, `PopScope`. ✅
+3. **Generate fallback asset** (Phase 3 offline-first) — run `scripts/generate_nursing_flutter_assets.sh`. ✅
 4. **Create session controller** (Phase 6 state management) — `NursingSessionController`.
-5. **Refactor widgets** (Phase 2) — extract question/option/explanation/capability/timer/glossary.
-6. **Add mock navigation widgets** (Phase 4.6) — question grid sheet, submit summary dialog.
-7. **Add offline fallback wiring** (Phase 3) — API service fallback + pending queue.
-8. **Add missing screens** (Phase 4) — disclaimer, onboarding, report, PDF, settings.
-9. **Harden services** (Phase 5) — timeouts, retries, exceptions, session logger.
+5. **Refactor widgets** (Phase 2) — extract question/option/explanation/capability/timer/glossary. ✅
+6. **Add mock navigation widgets** (Phase 4.6) — question grid sheet, submit summary dialog. ✅
+7. **Add offline fallback wiring** (Phase 3) — API service fallback + pending queue. ✅
+8. **Add missing screens** (Phase 4) — disclaimer, onboarding, report, PDF, settings. ✅
+9. **Harden services** (Phase 5) — timeouts, retries, exceptions, session logger. ✅
 10. **Add tests** (Phase 7).
 11. **Manual verification** (Phase 8).
 
