@@ -31,12 +31,18 @@ Before adding features, the existing scaffold must compile. We cannot run `flutt
 
 **File:** `mathwise_build/pubspec.yaml`  
 **Changes needed:**
-- Update SDK constraint from `>=3.2.0 <4.0.0` to `>=3.27.0 <4.0.0` because the existing codebase already uses `Color.withValues(alpha: …)`, which requires Flutter 3.27+.
+- Update SDK constraints. `pubspec.yaml`'s `sdk` field constrains the **Dart SDK**, while the `flutter` field constrains the **Flutter SDK** [^20]. Set:
+  ```yaml
+  environment:
+    sdk: '>=3.6.0 <4.0.0'
+    flutter: '>=3.27.0'
+  ```
+  Flutter 3.27.0 ships Dart 3.6.0, and the existing codebase already uses `Color.withValues(alpha: …)`, which requires Flutter 3.27+.
 - Verify `http: ^1.2.0` and `shared_preferences: ^2.2.2` remain compatible. Both are.
 - Verify `assets/nursing/` is listed under `assets:`. Already added.
 - Add the bundled fallback file explicitly: `assets/nursing/nursing_seed_questions.json`.
 
-**Why:** Build fails if dependencies or SDK constraints are incompatible; assets must be enumerated.
+**Why:** Build fails if dependencies or SDK constraints are incompatible; assets must be enumerated. Pinning both Dart and Flutter constraints prevents false compatibility claims [^20].
 
 ### 1.2 Document Flutter version pinning
 
@@ -89,18 +95,32 @@ return WillPopScope(
 
 **Planned change:**
 ```dart
-return PopScope<Object?>(
-  canPop: false,
-  onPopInvokedWithResult: (didPop, result) async {
+class _NursingQuizScreenState extends State<NursingQuizScreen> {
+  bool _canPop = false;
+  // ... other state
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope<Object?>(
+      canPop: _canPop,
+      onPopInvokedWithResult: _onPopInvoked,
+      child: Scaffold(...)
+    );
+  }
+
+  Future<void> _onPopInvoked(bool didPop, Object? result) async {
     if (didPop) return;
     final shouldPop = await _confirmExit();
-    if (shouldPop && mounted) Navigator.of(context).pop();
-  },
-  child: Scaffold(...)
-);
+    if (!mounted) return;
+    if (shouldPop) {
+      setState(() => _canPop = true);
+      Navigator.of(context).pop();
+    }
+  }
+}
 ```
 
-**Why:** `WillPopScope` and `PopScope.onPopInvoked` are deprecated; `onPopInvokedWithResult` is the current API as of Flutter 3.22+ [^1].
+**Why:** `WillPopScope` and `PopScope.onPopInvoked` are deprecated; `onPopInvokedWithResult` is the current API as of Flutter 3.22+ [^1]. Using a `_canPop` state variable and a single `Navigator.pop()` avoids `_debugLocked` navigation errors that can occur when issuing multiple pops inside the callback [^21]. Always guard async work with `if (!mounted) return;`.
 
 ---
 
@@ -276,6 +296,8 @@ assets:
 
 **Why:** The actual seed bank is in `output/`, not `data/`. Automating the copy prevents stale fallback content.
 
+**Size gate:** After generating the asset, run `flutter build apk --analyze-size` (or `--analyze-assets`) and record the APK size delta. If the bundled JSON contributes more than ~300 KB to the download size, switch to a lazy-loading strategy: ship only a subject index in the bundle and fetch/persist questions into `SharedPreferences` or `sqflite` on first use [^18].
+
 ### 3.2 Update `NursingApiService` to fall back to bundled asset
 
 **Behavior:**
@@ -290,7 +312,7 @@ assets:
 
 Use `compute()` from `flutter/foundation.dart` to parse the bundled JSON if it grows beyond ~200 KB. For the current 130-question bank this is optional but recommended as a defensive habit.
 
-### 3.3 Queue offline attempts for later sync
+### 3.4 Queue offline attempts for later sync
 
 **File:** `lib/features/nursing/services/nursing_storage_service.dart`  
 **Behavior:**
@@ -455,6 +477,22 @@ class NursingSessionLogger {
 
 **Why:** Enables the correlation experiment described in `bidirectional-06`.
 
+### 5.3 API contract tests
+
+**Files to create:**
+- `test/nursing/api_contract_test.dart`
+- `test/nursing/schemas/status_schema.json`
+- `test/nursing/schemas/topics_schema.json`
+- `test/nursing/schemas/questions_schema.json`
+- `test/nursing/schemas/analyze_response_schema.json`
+
+**Approach:**
+- Use `flutter_test` + `http` (already dependencies) to call the live backend endpoints.
+- Validate response bodies against JSON Schema using lightweight Dart assertions (type checks + required keys) or the `json_schema` package only if contract complexity grows [^15].
+- Run in CI against `https://drmath.trelolabs.com` on every PR that touches `NursingApiService` or backend nursing code.
+
+**Why:** Static analysis cannot detect backend schema drift. Contract tests provide fast feedback when the provider and consumer disagree on response shape [^15].
+
 ---
 
 ## 6. State Management Decision
@@ -476,6 +514,21 @@ class NursingSessionLogger {
 - ADR-009’s BLoC/Hive/drift strategy remains the long-term direction and will be applied in a v2 refactor across the whole app.
 
 **File:** `lib/features/nursing/controllers/nursing_session_controller.dart`
+
+### 6.2 Persist quiz progress against process death
+
+**File:** `lib/features/nursing/controllers/nursing_session_controller.dart` and `lib/features/nursing/services/nursing_storage_service.dart`
+
+**Behavior:**
+- On every answer selection and timer tick, persist to `SharedPreferences`:
+  - `nursing_inflight_mode`, `nursing_inflight_subject_id`, `nursing_inflight_topic_id`
+  - `nursing_inflight_index`, `nursing_inflight_answers`, `nursing_inflight_remaining_seconds`
+  - `nursing_inflight_questions` (serialized JSON of the current question list)
+- On entering `NursingQuizScreen`, check for an in-flight session. If one exists and matches the requested quiz parameters, show a `AlertDialog` offering "Resume" or "Start new test".
+- Clear the in-flight state on `_submit()` or when the user abandons via the exit confirmation.
+- For a more automatic approach, enable `RestorationMixin` on `NursingQuizScreen` and set `restorationScopeId: 'app'` on `MaterialApp` [^17].
+
+**Why:** Android and iOS can kill background processes at any time. Adult learners often have limited, interrupted study windows; losing 40 minutes of mock-test progress is a trust-breaking event [^16].
 
 ---
 
@@ -508,9 +561,14 @@ class NursingSessionLogger {
 
 ### 7.3 Accessibility checks
 
-Add `androidTapTargetGuideline` and `iOSTapTargetGuideline` assertions in widget tests for `OptionButton`.
+Add `androidTapTargetGuideline` and `iOSTapTargetGuideline` assertions in widget tests for every interactive nursing widget (`OptionButton`, `QuestionNavigationGrid`, `MarkForReviewButton`, `SubmitButton`, `LanguageToggle`).
 
-**Why:** Ensures 48×48 dp / 44×44 pt minimum touch targets [^3].
+**Additional checks:**
+- Verify semantic labels with `matchesSemantics` or TalkBack/VoiceOver manual testing.
+- Test the quiz screen at 200% system font size to ensure no overflow or clipped text.
+- Verify color contrast of critical text (question stems, options) meets WCAG 2.2 AA (4.5:1 for normal text) [^13][^14].
+
+**Why:** Material Design specifies 48×48 dp, Apple HIG specifies 44×44 pt, and WCAG 2.2 Level AAA specifies 44×44 CSS px minimum touch targets. For a healthcare-education app used by adult learners, target the stricter platform guidelines [^3][^13][^14].
 
 ---
 
@@ -604,3 +662,13 @@ Each phase gets one commit with a conventional message and a test/build gate.
 [^10]: TechWithSam (2026). *Flutter Performance Optimization 2026*. https://dev.to/techwithsam/flutter-performance-optimization-2026-make-your-app-10x-faster-best-practices-2p07
 [^11]: TechAhead (2026). *19 Mobile App Onboarding Best Practices and Examples*. https://www.techaheadcorp.com/blog/19-mobile-app-onboarding-best-practices-examples/
 [^12]: TryReadable (2026). *Testbook vs Adda247 vs Gradeup best app for SSC exam preparation*. https://www.tryreadable.ai/analysis/testbook-vs-adda247-vs-gradeup-best-app-for-ssc-exam-preparation
+
+[^13]: W3C (2023). *WCAG 2.2 Understanding Success Criterion 2.5.5: Target Size (Enhanced)*. https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced.html
+[^14]: W3C (2023). *WCAG 2.2 Understanding Success Criterion 2.5.8: Target Size (Minimum)*. https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html
+[^15]: Redocly (2025). *API Contract Testing 101: Benefits, challenges, and when you need it*. https://redocly.com/learn/testing/contract-testing-101
+[^16]: Square Developer Blog (2019). *Flutter, Android, and Process Death*. https://developer.squareup.com/blog/flutter-android-and-process-death/
+[^17]: Kodeco (2023). *State Restoration of Flutter App*. https://www.kodeco.com/36759497-state-restoration-of-flutter-app
+[^18]: Flutter docs. *Measuring your app's size*. https://docs.flutter.dev/perf/app-size
+[^19]: GeekyAnts (2026). *Offline-First Flutter: Implementation Blueprint for Real-World Apps*. https://techblog.geekyants.com/offline-first-flutter-implementation-blueprint-for-real-world-apps
+[^20]: Dart docs. *The pubspec file — SDK constraints*. https://dart.dev/tools/pub/pubspec#sdk-constraints
+[^21]: 掘金 (2025). *Flutter PopScope 返回拦截完整指南：易错点＋正确姿势＋实战示例*. https://juejin.cn/post/7580592190020452386

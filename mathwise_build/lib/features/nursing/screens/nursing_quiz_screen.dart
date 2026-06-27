@@ -38,6 +38,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
   DateTime? _startTime;
   Timer? _mockTimer;
   int _remainingSeconds = 60 * 60;
+  bool _canPop = false;
 
   @override
   void initState() {
@@ -117,7 +118,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope<Object?>(
-      canPop: false,
+      canPop: _canPop,
       onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
         appBar: NursingAppBar(
@@ -250,6 +251,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
     final shouldPop = await _confirmExit();
     if (!mounted) return;
     if (shouldPop) {
+      setState(() => _canPop = true);
       Navigator.of(context).pop();
     }
   }
