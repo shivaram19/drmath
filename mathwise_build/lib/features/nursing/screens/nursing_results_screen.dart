@@ -4,6 +4,7 @@ import '../models/attempt.dart';
 import '../models/capability.dart';
 import '../services/nursing_api_exception.dart';
 import '../services/nursing_api_service.dart';
+import '../services/nursing_session_logger.dart';
 import '../services/nursing_storage_service.dart';
 import '../widgets/capability_bar.dart';
 import '../widgets/loading_state.dart';
@@ -23,6 +24,7 @@ class NursingResultsScreen extends StatefulWidget {
 class _NursingResultsScreenState extends State<NursingResultsScreen> {
   final _api = NursingApiService();
   final _storage = NursingStorageService();
+  final _logger = NursingSessionLogger();
   bool _loading = true;
   String? _error;
   CapabilityAnalysis? _analysis;
@@ -54,6 +56,19 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
       }
 
       final analysis = await _api.analyzeAttempts(widget.attempts);
+      final correct = widget.attempts.where((a) => a.isCorrect).length;
+      final total = widget.attempts.length;
+      final weakAreas = analysis.topicCapabilities
+          .where((c) => (c.accuracy < 0.7 || c.priorityScore > 0.3))
+          .map((c) => c.topicId)
+          .whereType<String>()
+          .toList();
+      await _logger.log(
+        mode: 'results',
+        attemptsCount: widget.attempts.length,
+        score: total > 0 ? correct / total : 0,
+        weakAreas: weakAreas,
+      );
       await _storage.saveCapabilityMap({
         'subject_capabilities': analysis.subjectCapabilities
             .map((c) => {
@@ -79,9 +94,23 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
     } on NursingApiException catch (e) {
       if (e.isOffline) {
         await _storage.queuePendingAnalysis(widget.attempts);
+        final localAnalysis = _localAnalysisFromAttempts(widget.attempts);
+        final correct = widget.attempts.where((a) => a.isCorrect).length;
+        final total = widget.attempts.length;
+        final weakAreas = localAnalysis.topicCapabilities
+            .where((c) => c.accuracy < 0.7)
+            .map((c) => c.topicId)
+            .whereType<String>()
+            .toList();
+        await _logger.log(
+          mode: 'results_offline',
+          attemptsCount: widget.attempts.length,
+          score: total > 0 ? correct / total : 0,
+          weakAreas: weakAreas,
+        );
         if (mounted) {
           setState(() {
-            _analysis = _localAnalysisFromAttempts(widget.attempts);
+            _analysis = localAnalysis;
             _pendingSync = true;
             _loading = false;
           });

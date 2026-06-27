@@ -51,3 +51,6 @@ web/static/mathwise-web/
 
 # Golden test failure diffs (generated artifacts)
 test/failures/
+
+# Local Kimi MCP configuration
+.kimi/mcp/

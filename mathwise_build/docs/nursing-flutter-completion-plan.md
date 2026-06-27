@@ -441,21 +441,23 @@ Use `compute()` from `flutter/foundation.dart` to parse the bundled JSON if it g
 ### 5.1 File: `lib/features/nursing/services/nursing_api_service.dart`
 
 **Additions:**
-- Constructor with configurable `baseUrl` and timeout:
+- Constructor with configurable `baseUrl`, `timeout`, and optional `http.Client` for testability:
   ```dart
   final String baseUrl;
   final Duration timeout;
+  final Client? client;
   NursingApiService({
     this.baseUrl = 'https://drmath.trelolabs.com',
     this.timeout = const Duration(seconds: 10),
+    this.client,
   });
   ```
 - Wrap every `http` call with `.timeout(timeout)`.
 - Catch `TimeoutException`, `SocketException`, and `http.ClientException` and throw `NursingApiException` with a user-friendly message and an `isOffline` flag.
-- Add a lightweight retry wrapper (1 immediate retry on timeout) for `startDiagnostic`, `startMock`, and `analyzeAttempts`.
-- Add `loadFallbackQuestions()` to read the bundled JSON asset.
+- Add a generic `_retry` wrapper (max 3 attempts, exponential backoff capped at 5s) for all endpoints. Retries on `isOffline` errors and 5xx server errors.
+- Keep `loadFallbackQuestions()` to read the bundled JSON asset when the API is unreachable.
 
-**Why:** Hardcoded URLs and missing timeouts make local testing and error handling difficult; retries follow 2026 resilience best practices [^5].
+**Why:** Hardcoded URLs and missing timeouts make local testing and error handling difficult; retries with backoff follow 2026 resilience best practices [^5].
 
 ### 5.2 File: `lib/features/nursing/services/nursing_session_logger.dart` (new)
 
@@ -473,25 +475,24 @@ class NursingSessionLogger {
 }
 ```
 
-**Storage:** Append JSON lines to `SharedPreferences` under key `nursing_sessions`.
+**Storage:** Persist a JSON array in `SharedPreferences` under key `nursing_sessions`; cap at 100 entries and evict oldest first.
 
 **Why:** Enables the correlation experiment described in `bidirectional-06`.
 
 ### 5.3 API contract tests
 
 **Files to create:**
-- `test/nursing/api_contract_test.dart`
-- `test/nursing/schemas/status_schema.json`
-- `test/nursing/schemas/topics_schema.json`
-- `test/nursing/schemas/questions_schema.json`
-- `test/nursing/schemas/analyze_response_schema.json`
+- `test/features/nursing/services/nursing_api_contract_test.dart`
+- `test/features/nursing/services/nursing_session_logger_test.dart`
 
 **Approach:**
-- Use `flutter_test` + `http` (already dependencies) to call the live backend endpoints.
-- Validate response bodies against JSON Schema using lightweight Dart assertions (type checks + required keys) or the `json_schema` package only if contract complexity grows [^15].
-- Run in CI against `https://drmath.trelolabs.com` on every PR that touches `NursingApiService` or backend nursing code.
+- Use `flutter_test` + `package:http/testing.dart` (already a transitive dependency) and inject a `MockClient` into `NursingApiService`.
+- Validate response parsing for `fetchQuestions`, `startDiagnostic`, and `analyzeAttempts` with type checks and required-key assertions.
+- Verify retry behavior: a single 5xx is retried and eventually succeeds; three consecutive 5xx failures surface a `NursingApiException`.
+- Verify offline fallback: when the API returns 503, `fetchQuestions` falls back to the bundled seed asset via a fake `AssetBundle`.
+- Use `http.Response.bytes(..., utf8.encode(...))` for responses containing non-Latin-1 text (e.g., Telugu hints) because the default `http.Response` constructor encodes the body as Latin-1.
 
-**Why:** Static analysis cannot detect backend schema drift. Contract tests provide fast feedback when the provider and consumer disagree on response shape [^15].
+**Why:** Static analysis cannot detect backend schema drift. Consumer-side contract tests provide fast feedback when the provider and consumer disagree on response shape, without requiring a live backend or extra dependencies [^15].
 
 ---
 

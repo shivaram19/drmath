@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart' show Client;
 
 import '../models/attempt.dart';
 import '../models/capability.dart';
@@ -18,20 +20,22 @@ class NursingApiService {
   final String baseUrl;
   final Duration timeout;
   final AssetBundle? assetBundle;
+  final Client? client;
 
   NursingApiService({
     this.baseUrl = 'https://drmath.trelolabs.com',
     this.timeout = const Duration(seconds: 10),
     this.assetBundle,
+    this.client,
   });
 
   Future<Map<String, dynamic>> fetchStatus() async {
-    final response = await _get('$baseUrl/api/nursing/status');
+    final response = await _retry(() => _get('$baseUrl/api/nursing/status'));
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>> fetchTopics() async {
-    final response = await _get('$baseUrl/api/nursing/topics');
+    final response = await _retry(() => _get('$baseUrl/api/nursing/topics'));
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
@@ -56,7 +60,7 @@ class NursingApiService {
     try {
       final uri = Uri.parse('$baseUrl/api/nursing/questions')
           .replace(queryParameters: params);
-      final response = await _get(uri.toString());
+      final response = await _retry(() => _get(uri.toString()));
       final list = jsonDecode(response.body) as List<dynamic>;
       return list
           .map((e) => NursingQuestion.fromJson(e as Map<String, dynamic>))
@@ -76,9 +80,11 @@ class NursingApiService {
 
   Future<List<NursingQuestion>> startDiagnostic({int numQuestions = 20}) async {
     try {
-      final response = await _post(
-        '$baseUrl/api/nursing/diagnostic/start',
-        body: jsonEncode({'num_questions': numQuestions}),
+      final response = await _retry(
+        () => _post(
+          '$baseUrl/api/nursing/diagnostic/start',
+          body: jsonEncode({'num_questions': numQuestions}),
+        ),
       );
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final list = data['questions'] as List<dynamic>;
@@ -94,8 +100,10 @@ class NursingApiService {
   Future<List<NursingQuestion>> startMock(
       {String patternKey = 'mhsrb_staff_nurse'}) async {
     try {
-      final response = await _post(
-        '$baseUrl/api/nursing/mock/start?pattern_key=$patternKey',
+      final response = await _retry(
+        () => _post(
+          '$baseUrl/api/nursing/mock/start?pattern_key=$patternKey',
+        ),
       );
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final list = data['questions'] as List<dynamic>;
@@ -109,38 +117,40 @@ class NursingApiService {
   }
 
   Future<CapabilityAnalysis> analyzeAttempts(List<Attempt> attempts) async {
-    final response = await _post(
-      '$baseUrl/api/nursing/analyze',
-      body: jsonEncode(attempts.map((a) => a.toJson()).toList()),
+    final response = await _retry(
+      () => _post(
+        '$baseUrl/api/nursing/analyze',
+        body: jsonEncode(attempts.map((a) => a.toJson()).toList()),
+      ),
     );
     return CapabilityAnalysis.fromJson(
         jsonDecode(response.body) as Map<String, dynamic>);
   }
 
   Future<String> exportPdf(List<Attempt> attempts, {int topN = 3}) async {
-    final response = await _post(
+    final response = await _retry(() => _post(
       '$baseUrl/api/nursing/pdf',
       body: jsonEncode({
         'attempts': attempts.map((a) => a.toJson()).toList(),
         'top_n': topN,
       }),
-    );
+    ));
     return response.body;
   }
 
   Future<Map<String, dynamic>> reportQuestion(
       int questionId, String reason) async {
-    final response = await _post(
+    final response = await _retry(() => _post(
       '$baseUrl/api/nursing/report',
       body: jsonEncode(
           {'question_id': questionId, 'reason': reason}),
-    );
+    ));
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   Future<http.Response> _get(String url) async {
     try {
-      final response = await http
+      final response = await (client ?? http.Client())
           .get(Uri.parse(url))
           .timeout(timeout);
       _check(response);
@@ -164,7 +174,7 @@ class NursingApiService {
 
   Future<http.Response> _post(String url, {String? body}) async {
     try {
-      final response = await http
+      final response = await (client ?? http.Client())
           .post(
             Uri.parse(url),
             headers: {'Content-Type': 'application/json'},
@@ -187,6 +197,34 @@ class NursingApiService {
       rethrow;
     } catch (e) {
       throw NursingApiException(message: 'Network error: $e');
+    }
+  }
+
+  Future<T> _retry<T>(
+    Future<T> Function() call, {
+    int maxAttempts = 3,
+    Duration baseDelay = const Duration(milliseconds: 300),
+  }) async {
+    var attempt = 0;
+    while (true) {
+      try {
+        return await call();
+      } on NursingApiException catch (e) {
+        attempt++;
+        final shouldRetry = e.isOffline ||
+            (e.statusCode != null && e.statusCode! >= 500);
+        if (!shouldRetry || attempt >= maxAttempts) {
+          rethrow;
+        }
+        // Exponential backoff: 300ms, 600ms, 1200ms, ... capped at 5s.
+        final delay = Duration(
+          milliseconds: min(
+            baseDelay.inMilliseconds * (1 << (attempt - 1)),
+            5000,
+          ),
+        );
+        await Future<void>.delayed(delay);
+      }
     }
   }
 
