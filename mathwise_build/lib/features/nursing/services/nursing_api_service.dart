@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../models/nursing_question.dart';
 import '../models/attempt.dart';
 import '../models/capability.dart';
+import '../models/nursing_question.dart';
 
 /// HTTP client for the Dr. Math nursing API.
 ///

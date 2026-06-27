@@ -90,7 +90,7 @@ class _NursingSubjectScreenState extends State<NursingSubjectScreen> {
 
   void _startPractice(String topicId) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => NursingQuizScreen(
           mode: QuizMode.practice,
           subjectId: widget.subjectId,

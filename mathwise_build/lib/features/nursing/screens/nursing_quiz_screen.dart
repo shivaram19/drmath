@@ -116,8 +116,9 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _confirmExit,
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: _onPopInvoked,
       child: Scaffold(
         appBar: NursingAppBar(
           title: _title,
@@ -237,10 +238,19 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
+        MaterialPageRoute<void>(
           builder: (_) => NursingResultsScreen(attempts: attempts),
         ),
       );
+    }
+  }
+
+  Future<void> _onPopInvoked(bool didPop, Object? result) async {
+    if (didPop) return;
+    final shouldPop = await _confirmExit();
+    if (!mounted) return;
+    if (shouldPop) {
+      Navigator.of(context).pop();
     }
   }
 

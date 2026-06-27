@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../services/nursing_api_service.dart';
-import '../services/nursing_storage_service.dart';
-import '../widgets/nursing_app_bar.dart';
 import '../widgets/language_toggle.dart';
 import '../widgets/loading_state.dart';
-import 'nursing_subject_screen.dart';
+import '../widgets/nursing_app_bar.dart';
 import 'nursing_quiz_screen.dart';
+import 'nursing_subject_screen.dart';
 
 /// Landing page for the nursing practice module.
 class NursingHomeScreen extends StatefulWidget {
@@ -18,7 +17,6 @@ class NursingHomeScreen extends StatefulWidget {
 
 class _NursingHomeScreenState extends State<NursingHomeScreen> {
   final _api = NursingApiService();
-  final _storage = NursingStorageService();
   bool _loading = true;
   String? _error;
   Map<String, dynamic>? _topicsData;
@@ -36,7 +34,7 @@ class _NursingHomeScreenState extends State<NursingHomeScreen> {
       final topics = await _api.fetchTopics();
       if (mounted) {
         setState(() {
-          _questionCount = int.tryParse(status['questions'] ?? '0') ?? 0;
+          _questionCount = int.tryParse((status['questions'] ?? '0').toString()) ?? 0;
           _topicsData = topics;
           _loading = false;
         });
@@ -49,10 +47,10 @@ class _NursingHomeScreenState extends State<NursingHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: NursingAppBar(
+      appBar: const NursingAppBar(
         title: 'Nursing Practice',
         showBackButton: false,
-        actions: const [LanguageToggle()],
+        actions: [LanguageToggle()],
       ),
       body: _loading
           ? const NursingLoading()
@@ -78,7 +76,7 @@ class _NursingHomeScreenState extends State<NursingHomeScreen> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 12),
-        ...subjects.map((s) => _buildSubjectTile(s, counts[s] ?? 0)),
+        ...subjects.map((s) => _buildSubjectTile(s, (counts[s] as int? ?? 0))),
       ],
     );
   }
@@ -139,7 +137,7 @@ class _NursingHomeScreenState extends State<NursingHomeScreen> {
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(
+            MaterialPageRoute<void>(
               builder: (_) => NursingSubjectScreen(subjectId: subjectId),
             ),
           );
@@ -150,7 +148,7 @@ class _NursingHomeScreenState extends State<NursingHomeScreen> {
 
   void _startQuiz(QuizMode mode) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => NursingQuizScreen(mode: mode),
       ),
     );

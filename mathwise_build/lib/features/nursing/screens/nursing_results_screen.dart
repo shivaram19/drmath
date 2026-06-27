@@ -110,7 +110,7 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
+                          MaterialPageRoute<void>(
                             builder: (_) => const NursingQuizScreen(
                               mode: QuizMode.diagnostic,
                             ),
