@@ -5,6 +5,7 @@ import '../widgets/language_toggle.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/nursing_app_bar.dart';
 import 'nursing_quiz_screen.dart';
+import 'nursing_settings_screen.dart';
 import 'nursing_subject_screen.dart';
 
 /// Landing page for the nursing practice module.
@@ -47,10 +48,23 @@ class _NursingHomeScreenState extends State<NursingHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const NursingAppBar(
+      appBar: NursingAppBar(
         title: 'Nursing Practice',
         showBackButton: false,
-        actions: [LanguageToggle()],
+        actions: [
+          const LanguageToggle(),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const NursingSettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: _loading
           ? const NursingLoading()

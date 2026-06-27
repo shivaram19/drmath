@@ -10,6 +10,8 @@ class NursingStorageService {
   static const String _capabilityKey = 'nursing_capability_map';
   static const String _languageKey = 'nursing_language';
   static const String _pendingAnalysisKey = 'nursing_pending_analysis';
+  static const String _disclaimerKey = 'nursing_disclaimer_accepted';
+  static const String _onboardingKey = 'nursing_onboarding_seen';
 
   Future<List<Attempt>> loadAttempts() async {
     final prefs = await SharedPreferences.getInstance();
@@ -81,6 +83,26 @@ class NursingStorageService {
   Future<void> clearPendingAnalysis() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_pendingAnalysisKey);
+  }
+
+  Future<bool> getDisclaimerAccepted() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_disclaimerKey) ?? false;
+  }
+
+  Future<void> setDisclaimerAccepted(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_disclaimerKey, value);
+  }
+
+  Future<bool> getOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_onboardingKey) ?? false;
+  }
+
+  Future<void> setOnboardingSeen(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_onboardingKey, value);
   }
 
   Future<void> clearAll() async {
