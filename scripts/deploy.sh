@@ -93,10 +93,19 @@ fi
 mkdir -p "$PROJECT_DIR/certbot-www"
 
 # ------------------------------------------------------------------
-# 4. Build & start
+# 4. Generate runtime artifacts
 # ------------------------------------------------------------------
 echo ""
-echo "[4/6] Building and starting containers..."
+echo "[4/7] Generating runtime artifacts..."
+
+# Nursing seed bank is gitignored but required by the repository.
+python3 "$PROJECT_DIR/scripts/generate_nursing_seed.py"
+
+# ------------------------------------------------------------------
+# 5. Build & start
+# ------------------------------------------------------------------
+echo ""
+echo "[5/7] Building and starting containers..."
 
 cd "$PROJECT_DIR"
 docker-compose down 2>/dev/null || true
@@ -105,10 +114,10 @@ docker-compose up --build -d
 echo "✅ Containers started"
 
 # ------------------------------------------------------------------
-# 5. Health check
+# 6. Health check
 # ------------------------------------------------------------------
 echo ""
-echo "[5/6] Health check..."
+echo "[6/7] Health check..."
 
 sleep 3
 
@@ -116,6 +125,12 @@ if curl -fsS http://localhost:8000/api/topics &> /dev/null; then
     echo "✅ FastAPI app responding on localhost:8000"
 else
     echo "⚠️  FastAPI app not responding yet (may need a few more seconds)"
+fi
+
+if curl -fsS http://localhost:8000/api/nursing/status &> /dev/null; then
+    echo "✅ Nursing module responding on /api/nursing/status"
+else
+    echo "⚠️  Nursing module not responding yet (may need a few more seconds)"
 fi
 
 if curl -fsS -o /dev/null http://localhost:80/ 2>/dev/null || curl -fsS -o /dev/null http://127.0.0.1:80/ 2>/dev/null; then
@@ -131,6 +146,10 @@ echo ""
 echo "=========================================="
 echo "🎉 Deploy complete!"
 echo "=========================================="
+echo ""
+echo "Nursing module:"
+echo "  Landing:  http://localhost/nursing"
+echo "  API:      http://localhost/api/nursing/status"
 echo ""
 echo "Next steps:"
 echo "  1. Ensure DNS A-record points to this server:"

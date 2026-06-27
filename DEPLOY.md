@@ -100,6 +100,10 @@ After this, `http://drmath.trelolabs.com` redirects to `https://` automatically.
 ```bash
 cd /opt/drmath
 git pull
+
+# Regenerate runtime artifacts (e.g., nursing seed bank)
+python3 scripts/generate_nursing_seed.py
+
 docker-compose up --build -d
 ```
 
