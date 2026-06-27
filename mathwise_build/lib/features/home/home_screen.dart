@@ -21,6 +21,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../../core/constants/app_breakpoints.dart';
 import '../../core/constants/app_colors.dart';
 import '../../shared/data/demo_data.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
@@ -86,16 +87,64 @@ class _HomeTab extends StatelessWidget {
               color: AppColors.onSurfaceVariant,
             ),
           ),
+          const SizedBox(height: 16),
+          _buildClassSelector(context),
           const SizedBox(height: 32),
-          _buildContinueCard(context),
-          const SizedBox(height: 16),
-          _buildDailyPracticeCard(context),
-          const SizedBox(height: 16),
-          _buildGamesSummaryCard(context),
-          const SizedBox(height: 32),
-          Text('Recommended for You', style: theme.textTheme.displaySmall),
-          const SizedBox(height: 16),
-          _buildRecommendedGrid(context),
+          // Bento grid: responsive 2-column on tablet, single column on phone.
+          // Research: Sweller (1988) — less scrolling reduces extraneous load.
+          // Material 3 medium breakpoint (600dp) triggers two-column layout.
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isTablet = constraints.maxWidth >= Breakpoints.medium;
+              if (isTablet) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildContinueCard(context),
+                          const SizedBox(height: 16),
+                          _buildGamesSummaryCard(context),
+                          const SizedBox(height: 32),
+                          Text('Recommended for You', style: theme.textTheme.displaySmall),
+                          const SizedBox(height: 16),
+                          _buildRecommendedGrid(context),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildDailyPracticeCard(context),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+              // Compact: single column (mobile default).
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildContinueCard(context),
+                  const SizedBox(height: 16),
+                  _buildDailyPracticeCard(context),
+                  const SizedBox(height: 16),
+                  _buildGamesSummaryCard(context),
+                  const SizedBox(height: 32),
+                  Text('Recommended for You', style: theme.textTheme.displaySmall),
+                  const SizedBox(height: 16),
+                  _buildRecommendedGrid(context),
+                ],
+              );
+            },
+          ),
           const SizedBox(height: 32),
           // Dev/demo navigation to all screens.
           Text('All Screens', style: theme.textTheme.displaySmall),
@@ -411,6 +460,63 @@ class _HomeTab extends StatelessWidget {
           labelStyle: const TextStyle(color: AppColors.primary),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildClassSelector(BuildContext context) {
+    // Grade selector: autonomy-supporting, visible, discoverable.
+    // Rationale: Deci & Ryan (2000) — autonomy requires visible choices.
+    // Nielsen (2016) — hidden navigation reduces discoverability by 50%.
+    return GestureDetector(
+      onTap: () => _navigate(context, const ClassSelectionScreen()),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.primaryContainer.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.primaryContainer.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.school, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    DemoData.currentUser.grade,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  Text(
+                    'Tap to switch class',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: AppColors.primary,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

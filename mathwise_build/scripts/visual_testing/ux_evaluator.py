@@ -8,7 +8,7 @@ citations, and remediation guidance.
 
 Usage:
     cd mathwise_build
-    python3 scripts/ux_evaluator.py --screenshots screenshots/YYYY-MM-DD_HH-MM-SS/
+    python3 scripts/visual_testing/ux_evaluator.py --screenshots screenshots/YYYY-MM-DD_HH-MM-SS/
 
 Output:
     reports/YYYY-MM-DD_HH-MM-SS/<screen_name>/ux_report.md
@@ -24,6 +24,19 @@ from pathlib import Path
 from typing import Optional
 
 from PIL import Image
+
+
+# ── Color Utilities (shared with screenshot_auditor) ─────────────────────────
+
+def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
+    hex_color = hex_color.lstrip("#")
+    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+
+
+def color_distance(c1: tuple[int, ...], c2: tuple[int, ...]) -> float:
+    """Euclidean distance in RGB space."""
+    import math
+    return math.sqrt(sum((a - b) ** 2 for a, b in zip(c1[:3], c2[:3])))
 
 
 # ── Data Structures ──────────────────────────────────────────────────────────
@@ -100,7 +113,7 @@ class UXEvaluator:
         self._eval_cognitive_load(img, result)
         self._eval_color_psychology(img, result)
         self._eval_touch_targets(img, result)
-        self._eval_navigation(img, result)
+        self._eval_navigation(img, result, screen_name)
         self._eval_accessibility(img, result)
         self._eval_pedagogy(img, result, screen_name)
         self._eval_responsiveness(img, result, viewport)
@@ -204,39 +217,56 @@ class UXEvaluator:
             )
 
     def _eval_color_psychology(self, img: Image.Image, result: UXResult) -> None:
-        """Check for blue primary and absence of red backgrounds."""
+        """Check for blue primary and absence of red backgrounds.
+
+        Persistent UI chrome (app bar) is thin on tablets and can fall
+        below a naive 3% whole-screen threshold. We weight the top 15%
+        of the screen (where the app bar lives) 3× to avoid false negatives.
+        """
         width, height = img.size
         pixels = list(img.getdata())
 
         blue_count = 0
+        blue_weighted_count = 0.0
         red_count = 0
         total_opaque = 0
+        total_weighted = 0.0
 
         sample_step = max(1, len(pixels) // 2000)  # Sample ~2000 pixels
         for i in range(0, len(pixels), sample_step):
             pixel = pixels[i]
             if len(pixel) == 4 and pixel[3] < 128:
                 continue
+
+            # Map linear index to (x, y) to apply regional weighting
+            y = (i // width) / height  # Normalized y position (0.0–1.0)
+            # Top 15% of screen gets 3× weight (app bar region)
+            weight = 3.0 if y < 0.15 else 1.0
+
             total_opaque += 1
+            total_weighted += weight
             r, g, b = pixel[:3]
             # Blue-dominant
             if b > r + 20 and b > g + 10 and b > 100:
                 blue_count += 1
+                blue_weighted_count += weight
             # Red-dominant (strong red)
             if r > 180 and r > g + 60 and r > b + 60:
                 red_count += 1
 
         blue_ratio = blue_count / total_opaque if total_opaque > 0 else 0
+        blue_weighted_ratio = blue_weighted_count / total_weighted if total_weighted > 0 else 0
         red_ratio = red_count / total_opaque if total_opaque > 0 else 0
 
-        if blue_ratio > 0.03:
+        # Use weighted ratio for decision; unweighted for reporting
+        if blue_weighted_ratio > 0.03:
             self._add_finding(
                 result,
                 "Color Psychology",
                 "Blue primary color reduces math anxiety (Elliot & Maier 2014)",
                 "pass",
                 "info",
-                f"Blue tones present across ~{blue_ratio*100:.1f}% of screen — primary color visible.",
+                f"Blue tones present across ~{blue_ratio*100:.1f}% of screen (weighted ~{blue_weighted_ratio*100:.1f}%) — primary color visible.",
                 "color_psychology",
                 "Maintain blue (#2C5F9F) as dominant primary color.",
             )
@@ -247,7 +277,7 @@ class UXEvaluator:
                 "Blue primary color reduces math anxiety (Elliot & Maier 2014)",
                 "warning",
                 "medium",
-                "Blue tones not prominently detected. Verify primary color usage.",
+                f"Blue tones not prominently detected (raw {blue_ratio*100:.1f}%, weighted {blue_weighted_ratio*100:.1f}%). Verify primary color usage.",
                 "color_psychology",
                 "Ensure AppColors.primary (#2C5F9F) is used for app bar, CTAs, and active states.",
             )
@@ -308,11 +338,56 @@ class UXEvaluator:
                 "Increase touch target size to 48dp minimum. Children have lower fine motor precision.",
             )
 
-    def _eval_navigation(self, img: Image.Image, result: UXResult) -> None:
-        """Check for visible, persistent navigation (bottom tabs preferred)."""
+    # Screens pushed via Navigator.push legitimately lack bottom nav
+    SUB_SCREENS = {
+        "class_selection", "topic_choice", "topics_subtopics",
+        "curriculum_grid", "curriculum_list", "curriculum_stepper",
+        "concept_content", "practice_question",
+    }
+
+    def _eval_navigation(self, img: Image.Image, result: UXResult, screen_name: str) -> None:
+        """Check for visible, persistent navigation (bottom tabs preferred).
+
+        Tab-root screens (home, games, profile) must have bottom nav.
+        Sub-screens pushed via Navigator.push legitimately lack it.
+        """
         width, height = img.size
 
-        # Check bottom area for navigation-like structure
+        # Sub-screens: verify back button / AppBar instead of bottom nav
+        if screen_name in self.SUB_SCREENS:
+            # Check for top app bar (back button / title) as wayfinding substitute
+            top_area = img.crop((0, 0, width, int(height * 0.12)))
+            top_pixels = list(top_area.getdata())
+            primary_rgb = hex_to_rgb("#2C5F9F")
+            primary_count = sum(
+                1 for p in top_pixels
+                if len(p) >= 3 and color_distance(p[:3], primary_rgb) < 40
+            )
+            if primary_count > len(top_pixels) * 0.1:
+                self._add_finding(
+                    result,
+                    "Navigation",
+                    "Persistent visible navigation (Nielsen 2016)",
+                    "pass",
+                    "info",
+                    f"Sub-screen '{screen_name}' has app-bar wayfinding — bottom nav not expected.",
+                    "navigation",
+                    "Sub-screens should provide AppBar with back button for wayfinding.",
+                )
+            else:
+                self._add_finding(
+                    result,
+                    "Navigation",
+                    "Persistent visible navigation (Nielsen 2016)",
+                    "warning",
+                    "low",
+                    f"Sub-screen '{screen_name}' lacks clear app-bar wayfinding.",
+                    "navigation",
+                    "Ensure AppBar with back button is visible on all sub-screens.",
+                )
+            return
+
+        # Tab-root screens: check bottom area for navigation-like structure
         bottom_area = img.crop((0, int(height * 0.85), width, height))
         bw, bh = bottom_area.size
 

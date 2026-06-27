@@ -8,7 +8,7 @@ are captured via widget test golden files (test/visual_screenshots_test.dart).
 
 Usage:
     cd mathwise_build
-    python3 scripts/screenshot_capture.py [--output-dir screenshots/YYYY-MM-DD_HH-MM-SS]
+    python3 scripts/visual_testing/screenshot_capture.py [--output-dir screenshots/YYYY-MM-DD_HH-MM-SS]
 
 Output:
     screenshots/YYYY-MM-DD_HH-MM-SS/<screen_name>/<viewport>.png
@@ -31,7 +31,7 @@ from playwright.async_api import async_playwright, Page
 
 # ── Configuration ────────────────────────────────────────────────────────────
 
-BUILD_DIR = Path(__file__).parent.parent / "build" / "web"
+BUILD_DIR = Path(__file__).parent.parent.parent / "build" / "web"
 PORT = 9999
 BASE_URL = f"http://localhost:{PORT}"
 
@@ -199,7 +199,7 @@ def main() -> None:
         output_dir = Path(args.output_dir)
     else:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        output_dir = Path(__file__).parent.parent / "screenshots" / timestamp
+        output_dir = Path(__file__).parent.parent.parent / "screenshots" / timestamp
 
     output_dir.mkdir(parents=True, exist_ok=True)
 

@@ -11,10 +11,10 @@ Runs the complete dual-persona visual testing pipeline:
 
 Usage:
     cd mathwise_build
-    python3 scripts/visual_test_pipeline.py
+    python3 scripts/visual_testing/visual_test_pipeline.py
 
     # Skip golden generation (use existing test/goldens/)
-    python3 scripts/visual_test_pipeline.py --skip-goldens
+    python3 scripts/visual_testing/visual_test_pipeline.py --skip-goldens
 
 Output:
     reports/YYYY-MM-DD_HH-MM-SS/summary.md
@@ -42,7 +42,7 @@ from report_builder import ReportBuilder
 
 # ── Configuration ────────────────────────────────────────────────────────────
 
-PROJECT_DIR = SCRIPTS_DIR.parent
+PROJECT_DIR = SCRIPTS_DIR.parent.parent
 GOLDENS_DIR = PROJECT_DIR / "test" / "goldens"
 REPORTS_DIR = PROJECT_DIR / "reports"
 

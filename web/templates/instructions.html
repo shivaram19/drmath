@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM Instructions — Dr. Math Content Review System</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .instructions-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        .instructions-header {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .instructions-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .instructions-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .section {
+            background: var(--card);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .section h2 {
+            color: var(--accent);
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section h3 {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section p, .section li {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+        .section ul, .section ol {
+            padding-left: 1.5rem;
+            margin: 0.75rem 0;
+        }
+        .section li {
+            margin-bottom: 0.5rem;
+        }
+        .dim-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        .dim-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .dim-card .theory {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+        .dim-card .child-feel {
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-style: italic;
+        }
+        .rating-guide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .rating-item {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .rating-item strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .rating-item span {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .workflow-step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            background: var(--accent);
+            color: #0f172a;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step-content h4 {
+            margin-bottom: 0.25rem;
+        }
+        .step-content p {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+        .impact-box {
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            border: 1px solid #38bdf8;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        .impact-box h4 {
+            color: #38bdf8;
+            margin-bottom: 0.75rem;
+        }
+        .cta-box {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #4c1d95, #1e3a5f);
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+        .cta-box h2 {
+            margin-bottom: 1rem;
+        }
+        .cta-box a {
+            display: inline-block;
+            background: var(--accent);
+            color: #0f172a;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            margin: 0.5rem;
+            transition: transform 0.15s;
+        }
+        .cta-box a:hover {
+            transform: translateY(-2px);
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        code {
+            background: #1e293b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">🧮 Dr. Math</a>
+            <div class="nav-links">
+                <a href="/prompts">🎨 Prompts</a>
+                <a href="/history">📜 History</a>
+                <a href="/lab">🧪 Lab</a>
+                <a href="/status">📊 Status</a>
+                <a href="/instructions">📖 Instructions</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="instructions-container">
+        <a href="/" class="back-link">← Back to topics</a>
+
+        <div class="instructions-header">
+            <h1>📖 PM Instructions</h1>
+            <p>How to review, rate, and shape the educational content that children experience — from a product manager's lens.</p>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Your Role as a PM Reviewer</h2>
+            <p>You are the <strong>bridge between pedagogy and product</strong>. Every rating you give directly influences:</p>
+            <ul>
+                <li><strong>Which prompt persona</strong> gets prioritized for future content generation</li>
+                <li><strong>Which questions</strong> make it into the app for children to solve</li>
+                <li><strong>How we iterate</strong> on the LLM prompts to improve quality</li>
+                <li><strong>What content gaps</strong> exist across topics and difficulty levels</li>
+            </ul>
+            <div class="impact-box">
+                <h4>💡 Core Principle</h4>
+                <p>When you review, <strong>put yourself in the shoes of a 12-year-old Indian child</strong>. Would <em>you</em> want to solve this? Would it make you curious? Would it help you <em>think</em> — not just memorize?</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎨 The 4 Pedagogical Dimensions</h2>
+            <p>Each topic is generated in <strong>4 versions</strong>, each based on a different learning science theory. Your job is to compare them and identify which approach works best for each concept.</p>
+
+            <div class="dim-card">
+                <h4>🧮 Default (Anti-Gravity)</h4>
+                <div class="theory">Theory: Scaffolded instruction (Rosenshine, 2012)</div>
+                <div class="child-feel">"I understand step by step. The explanation makes sense."</div>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">Clear explanations, progressive difficulty, direct instruction. Best for introducing new concepts.</p>
+            </div>
+
+            <div class="dim-card">
+                <h4>📖 Cultural Storyteller</h4>
+                <div class="theory">Theory: Situated learning (Lave & Wenger, 1991)</div>
+                <div class="child-feel">"This is MY world — cricket, bazaar, festivals, train journeys."</div>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">Math embedded in Indian cultural contexts. Every problem is a mini-story. Best for engagement and relevance.</p>
+            </div>
+
+            <div class="dim-card">
+                <h4>👁️ Visual-First Thinker</h4>
+                <div class="theory">Theory: CPA method — Concrete → Pictorial → Abstract (Bruner, 1966)</div>
+                <div class="child-feel">"I can SEE it. I can draw it. The diagram helps me understand."</div>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">Heavy emphasis on diagrams, visual intuition, spatial reasoning. Best for geometry, fractions, and abstract concepts.</p>
+            </div>
+
+            <div class="dim-card">
+                <h4>🎯 ZPD Adaptive Tutor</h4>
+                <div class="theory">Theory: Zone of Proximal Development (Vygotsky, 1978)</div>
+                <div class="child-feel">"This is hard but not impossible. I can figure it out with a small push."</div>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">Just-harder-than-comfortable problems with scaffolding. Best for building resilience and deep understanding.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⭐ The 4 Rating Dimensions</h2>
+            <p>For <strong>each question</strong>, you rate on a 1-5 scale across these research-backed dimensions:</p>
+
+            <div class="rating-guide">
+                <div class="rating-item">
+                    <strong>🧠 Thought Direction</strong>
+                    <span>Does it guide the child toward the <em>right</em> way of thinking — or just test memorization?</span>
+                </div>
+                <div class="rating-item">
+                    <strong>🎭 Playfulness</strong>
+                    <span>Would a child <em>want</em> to solve this? Is it engaging, fun, curiosity-building?</span>
+                </div>
+                <div class="rating-item">
+                    <strong>🪜 Guidance Quality</strong>
+                    <span>Is the explanation helpful — or does it just give the answer? Good scaffolding?</span>
+                </div>
+                <div class="rating-item">
+                    <strong>🔥 Curiosity Building</strong>
+                    <span>Does it make the child want to learn <em>more</em> about this topic?</span>
+                </div>
+            </div>
+
+            <h3>Rating Scale</h3>
+            <ul>
+                <li><strong>1 ⭐</strong> — Poor. Unusable. Confusing or counter-productive.</li>
+                <li><strong>2 ⭐</strong> — Weak. Major flaws. Needs significant rewrite.</li>
+                <li><strong>3 ⭐</strong> — Acceptable. Works but not inspiring. Minor issues.</li>
+                <li><strong>4 ⭐</strong> — Good. Effective learning. Child would engage.</li>
+                <li><strong>5 ⭐</strong> — Excellent. Delightful. Sparks curiosity and deep thinking.</li>
+            </ul>
+
+            <div class="impact-box">
+                <h4>⚠️ Hierarchical Rule (from research)</h4>
+                <p>If a question is <strong>unclear</strong> or has an <strong>incorrect answer</strong>, it fails the gate — rate it 1-2 on all dimensions and leave a note. Clarity and accuracy are <em>prerequisites</em> for everything else.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔄 Your Review Workflow</h2>
+
+            <div class="workflow-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Pick a Topic</h4>
+                    <p>Start with <code>/</code> (home). Click "📝 Review" on any topic card. We recommend starting with <strong>Integers</strong> or <strong>Fractions</strong> as baseline topics.</p>
+                </div>
+            </div>
+
+            <div class="workflow-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Choose a Dimension</h4>
+                    <p>On the review page, use the dimension switcher at the top. Compare the <strong>same question</strong> across Default, Storyteller, Visual, and ZPD. Which version feels best?</p>
+                </div>
+            </div>
+
+            <div class="workflow-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Rate Each Question</h4>
+                    <p>Click the star buttons for each of the 4 dimensions. Be consistent — if you give Question 1 a 4 on Playfulness, what makes Question 5 a 5? Add notes to explain your reasoning.</p>
+                </div>
+            </div>
+
+            <div class="workflow-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Save & Move On</h4>
+                    <p>Click "Save Review" for each question. The page auto-updates the progress bar. Filter "Unreviewed" to find what's left.</p>
+                </div>
+            </div>
+
+            <div class="workflow-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h4>Check the Leaderboard</h4>
+                    <p>Visit <code>/lab</code> to see which prompt dimensions score highest across all topics. This tells us which pedagogical approach to prioritize.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 How Your Feedback Impacts the Pipeline</h2>
+            <ol>
+                <li><strong>Per-question ratings</strong> are stored in the <code>question_reviews</code> database table, linked to the exact generation.</li>
+                <li><strong>Aggregate stats</strong> (avg per dimension) are computed automatically and displayed on the review page header.</li>
+                <li><strong>Prompt leaderboard</strong> at <code>/lab</code> ranks which prompt persona produces the highest-rated content.</li>
+                <li><strong>Low-rated questions</strong> (avg &lt; 3) are flagged for re-generation with improved prompts.</li>
+                <li><strong>High-rated questions</strong> (avg ≥ 4) are prioritized for inclusion in the Flutter app.</li>
+                <li><strong>Your notes</strong> are read by the engineering team to refine prompt engineering and fix systematic issues.</li>
+            </ol>
+
+            <div class="impact-box">
+                <h4>🔄 Feedback Loop</h4>
+                <p><strong>Your ratings → Prompt optimization → Better generation → Higher child engagement → Better learning outcomes.</strong> You are the quality gate.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Pages You Should Know</h2>
+            <ul>
+                <li><code>/</code> — <strong>Home</strong> — All topics. Start here.</li>
+                <li><code>/review/{topic}</code> — <strong>Review</strong> — Rate questions for a topic.</li>
+                <li><code>/review/{topic}?prompt=storyteller</code> — <strong>Review Specific Dimension</strong> — View only the Cultural Storyteller version.</li>
+                <li><code>/status</code> — <strong>Generation Status</strong> — See what's generated, what's pending.</li>
+                <li><code>/lab</code> — <strong>Manager Lab</strong> — Compare prompts, see leaderboard.</li>
+                <li><code>/compare?a=1&b=2</code> — <strong>Side-by-Side</strong> — Compare two generations directly.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>❓ FAQ</h2>
+
+            <h3>Why are there 4 versions of the same topic?</h3>
+            <p>We don't know which pedagogical approach works best for Indian Class VII students. By generating the same topic 4 ways, we can A/B test them via your ratings. The winning dimension gets scaled.</p>
+
+            <h3>What if I disagree with another PM's rating?</h3>
+            <p>That's valuable signal! Divergent ratings tell us a question is polarizing — some children will love it, others won't. We use variance, not just mean, to evaluate.</p>
+
+            <h3>How many questions should I review?</h3>
+            <p>Minimum: 5 questions per topic per dimension. Ideal: all 40. Realistic: review the first 10 of each dimension for 2-3 topics. Quality over quantity.</p>
+
+            <h3>What if the correct answer is wrong?</h3>
+            <p>Rate it 1 ⭐ on all dimensions and leave a note: "Answer is incorrect — should be X." This is <em>critical</em> feedback. Accuracy is our highest priority.</p>
+
+            <h3>Can I change my rating later?</h3>
+            <p>Yes. Click the stars again and re-save. The database stores the latest rating for each question.</p>
+        </div>
+
+        <div class="cta-box">
+            <h2>Ready to Start Reviewing?</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--muted);">Pick a topic, choose a dimension, and put yourself in a child's shoes.</p>
+            <a href="/review/integers">📝 Review Integers</a>
+            <a href="/review/fractions">📝 Review Fractions</a>
+            <a href="/status">📊 View Status</a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>Built for Bill — Trelo Labs</p>
+        </div>
+    </footer>
+<div id="draggable-floating" class="floating-help" aria-label="PM Instructions"><a href="/instructions" style="color:inherit;text-decoration:none;">❓</a><span class="tooltip">PM Instructions</span></div>
+<script>
+(function(){
+  var el=document.getElementById("draggable-floating");
+  if(!el)return;
+  var stored=localStorage.getItem("floatingHelpPos");
+  if(stored){
+    var p=JSON.parse(stored);
+    el.style.left=p.x+"px";el.style.top=p.y+"px";el.style.right="auto";el.style.bottom="auto";
+  }
+  var dragging=false,offsetX=0,offsetY=0;
+  el.addEventListener("mousedown",function(e){
+    if(e.target.closest("a"))return;
+    dragging=true;
+    offsetX=e.clientX-el.offsetLeft;
+    offsetY=e.clientY-el.offsetTop;
+    el.style.transition="none";
+    e.preventDefault();
+  });
+  document.addEventListener("mousemove",function(e){
+    if(!dragging)return;
+    el.style.left=(e.clientX-offsetX)+"px";
+    el.style.top=(e.clientY-offsetY)+"px";
+    el.style.right="auto";el.style.bottom="auto";
+  });
+  document.addEventListener("mouseup",function(){
+    if(!dragging)return;
+    dragging=false;
+    el.style.transition="transform 0.2s, box-shadow 0.2s";
+    localStorage.setItem("floatingHelpPos",JSON.stringify({x:el.offsetLeft,y:el.offsetTop}));
+  });
+})();
+</script>
+</body>
+</html>

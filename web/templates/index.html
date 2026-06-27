@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. Math — Class VII Content Generator</title>
+    <title>Dr. Math — India's Adaptive Math Companion for Class VII</title>
+    <meta name="description" content="Dr. Math is an AI-powered adaptive math learning app for Indian Class VII students. It learns how your child thinks and selects the perfect next question, hint, and explanation.">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -11,65 +12,273 @@
         <div class="container">
             <a href="/" class="logo">🧮 Dr. Math</a>
             <div class="nav-links">
-                <a href="/prompts">🎨 Prompts</a>
-                <a href="/history">📜 History</a>
+                <a href="/manager">🎛 Manager</a>
                 <a href="/lab">🧪 Lab</a>
+                <a href="/prompts">🎨 Prompts</a>
             </div>
         </div>
     </nav>
 
-    <main class="container">
-        <section class="hero">
-            <h1>Generate Math Content in One Click</h1>
-            <p>Pick a topic. Choose a teaching style. We scrape IXL + MathIsFun and generate 40 MCQs.</p>
-        </section>
-
-        <section class="generate-box">
-            <form action="/generate" method="post" class="gen-form">
-                <input type="text" name="topic" placeholder="Enter topic (e.g. Integers, Fractions, Triangles)" required>
-                <select name="prompt_id" class="prompt-select">
-                    <option value="">🎨 Default (Anti-Gravity)</option>
-                    {% for p in prompts %}
-                    <option value="{{ p.id }}">{{ p.name }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit">🚀 Generate</button>
-            </form>
-            <p class="hint">
-                <a href="/prompts">Create custom prompts →</a> to match your teaching style
-            </p>
-        </section>
-
-        <section class="topics">
-            <h2>📚 Generated Topics</h2>
-            {% if topics %}
-            <div class="topic-grid">
-                {% for t in topics %}
-                <a href="/topic/{{ t.slug }}" class="topic-card">
-                    <h3>{{ t.name }}</h3>
-                    <div class="meta">
-                        <span>{{ t.total_questions }} questions</span>
-                        <span class="prompt-badge">{{ t.prompt_name }}</span>
-                    </div>
-                    <div class="diff-badges">
-                        <span class="badge d1">{{ t.difficulty.get('1',0) }}</span>
-                        <span class="badge d2">{{ t.difficulty.get('2',0) }}</span>
-                        <span class="badge d3">{{ t.difficulty.get('3',0) }}</span>
-                        <span class="badge d4">{{ t.difficulty.get('4',0) }}</span>
-                    </div>
-                </a>
-                {% endfor %}
+    <main>
+        <!-- Hero -->
+        <section class="hero marketing-hero">
+            <div class="container">
+                <div class="badge badge-accent">Now live for CBSE Class VII</div>
+                <h1>Math That Adapts to <span class="gradient-text">Your Child's Brain</span></h1>
+                <p class="subtitle">Dr. Math is India's adaptive AI math companion for Class VII students. It doesn't just mark answers right or wrong — it understands how your child thinks and chooses the next question to build real reasoning.</p>
+                <div class="cta-row">
+                    <a href="/mathwise.apk" class="btn btn-android" download>
+                        🤖 Download Android App
+                    </a>
+                    <a href="/mathwise-web/" class="btn btn-ios" target="_blank">
+                        🌐 Play in Browser
+                    </a>
+                    <a href="#topics" class="btn btn-secondary">
+                        📚 Explore Topics
+                    </a>
+                </div>
+                <p class="trust-line">No credit card required · Privacy-first · Research-backed</p>
             </div>
-            {% else %}
-            <p class="empty">No topics yet. Generate one above!</p>
-            {% endif %}
+        </section>
+
+        <!-- Problem / Solution -->
+        <section class="section section-dark">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Why Most Math Apps Fail Kids</h2>
+                    <p>They treat every child the same.</p>
+                </div>
+                <div class="grid-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">😰</div>
+                        <h3>One-Size-Fits-All Worksheets</h3>
+                        <p>Generic questions ignore whether your child is bored, stuck, or one step away from mastery.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Rigid "Easy / Medium / Hard" Levels</h3>
+                        <p>Real learning is continuous. Forcing kids into fixed buckets creates anxiety or complacency.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>AI Without Pedagogy</h3>
+                        <p>LLM-generated hints can be wrong or confusing. Children need trustworthy, research-backed guidance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>How Dr. Math Works</h2>
+                    <p>Four steps to deeper understanding.</p>
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Start a Topic</h3>
+                        <p>Your child picks Integers, Fractions, Percentage, or any Class VII topic.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Answer Adaptively</h3>
+                        <p>Dr. Math selects the next question based on speed, accuracy, hints used, and error patterns.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Learn From Mistakes</h3>
+                        <p>Every wrong answer is diagnosed. Dr. Math gives a targeted hint, not just the solution.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h3>Build Mastery</h3>
+                        <p>Spaced repetition and just-right challenge keep your child in the learning zone.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4 Dimensions -->
+        <section class="section section-dark">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Four Ways to Learn the Same Concept</h2>
+                    <p>Every child learns differently. Dr. Math adapts the teaching style, not just the difficulty.</p>
+                </div>
+                <div class="grid-2">
+                    <div class="dimension-card">
+                        <div class="dimension-icon">🧮</div>
+                        <h3>Step-by-Step Clarity</h3>
+                        <p>Clear scaffolding and worked examples for students who need structure. Based on Rosenshine's Principles of Instruction.</p>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-icon">📖</div>
+                        <h3>Cultural Stories</h3>
+                        <p>Math wrapped in Indian contexts — cricket scores, festivals, market prices — so children see why it matters.</p>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-icon">👁️</div>
+                        <h3>Visual-First Thinking</h3>
+                        <p>Number lines, diagrams, and spatial reasoning before abstract symbols. Inspired by Bruner's CPA approach.</p>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-icon">🎯</div>
+                        <h3>Zoned for Growth</h3>
+                        <p>Just-harder-than-comfortable problems with fading support. Grounded in Vygotsky's Zone of Proximal Development.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="section">
+            <div class="container">
+                <div class="metrics marketing-metrics">
+                    <div class="metric">
+                        <span class="value">10</span>
+                        <span class="label">CBSE Class VII Topics</span>
+                    </div>
+                    <div class="metric">
+                        <span class="value">~1,680</span>
+                        <span class="label">Research-Backed Questions</span>
+                    </div>
+                    <div class="metric">
+                        <span class="value">4</span>
+                        <span class="label">Teaching Dimensions</span>
+                    </div>
+                    <div class="metric">
+                        <span class="value">0</span>
+                        <span class="label">Rigid Difficulty Levels</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topics -->
+        <section id="topics" class="section section-dark">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Explore Class VII Topics</h2>
+                    <p>Each topic includes questions across all four teaching dimensions.</p>
+                </div>
+                {% if topics %}
+                <div class="topic-grid">
+                    {% for t in topics %}
+                    <a href="/topic/{{ t.slug }}" class="topic-card">
+                        <h3>{{ t.name }}</h3>
+                        <div class="meta">
+                            <span>{{ t.total_questions }} questions</span>
+                            <span class="prompt-badge">{{ t.prompt_name }}</span>
+                        </div>
+                        <div class="diff-badges">
+                            <span class="badge d1">{{ t.difficulty.get('1',0) }}</span>
+                            <span class="badge d2">{{ t.difficulty.get('2',0) }}</span>
+                            <span class="badge d3">{{ t.difficulty.get('3',0) }}</span>
+                            <span class="badge d4">{{ t.difficulty.get('4',0) }}</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty">Topics loading soon. Check back!</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Trust -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Built on Learning Science, Not Hype</h2>
+                    <p>Every feature traces back to peer-reviewed research.</p>
+                </div>
+                <div class="trust-grid">
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        <span>Adaptive selection based on response time, accuracy, and hint use</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        <span>Misconception-targeted feedback, not generic explanations</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        <span>Spaced repetition to combat forgetting</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        <span>Continuous difficulty — no fixed "levels"</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        <span>Pseudonymous accounts; minimal child data collected</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="check">✓</span>
+                        <span>Grounded, cited content pipeline with full provenance</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="section section-cta">
+            <div class="container">
+                <h2>Give Your Child a Math Companion That Understands Them</h2>
+                <p>Download Dr. Math today. Free to start. No spam. No rigid levels. Just better learning.</p>
+                <div class="cta-row">
+                    <a href="/mathwise.apk" class="btn btn-android" download>🤖 Download Android</a>
+                    <a href="/mathwise-web/" class="btn btn-ios" target="_blank">🌐 Play in Browser</a>
+                </div>
+            </div>
         </section>
     </main>
 
     <footer>
         <div class="container">
-            <p>Built for Bill — Trelo Labs</p>
+            <p><strong>Dr. Math</strong> — Adaptive math learning for Indian Class VII students.</p>
+            <p>
+                <a href="/manager">Manager Tools</a> ·
+                <a href="/lab">Research Lab</a> ·
+                <a href="https://github.com/shivaram19/drmath" target="_blank" rel="noopener">GitHub</a>
+            </p>
         </div>
     </footer>
+
+    <div id="draggable-floating" class="floating-help" aria-label="PM Instructions"><a href="/instructions" style="color:inherit;text-decoration:none;">❓</a><span class="tooltip">PM Instructions</span></div>
+    <script>
+    (function(){
+      var el=document.getElementById("draggable-floating");
+      if(!el)return;
+      var stored=localStorage.getItem("floatingHelpPos");
+      if(stored){
+        var p=JSON.parse(stored);
+        el.style.left=p.x+"px";el.style.top=p.y+"px";el.style.right="auto";el.style.bottom="auto";
+      }
+      var dragging=false,offsetX=0,offsetY=0;
+      el.addEventListener("mousedown",function(e){
+        if(e.target.closest("a"))return;
+        dragging=true;
+        offsetX=e.clientX-el.offsetLeft;
+        offsetY=e.clientY-el.offsetTop;
+        el.style.transition="none";
+        e.preventDefault();
+      });
+      document.addEventListener("mousemove",function(e){
+        if(!dragging)return;
+        el.style.left=(e.clientX-offsetX)+"px";
+        el.style.top=(e.clientY-offsetY)+"px";
+        el.style.right="auto";el.style.bottom="auto";
+      });
+      document.addEventListener("mouseup",function(){
+        if(!dragging)return;
+        dragging=false;
+        el.style.transition="transform 0.2s, box-shadow 0.2s";
+        localStorage.setItem("floatingHelpPos",JSON.stringify({x:el.offsetLeft,y:el.offsetTop}));
+      });
+    })();
+    </script>
 </body>
 </html>
