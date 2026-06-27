@@ -105,7 +105,26 @@ def test_html_pages_return_200(client):
     for path in ["/nursing", "/nursing/practice", "/nursing/mock", "/nursing/diagnostic"]:
         response = client.get(path)
         assert response.status_code == 200
-        assert "Phase 3" in response.text or "Dr. Math" in response.text
+        assert "Dr. Math Nursing" in response.text
+
+
+def test_pdf_export_post(client):
+    attempts = [
+        Attempt(
+            question_id=1,
+            selected_option="A",
+            is_correct=False,
+            time_seconds=60.0,
+            confidence=2,
+            subject_id="anatomy_physiology",
+            topic_id="ap_cardiovascular",
+            cognitive_level="remember",
+        ).model_dump(),
+    ]
+    response = client.post("/api/nursing/pdf", json={"attempts": attempts, "top_n": 2})
+    assert response.status_code == 200
+    assert "<!DOCTYPE html>" in response.text
+    assert "Answer Key" in response.text
 
 
 def test_existing_math_homepage_unaffected(client):

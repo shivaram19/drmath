@@ -1,0 +1,28 @@
+{% extends "nursing/base.html" %}
+
+{% block title %}Full Mock Test — Nursing{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 data-te="పూర్తి మాక్ పరీక్ష">Full Mock Test</h2>
+  <p><span data-te="80 ప్రశ్నలు, 60 నిమిషాలు">80 questions, 60 minutes</span>. <span data-te="స్వీయ-వేగం">Self-paced</span>.</p>
+  <div id="timer" class="timer">60:00</div>
+</div>
+
+<div id="quiz-container">
+  <p data-te="ప్రశ్నలు లోడ్ అవుతున్నాయి...">Loading questions…</p>
+</div>
+
+<div class="actions">
+  <button id="submit-btn" class="btn" style="display:none;" data-te="పరీక్షను ముగించండి">Finish Mock</button>
+</div>
+
+<div id="result-card" class="card" style="display:none;">
+  <h2 data-te="మాక్ ఫలితాలు">Mock Results</h2>
+  <div id="result-summary"></div>
+  <div class="actions">
+    <a href="/nursing" class="btn btn-secondary" data-te="హోమ్">Home</a>
+    <a href="/nursing/practice" class="btn" data-te="ప్రాక్టీస్ కొనసాగించండి">Continue Practice</a>
+  </div>
+</div>
+{% endblock %}

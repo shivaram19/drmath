@@ -1,0 +1,57 @@
+{% extends "nursing/base.html" %}
+
+{% block title %}Nursing Practice — Home{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 data-te="టెలంగాణా స్టాఫ్ నర్స్ ప్రాక్టీస్">Telangana Staff Nurse Practice</h2>
+  <p data-te="మీ బలహీన ప్రదేశాలను కనుగొని, విషయం వారీగా సాధన చేయండి.">Find your weak areas and practice topic-wise.</p>
+  <div class="actions">
+    <a href="/nursing/diagnostic" class="btn" data-te="డయగ్నస్టిక్ పరీక్ష">Start Diagnostic</a>
+    <a href="/nursing/mock" class="btn btn-secondary" data-te="మాక్ పరీక్ష">Full Mock Test</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2 data-te="విషయాలు">Subjects</h2>
+  <div id="subject-grid" class="subject-grid">
+    <p>Loading subjects…</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2 data-te="శీఘ్ర ప్రాక్టీస్">Quick Practice</h2>
+  <div class="form-group">
+    <label for="subject-select" data-te="విషయం ఎంచుకోండి">Choose Subject</label>
+    <select id="subject-select">
+      <option value="">-- Select subject --</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="topic-select" data-te="అంశం ఎంచుకోండి">Choose Topic</label>
+    <select id="topic-select" disabled>
+      <option value="">-- Select topic --</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="cognitive-select" data-te="ఆలోచన స్థాయి">Cognitive Level</label>
+    <select id="cognitive-select">
+      <option value="">Any</option>
+      <option value="remember">Remember</option>
+      <option value="understand">Understand</option>
+      <option value="apply">Apply</option>
+      <option value="analyze">Analyze</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="context-select" data-te="సందర్భం">Context</label>
+    <select id="context-select">
+      <option value="">Any</option>
+      <option value="theory">Theory</option>
+      <option value="scenario">Scenario</option>
+      <option value="calculation">Calculation</option>
+    </select>
+  </div>
+  <a id="practice-link" href="/nursing/practice" class="btn" data-te="ప్రాక్టీస్ ప్రారంభించండి">Start Practice</a>
+</div>
+{% endblock %}

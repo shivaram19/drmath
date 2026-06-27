@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dr. Math — Nursing Practice{% endblock %}</title>
+  <link rel="stylesheet" href="/static/nursing/nursing.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>🩺 Dr. Math Nursing</h1>
+      <div>
+        <button id="lang-toggle" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.9rem;">తెలుగు</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <p>Practice material for Telangana Staff Nurse / ANM-GNM recruitment.</p>
+    <p class="disclaimer">This is practice content, not an official question bank. Verify clinical facts with standard textbooks.</p>
+  </footer>
+
+  <script src="/static/nursing/nursing.js"></script>
+</body>
+</html>

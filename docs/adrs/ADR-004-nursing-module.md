@@ -79,6 +79,7 @@ Add a self-contained `/nursing` module to the Dr. Math FastAPI application with 
 - 2026-05-13: `web/nursing/README.md` added documenting package conventions.
 - 2026-05-13: `web/services/nursing_service.py` added with diagnostic, practice, mock, capability, PDF export, and report services.
 - 2026-05-13: `web/routers/nursing.py` added and included in `web/main.py`; exposes `/nursing` HTML routes and `/api/nursing` JSON endpoints.
+- 2026-05-13: Phase 3 UI added: Jinja2 templates, mobile-first CSS, vanilla JS session logic, Telugu glossary tooltips, and `localStorage` progress.
 
 ## References
 

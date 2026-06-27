@@ -1,9 +1,15 @@
 """FastAPI router for the nursing practice module."""
 from typing import Any, Dict, List, Optional
 
+from pathlib import Path
+
 from fastapi import APIRouter, Query, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+
+TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 from web.domain.constants import DEFAULT_PATTERN_KEY, CognitiveLevel, QuestionContext
 from web.domain.models import Attempt, Question
@@ -16,27 +22,27 @@ service = NursingService()
 
 
 # ---------------------------------------------------------------------------
-# HTML pages (placeholders; full templates come in Phase 3)
+# HTML pages
 # ---------------------------------------------------------------------------
 
 @router.get("", response_class=HTMLResponse)
 def nursing_home(request: Request):
-    return HTMLResponse("<h1>Dr. Math — Telangana Staff Nurse Practice</h1><p>Landing page coming in Phase 3.</p>")
+    return templates.TemplateResponse(request, "nursing/index.html")
 
 
 @router.get("/practice", response_class=HTMLResponse)
 def nursing_practice(request: Request):
-    return HTMLResponse("<h1>Topic Practice</h1><p>Practice page coming in Phase 3.</p>")
+    return templates.TemplateResponse(request, "nursing/practice.html")
 
 
 @router.get("/mock", response_class=HTMLResponse)
 def nursing_mock(request: Request):
-    return HTMLResponse("<h1>Full Mock Test</h1><p>Mock test page coming in Phase 3.</p>")
+    return templates.TemplateResponse(request, "nursing/mock.html")
 
 
 @router.get("/diagnostic", response_class=HTMLResponse)
 def nursing_diagnostic(request: Request):
-    return HTMLResponse("<h1>Diagnostic Test</h1><p>Diagnostic page coming in Phase 3.</p>")
+    return templates.TemplateResponse(request, "nursing/diagnostic.html")
 
 
 # ---------------------------------------------------------------------------
@@ -66,6 +72,11 @@ class ReportRequest(BaseModel):
 class ReportResponse(BaseModel):
     status: str
     report: Dict[str, Any]
+
+
+class PdfRequest(BaseModel):
+    attempts: List[Attempt]
+    top_n: int = 3
 
 
 @api_router.get("/status")
@@ -149,13 +160,10 @@ def analyze_attempts(attempts: List[Attempt]) -> Dict[str, Any]:
     }
 
 
-@api_router.get("/pdf")
-def weak_area_pdf(
-    attempts: List[Attempt] = [],
-    top_n: int = Query(3, ge=1, le=10),
-) -> HTMLResponse:
+@api_router.post("/pdf")
+def weak_area_pdf(payload: PdfRequest) -> HTMLResponse:
     """Return a printable HTML practice sheet for weak areas."""
-    html_bytes = service.pdf.export_weak_area(attempts, top_n=top_n)
+    html_bytes = service.pdf.export_weak_area(payload.attempts, top_n=payload.top_n)
     return HTMLResponse(
         content=html_bytes.decode("utf-8"),
         headers={"Content-Disposition": "attachment; filename=weak-area-practice.html"},

@@ -1,0 +1,38 @@
+{% extends "nursing/base.html" %}
+
+{% block title %}Diagnostic Test — Nursing{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 data-te="డయగ్నస్టిక్ పరీక్ష">Diagnostic Test</h2>
+  <p><span data-te="20 ప్రశ్నలు, సమయ పరిమితి లేదు">20 questions, no time limit</span>. <span data-te="మీ ఆత్మవిశ్వాసాన్ని గుర్తించండి">Rate your confidence</span>.</p>
+  <div id="timer" class="timer" style="display:none;">00:00</div>
+</div>
+
+<div id="quiz-container">
+  <p data-te="లోడ్ అవుతోంది...">Loading questions…</p>
+</div>
+
+<div class="card" id="confidence-card" style="display:none;">
+  <label for="confidence" data-te="ఈ ప్రశ్నపై మీ ఆత్మవిశ్వాసం">Confidence on this question</label>
+  <input type="range" id="confidence" min="1" max="5" value="3">
+  <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--color-muted);">
+    <span data-te="తక్కువ">Low</span>
+    <span data-te="ఎక్కువ">High</span>
+  </div>
+</div>
+
+<div class="actions">
+  <button id="submit-btn" class="btn" style="display:none;" data-te="సమర్పించండి">Submit Diagnostic</button>
+</div>
+
+<div id="result-card" class="card" style="display:none;">
+  <h2 data-te="ఫలితాలు">Results</h2>
+  <div id="result-summary"></div>
+  <div id="weak-areas"></div>
+  <div class="actions">
+    <a href="/nursing/practice" class="btn" data-te="బలహీన ప్రదేశాలపై ప్రాక్టీస్ చేయండి">Practice Weak Areas</a>
+    <a href="/nursing" class="btn btn-secondary" data-te="హోమ్">Home</a>
+  </div>
+</div>
+{% endblock %}
