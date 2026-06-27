@@ -1,0 +1,430 @@
+{
+  "exam": {
+    "name": "MHSRB Telangana Staff Nurse / Nursing Officer Recruitment",
+    "body": "Medical & Health Services Recruitment Board, Telangana",
+    "url": "https://mhsrb.telangana.gov.in/",
+    "mode": "OMR-based / Computer-Based Test",
+    "total_questions": 80,
+    "total_marks": 80,
+    "duration_minutes": 60,
+    "negative_marking": false,
+    "language": "English",
+    "selection": "80 points written + 20 points government-service experience"
+  },
+  "subjects": [
+    {
+      "id": "anatomy_physiology",
+      "name_en": "Anatomy & Physiology",
+      "name_te": "శరీర నిర్మాణ శాస్త్రం మరియు క్రియాశాస్త్రం",
+      "weight": "high",
+      "estimated_questions": 10,
+      "topics": [
+        {
+          "id": "ap_cells_tissues",
+          "name_en": "Cells, Tissues & Body Organization",
+          "name_te": "కణాలు, కణజాలాలు మరియు శరీర నిర్వహణ",
+          "subtopics": ["Cell structure & function", "Epithelial, connective, muscle, nervous tissue", "Organs & organ systems"]
+        },
+        {
+          "id": "ap_skeletal",
+          "name_en": "Skeletal System",
+          "name_te": "ఎముక వ్యవస్థ",
+          "subtopics": ["Types, structure & functions of bones", "Joints: classification & function", "Axial & appendicular skeleton"]
+        },
+        {
+          "id": "ap_muscular",
+          "name_en": "Muscular System",
+          "name_te": "కండర వ్యవస్థ",
+          "subtopics": ["Types of muscle", "Muscle contraction", "Posture & movement"]
+        },
+        {
+          "id": "ap_cardiovascular",
+          "name_en": "Cardiovascular System",
+          "name_te": "హృదయ మరియు రక్తనాళ వ్యవస్థ",
+          "subtopics": ["Heart anatomy & cardiac cycle", "Blood vessels & circulation", "Blood composition & groups", "Blood pressure"]
+        },
+        {
+          "id": "ap_respiratory",
+          "name_en": "Respiratory System",
+          "name_te": "శ్వాస వ్యవస్థ",
+          "subtopics": ["Respiratory organs", "Mechanism of breathing", "Gas exchange", "Common respiratory disorders"]
+        },
+        {
+          "id": "ap_digestive",
+          "name_en": "Digestive System",
+          "name_te": "జీర్ణ వ్యవస్థ",
+          "subtopics": ["Digestive organs & enzymes", "Absorption & assimilation", "Common digestive disorders"]
+        },
+        {
+          "id": "ap_excretory",
+          "name_en": "Excretory System",
+          "name_te": "మూత్ర వ్యవస్థ",
+          "subtopics": ["Kidney structure & function", "Urine formation", "Fluid & electrolyte balance"]
+        },
+        {
+          "id": "ap_nervous",
+          "name_en": "Nervous System",
+          "name_te": "నరముల వ్యవస్థ",
+          "subtopics": ["Brain & spinal cord", "Nerves & reflexes", "Sensory organs"]
+        },
+        {
+          "id": "ap_endocrine",
+          "name_en": "Endocrine System",
+          "name_te": "హార్మోనుల వ్యవస్థ",
+          "subtopics": ["Pituitary, thyroid, parathyroid, adrenal, pancreas", "Hormones & disorders"]
+        },
+        {
+          "id": "ap_reproductive",
+          "name_en": "Reproductive System",
+          "name_te": "ప్రజనన వ్యవస్థ",
+          "subtopics": ["Male & female reproductive organs", "Menstrual cycle", "Fertilization & pregnancy"]
+        }
+      ]
+    },
+    {
+      "id": "fundamentals_nursing",
+      "name_en": "Fundamentals of Nursing",
+      "name_te": "నర్సింగ్ మూలాధారాలు",
+      "weight": "high",
+      "estimated_questions": 12,
+      "topics": [
+        {
+          "id": "fn_concepts",
+          "name_en": "Concepts of Health & Nursing",
+          "name_te": "ఆరోగ్యం మరియు నర్సింగ్ భావనలు",
+          "subtopics": ["Definition of health & illness", "Nursing process: ADPIE", "Roles & responsibilities of a nurse"]
+        },
+        {
+          "id": "fn_vital_signs",
+          "name_en": "Vital Signs",
+          "name_te": "ప్రాణాధార సంకేతాలు",
+          "subtopics": ["Temperature, pulse, respiration, blood pressure", "Normal ranges", "Recording & reporting"]
+        },
+        {
+          "id": "fn_hygiene",
+          "name_en": "Hygiene & Comfort",
+          "name_te": "పరిశుభ్రత మరియు ఆరామం",
+          "subtopics": ["Bath, oral care, hair care", "Bed making", "Pressure sore prevention"]
+        },
+        {
+          "id": "fn_infection_control",
+          "name_en": "Infection Control & Asepsis",
+          "name_te": "సంక్రమణ నియంత్రణ",
+          "subtopics": ["Hand hygiene", "Standard precautions", "PPE", "Isolation techniques"]
+        },
+        {
+          "id": "fn_wound_care",
+          "name_en": "Wound Care & Dressing",
+          "name_te": "గాయ సంరక్షణ",
+          "subtopics": ["Wound types & healing", "Dressing techniques", "Suture & staple care"]
+        },
+        {
+          "id": "fn_positioning",
+          "name_en": "Positioning, Moving & Transfer",
+          "name_te": "స్థాన నిర్ధారణ మరియు మార్పిడి",
+          "subtopics": ["Patient positions", "Body mechanics", "Use of assistive devices"]
+        }
+      ]
+    },
+    {
+      "id": "microbiology",
+      "name_en": "Microbiology",
+      "name_te": "సూక్ష్మజీవ శాస్త్రం",
+      "weight": "medium",
+      "estimated_questions": 5,
+      "topics": [
+        {
+          "id": "micro_organisms",
+          "name_en": "Microorganisms",
+          "name_te": "సూక్ష్మజీవులు",
+          "subtopics": ["Bacteria, virus, fungi, parasites", "Morphology & classification", "Chain of infection"]
+        },
+        {
+          "id": "micro_control",
+          "name_en": "Control of Microorganisms",
+          "name_te": "సూక్ష్మజీవ నియంత్రణ",
+          "subtopics": ["Sterilization & disinfection", "Autoclaving", "Antiseptics & disinfectants", "Biosafety & waste management"]
+        },
+        {
+          "id": "micro_immunization",
+          "name_en": "Immunity & Immunization",
+          "name_te": "రోగనిరోధక శక్తి మరియు టీకాలు",
+          "subtopics": ["Types of immunity", "Vaccines & schedule", "Cold chain"]
+        }
+      ]
+    },
+    {
+      "id": "pharmacology",
+      "name_en": "Pharmacology",
+      "name_te": "మందుల శాస్త్రం",
+      "weight": "medium",
+      "estimated_questions": 5,
+      "topics": [
+        {
+          "id": "pharma_basics",
+          "name_en": "Basics of Pharmacology",
+          "name_te": "మూలభూత మందుల శాస్త్రం",
+          "subtopics": ["Routes of drug administration", "Drug calculations & dosages", "Five rights of medication"]
+        },
+        {
+          "id": "pharma_common",
+          "name_en": "Common Drug Categories",
+          "name_te": "సాధారణ మందుల వర్గాలు",
+          "subtopics": ["Analgesics, antibiotics, antipyretics", "Antihypertensives, antidiabetics", "IV fluids & electrolytes"]
+        }
+      ]
+    },
+    {
+      "id": "medical_surgical",
+      "name_en": "Medical-Surgical Nursing",
+      "name_te": "వైద్య-శస్త్రచికిత్స నర్సింగ్",
+      "weight": "high",
+      "estimated_questions": 12,
+      "topics": [
+        {
+          "id": "ms_assessment",
+          "name_en": "Health Assessment",
+          "name_te": "ఆరోగ్య పరీక్ష",
+          "subtopics": ["History taking", "Physical examination", "Clinical investigations"]
+        },
+        {
+          "id": "ms_pre_post_op",
+          "name_en": "Pre- & Post-Operative Care",
+          "name_te": "శస్త్రచికిత్సకు ముందు మరియు తర్వాత సంరక్షణ",
+          "subtopics": ["Pre-op preparation", "Post-op complications", "Pain management"]
+        },
+        {
+          "id": "ms_respiratory",
+          "name_en": "Respiratory Disorders",
+          "name_te": "శ్వాస వ్యాధులు",
+          "subtopics": ["TB, pneumonia, asthma, COPD", "Oxygen therapy", "Chest physiotherapy"]
+        },
+        {
+          "id": "ms_cardiovascular",
+          "name_en": "Cardiovascular Disorders",
+          "name_te": "హృదయ వ్యాధులు",
+          "subtopics": ["Hypertension, angina, MI, heart failure", "ECG basics", "Cardiac rehabilitation"]
+        },
+        {
+          "id": "ms_gi",
+          "name_en": "Gastrointestinal Disorders",
+          "name_te": "జీర్ణ వ్యాధులు",
+          "subtopics": ["Peptic ulcer, hepatitis, appendicitis", "NG tube care", "Stoma care"]
+        },
+        {
+          "id": "ms_renal",
+          "name_en": "Renal & Genitourinary Disorders",
+          "name_te": "మూత్ర మరియు జనన వ్యాధులు",
+          "subtopics": ["UTI, renal failure, stones", "Catheterization", "Dialysis basics"]
+        },
+        {
+          "id": "ms_neuro",
+          "name_en": "Neurological Disorders",
+          "name_te": "నాడి వ్యాధులు",
+          "subtopics": ["Stroke, epilepsy, meningitis", "Level of consciousness", "Seizure precautions"]
+        },
+        {
+          "id": "ms_oncology",
+          "name_en": "Oncology Nursing",
+          "name_te": "క్యాన్సర్ నర్సింగ్",
+          "subtopics": ["Chemotherapy & radiation care", "Side-effect management", "Palliative care basics"]
+        }
+      ]
+    },
+    {
+      "id": "community_health",
+      "name_en": "Community Health Nursing",
+      "name_te": "సామాజిక ఆరోగ్య నర్సింగ్",
+      "weight": "medium",
+      "estimated_questions": 6,
+      "topics": [
+        {
+          "id": "chn_concepts",
+          "name_en": "Concepts of Community Health",
+          "name_te": "సామాజిక ఆరోగ్య భావనలు",
+          "subtopics": ["Primary health care", "Health promotion & prevention", "Epidemiology basics"]
+        },
+        {
+          "id": "chn_communicable",
+          "name_en": "Communicable Diseases Control",
+          "name_te": "సంక్రామక వ్యాధుల నియంత్రణ",
+          "subtopics": ["Vector-borne diseases", "Water & food-borne diseases", "National health programmes"]
+        },
+        {
+          "id": "chn_maternal_child",
+          "name_en": "Maternal & Child Health Programmes",
+          "name_te": "తల్లి మరియు శిశు ఆరోగ్య కార్యక్రమాలు",
+          "subtopics": ["ANC, PNC, immunization", "Family welfare methods", "RCH programme"]
+        },
+        {
+          "id": "chn_environment",
+          "name_en": "Environmental Sanitation",
+          "name_te": "పర్యావరణ పరిశుభ్రత",
+          "subtopics": ["Safe water", "Waste disposal", "Vector control"]
+        }
+      ]
+    },
+    {
+      "id": "mental_health",
+      "name_en": "Mental Health Nursing",
+      "name_te": "మానసిక ఆరోగ్య నర్సింగ్",
+      "weight": "medium",
+      "estimated_questions": 5,
+      "topics": [
+        {
+          "id": "mh_concepts",
+          "name_en": "Concepts of Mental Health",
+          "name_te": "మానసిక ఆరోగ్య భావనలు",
+          "subtopics": ["Mental health & illness", "Defense mechanisms", "Therapeutic communication"]
+        },
+        {
+          "id": "mh_disorders",
+          "name_en": "Common Mental Disorders",
+          "name_te": "సాధారణ మానసిక వ్యాధులు",
+          "subtopics": ["Anxiety, depression, schizophrenia", "Substance use disorders", "Suicide prevention"]
+        },
+        {
+          "id": "mh_psychiatric",
+          "name_en": "Psychiatric Nursing Management",
+          "name_te": "మానసిక నర్సింగ్ నిర్వహణ",
+          "subtopics": ["Psychotropic medications", "ECT care", "Rehabilitation"]
+        }
+      ]
+    },
+    {
+      "id": "child_health",
+      "name_en": "Child Health Nursing",
+      "name_te": "శిశు ఆరోగ్య నర్సింగ్",
+      "weight": "medium",
+      "estimated_questions": 6,
+      "topics": [
+        {
+          "id": "ch_growth",
+          "name_en": "Growth & Development",
+          "name_te": "వృద్ధి మరియు అభివృద్ధి",
+          "subtopics": ["Developmental milestones", "Nutritional needs", "Immunization schedule"]
+        },
+        {
+          "id": "ch_common_diseases",
+          "name_en": "Common Childhood Diseases",
+          "name_te": "సాధారణ శిశు వ్యాధులు",
+          "subtopics": ["ARI, diarrhea, malnutrition", "Fever management", "Pediatric medications"]
+        },
+        {
+          "id": "ch_neonatal",
+          "name_en": "Neonatal Care",
+          "name_te": "నవజాత శిశు సంరక్షణ",
+          "subtopics": ["Essential newborn care", "Breastfeeding", "Low birth weight care"]
+        }
+      ]
+    },
+    {
+      "id": "midwifery",
+      "name_en": "Midwifery & Gynecological Nursing",
+      "name_te": "ప్రసూతి మరియు స్త్రీ రోగ నర్సింగ్",
+      "weight": "high",
+      "estimated_questions": 10,
+      "topics": [
+        {
+          "id": "mw_anatomy",
+          "name_en": "Female Reproductive Anatomy",
+          "name_te": "స్త్రీ ప్రజనన అవయవాలు",
+          "subtopics": ["External & internal genitalia", "Pelvis: types & diameters", "Fetal development"]
+        },
+        {
+          "id": "mw_pregnancy",
+          "name_en": "Normal Pregnancy",
+          "name_te": "సాధారణ గర్భధారణ",
+          "subtopics": ["Signs & symptoms", "Antenatal care", "Diet & exercise", "Minor ailments"]
+        },
+        {
+          "id": "mw_labour",
+          "name_en": "Normal Labour",
+          "name_te": "సాధారణ ప్రసవం",
+          "subtopics": ["Stages of labour", "Mechanism of labour", "Conduct of normal delivery", "Apgar scoring"]
+        },
+        {
+          "id": "mw_puerperium",
+          "name_en": "Puerperium & Newborn Care",
+          "name_te": "ప్రసవానంతర కాలం మరియు నవజాత సంరక్షణ",
+          "subtopics": ["Postnatal care", "Breastfeeding", "Family planning"]
+        },
+        {
+          "id": "mw_complications",
+          "name_en": "Complications of Pregnancy & Labour",
+          "name_te": "గర్భధారణ మరియు ప్రసవ సమస్యలు",
+          "subtopics": ["Bleeding in pregnancy", "PIH, preeclampsia, eclampsia", "Prolonged labour", "PPH"]
+        },
+        {
+          "id": "mw_gynecology",
+          "name_en": "Gynecological Disorders",
+          "name_te": "స్త్రీ రోగాలు",
+          "subtopics": ["Menstrual disorders", "RTI/STI", "Cervical cancer screening"]
+        }
+      ]
+    },
+    {
+      "id": "nutrition",
+      "name_en": "Nutrition & Dietetics",
+      "name_te": "పోషణ శాస్త్రం",
+      "weight": "medium",
+      "estimated_questions": 4,
+      "topics": [
+        {
+          "id": "nut_basics",
+          "name_en": "Basic Nutrition",
+          "name_te": "మూలభూత పోషణ",
+          "subtopics": ["Nutrients & their functions", "Balanced diet", "Therapeutic diets"]
+        },
+        {
+          "id": "nut_lifecycle",
+          "name_en": "Nutrition Across Life Cycle",
+          "name_te": "జీవిత చక్రంలో పోషణ",
+          "subtopics": ["Pregnancy & lactation", "Infant & child nutrition", "Geriatric nutrition"]
+        }
+      ]
+    },
+    {
+      "id": "professional_trends",
+      "name_en": "Professional Trends & Administration",
+      "name_te": "వృత్తిపరమైన పద్ధతులు మరియు నిర్వహణ",
+      "weight": "low",
+      "estimated_questions": 3,
+      "topics": [
+        {
+          "id": "pt_ethics",
+          "name_en": "Nursing Ethics & Law",
+          "name_te": "నర్సింగ్ నైతికతలు మరియు చట్టం",
+          "subtopics": ["Code of ethics", "Legal issues in nursing", "Consent & confidentiality"]
+        },
+        {
+          "id": "pt_admin",
+          "name_en": "Ward Management & Leadership",
+          "name_te": "వార్డు నిర్వహణ మరియు నాయకత్వం",
+          "subtopics": ["Patient assignment", "Inventory & records", "Quality care"]
+        }
+      ]
+    },
+    {
+      "id": "first_aid",
+      "name_en": "First Aid & Emergency Nursing",
+      "name_te": "మొదటి చికిత్స మరియు అత్యవసర నర్సింగ్",
+      "weight": "medium",
+      "estimated_questions": 4,
+      "topics": [
+        {
+          "id": "fa_basics",
+          "name_en": "Principles of First Aid",
+          "name_te": "మొదటి చికిత్స సూత్రాలు",
+          "subtopics": ["ABC of resuscitation", "CPR", "Shock, hemorrhage, burns", "Poisoning & bites"]
+        },
+        {
+          "id": "fa_emergency",
+          "name_en": "Emergency Nursing",
+          "name_te": "అత్యవసర నర్సింగ్",
+          "subtopics": ["Triage", "Disaster management", "BLS/CPR updates"]
+        }
+      ]
+    }
+  ]
+}
