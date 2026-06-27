@@ -1,0 +1,162 @@
+"""FastAPI router for the nursing practice module."""
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Query, Request, Form
+from fastapi.responses import HTMLResponse, JSONResponse
+from pydantic import BaseModel
+
+from web.domain.constants import DEFAULT_PATTERN_KEY, CognitiveLevel, QuestionContext
+from web.domain.models import Attempt, Question
+from web.services.nursing_service import NursingService
+
+
+router = APIRouter(prefix="/nursing", tags=["nursing"])
+api_router = APIRouter(prefix="/api/nursing", tags=["nursing-api"])
+service = NursingService()
+
+
+# ---------------------------------------------------------------------------
+# HTML pages (placeholders; full templates come in Phase 3)
+# ---------------------------------------------------------------------------
+
+@router.get("", response_class=HTMLResponse)
+def nursing_home(request: Request):
+    return HTMLResponse("<h1>Dr. Math — Telangana Staff Nurse Practice</h1><p>Landing page coming in Phase 3.</p>")
+
+
+@router.get("/practice", response_class=HTMLResponse)
+def nursing_practice(request: Request):
+    return HTMLResponse("<h1>Topic Practice</h1><p>Practice page coming in Phase 3.</p>")
+
+
+@router.get("/mock", response_class=HTMLResponse)
+def nursing_mock(request: Request):
+    return HTMLResponse("<h1>Full Mock Test</h1><p>Mock test page coming in Phase 3.</p>")
+
+
+@router.get("/diagnostic", response_class=HTMLResponse)
+def nursing_diagnostic(request: Request):
+    return HTMLResponse("<h1>Diagnostic Test</h1><p>Diagnostic page coming in Phase 3.</p>")
+
+
+# ---------------------------------------------------------------------------
+# API endpoints
+# ---------------------------------------------------------------------------
+
+class DiagnosticStartRequest(BaseModel):
+    num_questions: int = 20
+
+
+class DiagnosticStartResponse(BaseModel):
+    questions: List[Dict[str, Any]]
+
+
+class MockStartResponse(BaseModel):
+    pattern_key: str
+    total_questions: int
+    questions: List[Dict[str, Any]]
+
+
+class ReportRequest(BaseModel):
+    question_id: int
+    reason: str
+    user_id: Optional[str] = None
+
+
+class ReportResponse(BaseModel):
+    status: str
+    report: Dict[str, Any]
+
+
+@api_router.get("/status")
+def nursing_status() -> Dict[str, str]:
+    meta = service.repository.get_meta()
+    return {
+        "status": "healthy",
+        "module": "nursing",
+        "questions": str(meta.get("total_questions", 0)),
+    }
+
+
+@api_router.get("/topics")
+def nursing_topics() -> Dict[str, Any]:
+    subjects = service.repository.list_subjects()
+    topics = {}
+    for subject_id in subjects:
+        topics[subject_id] = service.repository.list_topics(subject_id=subject_id)
+    return {
+        "subjects": subjects,
+        "topics_by_subject": topics,
+        "counts": service.repository.count_by_subject(),
+    }
+
+
+@api_router.get("/questions")
+def nursing_questions(
+    subject_id: Optional[str] = Query(None),
+    topic_id: Optional[str] = Query(None),
+    cognitive_level: Optional[CognitiveLevel] = Query(None),
+    context: Optional[QuestionContext] = Query(None),
+    difficulty: Optional[int] = Query(None),
+    concept_tag: Optional[str] = Query(None),
+    limit: Optional[int] = Query(None),
+) -> List[Dict[str, Any]]:
+    questions = service.practice.by_topic(
+        subject_id=subject_id,
+        topic_id=topic_id,
+        cognitive_level=cognitive_level,
+        context=context,
+        difficulty=difficulty,
+        concept_tag=concept_tag,
+        limit=limit,
+    )
+    return [q.model_dump() for q in questions]
+
+
+@api_router.post("/diagnostic/start", response_model=DiagnosticStartResponse)
+def diagnostic_start(payload: DiagnosticStartRequest) -> DiagnosticStartResponse:
+    questions = service.diagnostic.build(num_questions=payload.num_questions)
+    return DiagnosticStartResponse(questions=[q.model_dump() for q in questions])
+
+
+@api_router.post("/mock/start", response_model=MockStartResponse)
+def mock_start(pattern_key: str = DEFAULT_PATTERN_KEY) -> MockStartResponse:
+    questions = service.mock.build(pattern_key=pattern_key)
+    return MockStartResponse(
+        pattern_key=pattern_key,
+        total_questions=len(questions),
+        questions=[q.model_dump() for q in questions],
+    )
+
+
+@api_router.post("/report", response_model=ReportResponse)
+def report_question(payload: ReportRequest) -> ReportResponse:
+    record = service.report.report(
+        question_id=payload.question_id,
+        reason=payload.reason,
+        user_id=payload.user_id,
+    )
+    return ReportResponse(status="recorded", report=record)
+
+
+@api_router.post("/analyze")
+def analyze_attempts(attempts: List[Attempt]) -> Dict[str, Any]:
+    result = service.capability.analyze(attempts)
+    return {
+        "subject_capabilities": [s.model_dump() for s in result.subject_capabilities],
+        "topic_capabilities": [t.model_dump() for t in result.topic_capabilities],
+        "dimension_capabilities": [d.model_dump() for d in result.dimension_capabilities],
+    }
+
+
+@api_router.get("/pdf")
+def weak_area_pdf(
+    attempts: List[Attempt] = [],
+    top_n: int = Query(3, ge=1, le=10),
+) -> HTMLResponse:
+    """Return a printable HTML practice sheet for weak areas."""
+    html_bytes = service.pdf.export_weak_area(attempts, top_n=top_n)
+    return HTMLResponse(
+        content=html_bytes.decode("utf-8"),
+        headers={"Content-Disposition": "attachment; filename=weak-area-practice.html"},
+    )

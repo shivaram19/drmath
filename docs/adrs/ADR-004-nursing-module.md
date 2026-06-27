@@ -78,6 +78,7 @@ Add a self-contained `/nursing` module to the Dr. Math FastAPI application with 
 - 2026-05-13: Adaptive queue service added for accuracy/speed/confidence/consistency scoring.
 - 2026-05-13: `web/nursing/README.md` added documenting package conventions.
 - 2026-05-13: `web/services/nursing_service.py` added with diagnostic, practice, mock, capability, PDF export, and report services.
+- 2026-05-13: `web/routers/nursing.py` added and included in `web/main.py`; exposes `/nursing` HTML routes and `/api/nursing` JSON endpoints.
 
 ## References
 

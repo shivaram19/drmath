@@ -23,6 +23,12 @@ from db.models import Generation
 
 app = FastAPI(title="Dr. Math", description="Class VII Math Content Generator with Prompt Lab")
 
+# Nursing practice module routers
+from web.routers import nursing
+
+app.include_router(nursing.router)
+app.include_router(nursing.api_router)
+
 BASE_DIR = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.mount("/mathwise-web", StaticFiles(directory=BASE_DIR / "static" / "mathwise-web", html=True), name="mathwise-web")
