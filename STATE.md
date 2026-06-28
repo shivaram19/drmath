@@ -109,6 +109,8 @@ No passwords. Open access.
 | **ADR-021** | **Android release build toolchain** | **Accepted** |
 | **ADR-022** | **Consent-gated analytics for Nursing** | **Accepted** |
 | **ADR-023** | **Web-to-APK conversion measurement** | **Accepted** |
+| **ADR-024** | **WhatsApp channel choice, consent model, and data retention** | **Proposed** |
+| **ADR-025** | **Pragmatic SOLID refactor strategy** | **Proposed** |
 
 ---
 
@@ -131,10 +133,15 @@ No passwords. Open access.
 ## 🎯 Next Immediate Work
 
 1. **Phase 10.8+** — Monitor APK conversion funnel (`apk_prompt_shown` → `apk_download_clicked` → `app_first_open`) for at least 100 impressions; decide whether to spike a Play Console release based on click-to-open gap.
-2. **Phase 10.9** — WhatsApp daily quiz reminder experiment: explicit opt-in flow, BSP evaluation (Chat Mitra Starter / Meta Cloud API), Meta template approval, backend scheduler + STOP handling, cost/engagement reversal trigger.
-3. **Phase 10.10** — Expand nursing seed bank to 100 verified questions across INC GNM domains with `source_url`, `source_section`, and `verified_at` metadata.
-4. **ADR-024** — Write Architecture Decision Record for WhatsApp channel choice, consent model, and data retention before any bot code is merged.
-5. **Manager requests features** — export ratings CSV, bulk generate, prompt templates from research personas.
+2. **Phase 10.8a** — Add characterization tests for `pipeline/run.py` and core web routes before structural refactor.
+3. **Phase 10.8b** — Decouple math pipeline: create `pipeline/interfaces.py`, implement LLM/scraper/content-store ports, and introduce `GenerateContentUseCase` behind a compatibility wrapper.
+4. **Phase 10.8c** — Web composition root: inject `NursingService`, extract `AnalyticsSink`, and split `web/main.py` into focused routers incrementally.
+5. **Phase 10.9** — WhatsApp daily quiz reminder experiment: explicit opt-in flow, BSP evaluation (Chat Mitra Starter / Meta Cloud API), Meta template approval, backend scheduler + STOP handling, cost/engagement reversal trigger. **Gated by Phase 10.8c.**
+6. **Phase 10.10** — Expand nursing seed bank to 100 verified questions across INC GNM domains with `source_url`, `source_section`, and `verified_at` metadata.
+7. **ADR-024** — Write Architecture Decision Record for WhatsApp channel choice, consent model, and data retention before any bot code is merged.
+8. **ADR-025** — Write Architecture Decision Record for pragmatic SOLID refactor strategy (ports for volatile boundaries, Strangler Fig, delete `src/`).
+9. **Structural cleanup** — Delete empty `src/` tree, update `AGENTS.md`, remove runtime artifacts from production Docker image.
+10. **Manager requests features** — export ratings CSV, bulk generate, prompt templates from research personas.
 
 ---
 
