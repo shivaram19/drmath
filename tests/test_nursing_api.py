@@ -4,6 +4,8 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
+from web.adapters.analytics import JSONLAnalyticsSink
+from web.dependencies import get_analytics_sink
 from web.domain.constants import CognitiveLevel, QuestionContext
 from web.domain.models import Attempt
 from web.main import app
@@ -140,20 +142,26 @@ def test_pdf_export_post(client):
     assert "Answer Key" in response.text
 
 
-def test_record_analytics_event(client, monkeypatch, tmp_path):
-    from web.routers.nursing import EVENTS_PATH
+def _override_analytics_sink(path):
+    app.dependency_overrides[get_analytics_sink] = lambda: JSONLAnalyticsSink(path=path)
 
+
+def test_record_analytics_event(client, tmp_path):
     path = tmp_path / "nursing_events.jsonl"
-    monkeypatch.setattr("web.routers.nursing.EVENTS_PATH", path)
-    response = client.post(
-        "/api/nursing/analytics",
-        json={
-            "event": "landing_quiz_started",
-            "timestamp": "2026-05-05T12:00:00Z",
-            "consent_version": "2026-06-28",
-            "metadata": { "source": "test" },
-        },
-    )
+    _override_analytics_sink(path)
+    try:
+        response = client.post(
+            "/api/nursing/analytics",
+            json={
+                "event": "landing_quiz_started",
+                "timestamp": "2026-05-05T12:00:00Z",
+                "consent_version": "2026-06-28",
+                "metadata": {"source": "test"},
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_analytics_sink, None)
+
     assert response.status_code == 200
     assert response.json()["status"] == "recorded"
     assert path.exists()
@@ -165,26 +173,28 @@ def test_record_analytics_event(client, monkeypatch, tmp_path):
     assert record["metadata"]["source"] == "test"
 
 
-def test_record_analytics_event_with_utm(client, monkeypatch, tmp_path):
-    from web.routers.nursing import EVENTS_PATH
-
+def test_record_analytics_event_with_utm(client, tmp_path):
     path = tmp_path / "nursing_events.jsonl"
-    monkeypatch.setattr("web.routers.nursing.EVENTS_PATH", path)
-    response = client.post(
-        "/api/nursing/analytics",
-        json={
-            "event": "apk_download_clicked",
-            "timestamp": "2026-05-05T12:00:00Z",
-            "consent_version": "2026-06-28",
-            "metadata": {
-                "placement": "result_cta",
-                "utm_source": "web_nursing",
-                "utm_medium": "result_cta",
-                "utm_campaign": "nursing_full_app_install",
-                "utm_content": "after_quiz",
+    _override_analytics_sink(path)
+    try:
+        response = client.post(
+            "/api/nursing/analytics",
+            json={
+                "event": "apk_download_clicked",
+                "timestamp": "2026-05-05T12:00:00Z",
+                "consent_version": "2026-06-28",
+                "metadata": {
+                    "placement": "result_cta",
+                    "utm_source": "web_nursing",
+                    "utm_medium": "result_cta",
+                    "utm_campaign": "nursing_full_app_install",
+                    "utm_content": "after_quiz",
+                },
             },
-        },
-    )
+        )
+    finally:
+        app.dependency_overrides.pop(get_analytics_sink, None)
+
     assert response.status_code == 200
     assert response.json()["status"] == "recorded"
     lines = path.read_text(encoding="utf-8").strip().split("\n")
@@ -193,22 +203,24 @@ def test_record_analytics_event_with_utm(client, monkeypatch, tmp_path):
     assert record["metadata"]["utm_content"] == "after_quiz"
 
 
-def test_record_analytics_event_rejects_long_utm(client, monkeypatch, tmp_path):
-    from web.routers.nursing import EVENTS_PATH
-
+def test_record_analytics_event_rejects_long_utm(client, tmp_path):
     path = tmp_path / "nursing_events.jsonl"
-    monkeypatch.setattr("web.routers.nursing.EVENTS_PATH", path)
-    response = client.post(
-        "/api/nursing/analytics",
-        json={
-            "event": "apk_download_clicked",
-            "timestamp": "2026-05-05T12:00:00Z",
-            "consent_version": "2026-06-28",
-            "metadata": {
-                "utm_campaign": "x" * 129,
+    _override_analytics_sink(path)
+    try:
+        response = client.post(
+            "/api/nursing/analytics",
+            json={
+                "event": "apk_download_clicked",
+                "timestamp": "2026-05-05T12:00:00Z",
+                "consent_version": "2026-06-28",
+                "metadata": {
+                    "utm_campaign": "x" * 129,
+                },
             },
-        },
-    )
+        )
+    finally:
+        app.dependency_overrides.pop(get_analytics_sink, None)
+
     assert response.status_code == 422
     assert not path.exists()
 

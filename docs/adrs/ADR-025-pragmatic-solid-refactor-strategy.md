@@ -66,6 +66,11 @@ Research in `docs/research/bidirectional/bidirectional-09-introspection-solid-un
 
 ---
 
+## Implementation Log
+
+- **2026-05-05** — Phase 10.8b complete: math pipeline refactored into ports (`pipeline/interfaces.py`), adapters (`pipeline/adapters.py`), and `GenerateContentUseCase` (`pipeline/use_cases.py`). `pipeline/run.py` remains a compatibility wrapper.
+- **2026-05-05** — Phase 10.8c complete (minimal scope): web composition root created in `web/dependencies.py`; `NursingService` and `AnalyticsSink` injected into `web/routers/nursing.py` via FastAPI `Depends`. `web/main.py` left intact; router decomposition deferred to a future incremental cleanup.
+
 ## Council of Ten Deliberation Summary
 
 - **Research Scientist:** The decision is backed by first-principles analysis of change cost, not by architectural fashion.

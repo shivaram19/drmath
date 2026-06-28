@@ -5,18 +5,19 @@ from typing import Any, Dict, List, Optional
 
 from pathlib import Path
 
-from fastapi import APIRouter, Query, Request, Form
+from fastapi import APIRouter, Query, Request, Form, Depends
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel, field_validator
 
+from web.dependencies import get_analytics_sink, get_nursing_service
 from web.domain.constants import DEFAULT_PATTERN_KEY, CognitiveLevel, QuestionContext
 from web.domain.models import Attempt, Question
+from web.ports import AnalyticsSink
 from web.services.nursing_service import NursingService
 
 
 router = APIRouter(prefix="/nursing", tags=["nursing"])
 api_router = APIRouter(prefix="/api/nursing", tags=["nursing-api"])
-service = NursingService()
 
 NURSING_LANDING_PATH = Path(__file__).resolve().parent.parent / "static" / "nursing" / "index.html"
 NURSING_PRIVACY_PATH = Path(__file__).resolve().parent.parent / "static" / "nursing" / "privacy.html"
@@ -73,7 +74,7 @@ class PdfRequest(BaseModel):
 
 
 @api_router.get("/status")
-def nursing_status() -> Dict[str, str]:
+def nursing_status(service: NursingService = Depends(get_nursing_service)) -> Dict[str, str]:
     meta = service.repository.get_meta()
     return {
         "status": "healthy",
@@ -83,7 +84,7 @@ def nursing_status() -> Dict[str, str]:
 
 
 @api_router.get("/topics")
-def nursing_topics() -> Dict[str, Any]:
+def nursing_topics(service: NursingService = Depends(get_nursing_service)) -> Dict[str, Any]:
     subjects = service.repository.list_subjects()
     topics = {}
     for subject_id in subjects:
@@ -104,6 +105,7 @@ def nursing_questions(
     difficulty: Optional[int] = Query(None),
     concept_tag: Optional[str] = Query(None),
     limit: Optional[int] = Query(None),
+    service: NursingService = Depends(get_nursing_service),
 ) -> List[Dict[str, Any]]:
     questions = service.practice.by_topic(
         subject_id=subject_id,
@@ -118,13 +120,19 @@ def nursing_questions(
 
 
 @api_router.post("/diagnostic/start", response_model=DiagnosticStartResponse)
-def diagnostic_start(payload: DiagnosticStartRequest) -> DiagnosticStartResponse:
+def diagnostic_start(
+    payload: DiagnosticStartRequest,
+    service: NursingService = Depends(get_nursing_service),
+) -> DiagnosticStartResponse:
     questions = service.diagnostic.build(num_questions=payload.num_questions)
     return DiagnosticStartResponse(questions=[q.model_dump() for q in questions])
 
 
 @api_router.post("/mock/start", response_model=MockStartResponse)
-def mock_start(pattern_key: str = DEFAULT_PATTERN_KEY) -> MockStartResponse:
+def mock_start(
+    pattern_key: str = DEFAULT_PATTERN_KEY,
+    service: NursingService = Depends(get_nursing_service),
+) -> MockStartResponse:
     questions = service.mock.build(pattern_key=pattern_key)
     return MockStartResponse(
         pattern_key=pattern_key,
@@ -134,7 +142,10 @@ def mock_start(pattern_key: str = DEFAULT_PATTERN_KEY) -> MockStartResponse:
 
 
 @api_router.post("/report", response_model=ReportResponse)
-def report_question(payload: ReportRequest) -> ReportResponse:
+def report_question(
+    payload: ReportRequest,
+    service: NursingService = Depends(get_nursing_service),
+) -> ReportResponse:
     record = service.report.report(
         question_id=payload.question_id,
         reason=payload.reason,
@@ -144,7 +155,10 @@ def report_question(payload: ReportRequest) -> ReportResponse:
 
 
 @api_router.post("/analyze")
-def analyze_attempts(attempts: List[Attempt]) -> Dict[str, Any]:
+def analyze_attempts(
+    attempts: List[Attempt],
+    service: NursingService = Depends(get_nursing_service),
+) -> Dict[str, Any]:
     result = service.capability.analyze(attempts)
     return {
         "subject_capabilities": [s.model_dump() for s in result.subject_capabilities],
@@ -154,7 +168,10 @@ def analyze_attempts(attempts: List[Attempt]) -> Dict[str, Any]:
 
 
 @api_router.post("/pdf")
-def weak_area_pdf(payload: PdfRequest) -> HTMLResponse:
+def weak_area_pdf(
+    payload: PdfRequest,
+    service: NursingService = Depends(get_nursing_service),
+) -> HTMLResponse:
     """Return a printable HTML practice sheet for weak areas."""
     html_bytes = service.pdf.export_weak_area(payload.attempts, top_n=payload.top_n)
     return HTMLResponse(
@@ -166,9 +183,6 @@ def weak_area_pdf(payload: PdfRequest) -> HTMLResponse:
 # ---------------------------------------------------------------------------
 # Analytics events (consent-gated)
 # ---------------------------------------------------------------------------
-
-EVENTS_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "nursing_events.jsonl"
-
 
 class EventRequest(BaseModel):
     event: str
@@ -190,20 +204,19 @@ class EventRequest(BaseModel):
 
 
 @api_router.post("/analytics")
-def record_event(payload: EventRequest) -> JSONResponse:
+def record_event(
+    payload: EventRequest,
+    sink: AnalyticsSink = Depends(get_analytics_sink),
+) -> JSONResponse:
     """Record an anonymous, consent-gated analytics event.
 
     No IP, device ID, or personal identifiers are stored. Events are appended
     to a local JSONL file and retained in line with the DPDPA privacy notice.
     """
-    EVENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    record = {
-        "received_at": datetime.utcnow().isoformat(),
-        "event": payload.event,
-        "client_timestamp": payload.timestamp,
-        "consent_version": payload.consent_version,
-        "metadata": payload.metadata,
-    }
-    with EVENTS_PATH.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    sink.record_event(
+        event=payload.event,
+        client_timestamp=payload.timestamp,
+        consent_version=payload.consent_version,
+        metadata=payload.metadata,
+    )
     return JSONResponse({"status": "recorded"})
