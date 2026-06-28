@@ -764,13 +764,61 @@ Documented lesson: `pumpAndSettle` waits for all animations to complete; an inde
 - All nursing widget/service tests pass; debug APK builds successfully.
 - Integration tests cannot run in this environment (no Android/iOS emulator or device).
 
-## 14. Phase 10 backlog
-1. Filter PDF attempts by selected topics.
-2. Strip HTML tags for PDF preview with a zero-dependency helper.
-3. Add offline handling to PDF generation.
-4. Fix nursing card overflow on narrow screens.
-5. Add tap-target/accessibility tests for remaining screens if not already covered.
-6. Run full `flutter test` suite once overflow is resolved.
+## 14. Plan Revisions — Round 5 (2026-05-05)
+
+### 14.1 Unknowns discovered after Phase 9
+
+1. **APK size is unacceptable for the target user.** The debug APK is 104 MB; Bharat-first apps should aim below 15–20 MB [^23][^24].
+2. **Release build is blocked by Java/Gradle incompatibility.** `flutter build apk` fails on `bcprov-jdk18on-1.80` JetifyTransform [^25].
+3. **Home-screen overflows are a user-acquisition blocker.** The nursing card overflows on narrow widths, so users may never enter the module.
+4. **Content has not been audited against real nursing exam syllabi.** AIIMS, ESIC, RRB, and Telangana ANM/GNM syllabi are known; our seed questions are not mapped to them [^26][^27][^28].
+5. **The app is English-first, not vernacular-first.** Localization requires more than translation: conversational Telugu, icon-heavy cues, and possibly voice input [^23][^29].
+6. **Offline handling is incomplete.** PDF generation shows an offline message but does not persist the request for later retry.
+7. **There is no CI/CD, crash reporting, or analytics.** Manual builds and static-file deployment are not scalable.
+8. **Integration tests have no runner.** The skeleton cannot execute without an Android/iOS device or emulator.
+
+### 14.2 Decisions for Phase 10
+
+1. **Fix and pin the Java/Gradle/AGP toolchain** so release builds are deterministic.
+2. **Set a 20 MB release-APK size budget** and use `flutter build apk --analyze-size` plus `--split-per-abi` / AAB to meet it.
+3. **Fix `HomeScreen` card overflows** before adding any new nursing features.
+4. **Audit nursing seed content** against AIIMS/ESIC/RRB/Telangana ANM-GNM syllabi and tag questions accordingly.
+5. **Implement vernacular-first localization** with ARB files and conversational Telugu for high-friction screens.
+6. **Make PDF generation offline-first** by persisting pending generation requests and retrying on connectivity.
+7. **Add a GitHub Actions CI/CD pipeline** that analyzes, tests, and builds release artifacts on every push/PR.
+8. **Add crash reporting and minimal analytics** before a public beta.
+9. **Document a manual device smoke-test checklist** until integration tests run in CI.
+10. **Automate Flutter web rebuild** for the `/mathwise-web` deployment.
+
+### 14.3 Phase 10 execution order
+1. Fix Java/Gradle toolchain and verify `flutter build apk --release`.
+2. Run size analysis and create size-reduction ADR.
+3. Fix `HomeScreen` card overflows and add narrow-width widget test.
+4. Audit and tag nursing seed questions against real exam syllabi.
+5. Set up ARB localization and translate high-friction screens to Telugu.
+6. Persist offline PDF generation requests.
+7. Add GitHub Actions CI/CD workflow.
+8. Add crash reporting and analytics.
+9. Document manual QA checklist.
+10. Rebuild and verify Flutter web output.
+11. Commit with conventional message.
+
+### 14.4 Phase 10 completion criteria
+- Release APK/AAB builds deterministically in CI.
+- Release APK size is under 20 MB (ideally under 15 MB).
+- `flutter test` passes without overflow exceptions.
+- Nursing seed questions are tagged by exam and topic.
+- Telugu translations exist for disclaimer, onboarding, quiz, results, and PDF screens.
+- Offline PDF requests are queued and retried.
+- CI runs analyze, unit/widget tests, and release build on every PR.
+
+## 15. Phase 11 backlog
+1. Run integration tests on a real device or device farm.
+2. Add Play Store internal testing track deployment via Fastlane/GitHub Actions.
+3. Implement spaced-repetition and interleaving for quiz sessions.
+4. Add a SQLite-based sync outbox if the pending queue grows.
+5. Conduct usability testing with target adult learners.
+6. Add accessibility audit beyond tap-target sizes.
 
 ## 11. Key Research Citations
 
@@ -797,3 +845,17 @@ Documented lesson: `pumpAndSettle` waits for all animations to complete; an inde
 [^20]: Dart docs. *The pubspec file — SDK constraints*. https://dart.dev/tools/pub/pubspec#sdk-constraints
 [^21]: 掘金 (2025). *Flutter PopScope 返回拦截完整指南：易错点＋正确姿势＋实战示例*. https://juejin.cn/post/7580592190020452386  
 [^22]: AWS Architecture Blog. *Exponential Backoff and Jitter*. https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+
+[^23]: ProductGrowth.in. (2026). *Mobile-First UX for Bharat: Tier 2/3 India Design Guide*. https://productgrowth.in/resources/guides/mobile-first-bharat/
+
+[^24]: AppsOnAir. (2026). *Reducing Flutter App Size Effectively*. https://www.appsonair.com/blogs/reducing-flutter-app-size-effectively
+
+[^25]: Flutter Docs. (2026). *Android Java Gradle migration guide*. https://docs.flutter.dev/release/breaking-changes/android-java-gradle-migration-guide
+
+[^26]: Adda247. (2025). *ESIC Nursing Officer Syllabus and Exam Pattern 2025*. https://www.adda247.com/exams/nursing/esic-nursing-officer-syllabus/
+
+[^27]: RRB Staff Nurse. (n.d.). *RRB Staff Nurse Exam 2025 — Notification, Syllabus & Updates*. https://rrbstaffnurse.in/
+
+[^28]: IIT Mandi. (2025). *Syllabus and Scheme of Examination for the Post of Staff Nurse*. https://www.iitmandi.ac.in/recruitment/Syllabus_scheme_Staff_nurse.pdf
+
+[^29]: Medhi, I., Patnaik, S., Brunskill, E., Gautama, S. N., Thies, W., & Toyama, K. (2011). *Designing mobile interfaces for novice and low-literacy users*. ACM Transactions on Computer-Human Interaction, 18(1), 2:1–2:28. https://doi.org/10.1145/1959022.1959024
