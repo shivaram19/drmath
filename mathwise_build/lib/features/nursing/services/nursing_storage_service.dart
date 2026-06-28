@@ -12,6 +12,7 @@ class NursingStorageService {
   static const String _pendingAnalysisKey = 'nursing_pending_analysis';
   static const String _disclaimerKey = 'nursing_disclaimer_accepted';
   static const String _onboardingKey = 'nursing_onboarding_seen';
+  static const String _inflightKey = 'nursing_inflight_session';
 
   Future<List<Attempt>> loadAttempts() async {
     final prefs = await SharedPreferences.getInstance();
@@ -110,5 +111,25 @@ class NursingStorageService {
     await prefs.remove(_attemptsKey);
     await prefs.remove(_capabilityKey);
     await prefs.remove(_pendingAnalysisKey);
+  }
+
+  /// Persists an in-flight quiz session so it can survive process death.
+  Future<void> saveInflightSession(Map<String, dynamic> session) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_inflightKey, jsonEncode(session));
+  }
+
+  /// Retrieves a previously persisted in-flight quiz session, if any.
+  Future<Map<String, dynamic>?> loadInflightSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_inflightKey);
+    if (raw == null || raw.isEmpty) return null;
+    return jsonDecode(raw) as Map<String, dynamic>;
+  }
+
+  /// Clears the in-flight quiz session after submission or abandonment.
+  Future<void> clearInflightSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_inflightKey);
   }
 }

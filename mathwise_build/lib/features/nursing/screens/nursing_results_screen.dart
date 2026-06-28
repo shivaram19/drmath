@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/nursing_session_controller.dart';
 import '../models/attempt.dart';
 import '../models/capability.dart';
 import '../services/nursing_api_exception.dart';

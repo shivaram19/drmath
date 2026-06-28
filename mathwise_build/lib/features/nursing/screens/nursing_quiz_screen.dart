@@ -1,7 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 
-import '../models/attempt.dart';
+import '../controllers/nursing_session_controller.dart';
 import '../models/nursing_question.dart';
 import '../services/nursing_api_service.dart';
 import '../services/nursing_storage_service.dart';
@@ -11,8 +10,6 @@ import '../widgets/question_card.dart';
 import '../widgets/timer_widget.dart';
 import 'nursing_report_screen.dart';
 import 'nursing_results_screen.dart';
-
-enum QuizMode { diagnostic, mock, practice }
 
 class NursingQuizScreen extends StatefulWidget {
   final QuizMode mode;
@@ -31,75 +28,76 @@ class NursingQuizScreen extends StatefulWidget {
 }
 
 class _NursingQuizScreenState extends State<NursingQuizScreen> {
-  final _api = NursingApiService();
-  final _storage = NursingStorageService();
-  bool _loading = true;
-  String? _error;
-  List<NursingQuestion> _questions = [];
-  int _currentIndex = 0;
-  final Map<int, String> _selectedAnswers = {};
-  final Set<int> _markedForReview = {};
-  DateTime? _startTime;
-  Timer? _mockTimer;
-  int _remainingSeconds = 60 * 60;
+  late final NursingSessionController _controller;
   bool _canPop = false;
 
   @override
   void initState() {
     super.initState();
+    _controller = NursingSessionController(
+      api: NursingApiService(),
+      storage: NursingStorageService(),
+    );
+    _controller.addListener(_onControllerChanged);
     _load();
   }
 
   @override
   void dispose() {
-    _mockTimer?.cancel();
+    _controller.removeListener(_onControllerChanged);
+    _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _load() async {
-    try {
-      List<NursingQuestion> questions;
-      switch (widget.mode) {
-        case QuizMode.diagnostic:
-          questions = await _api.startDiagnostic(numQuestions: 20);
-          break;
-        case QuizMode.mock:
-          questions = await _api.startMock();
-          _startMockTimer();
-          break;
-        case QuizMode.practice:
-          questions = await _api.fetchQuestions(
-            subjectId: widget.subjectId,
-            topicId: widget.topicId,
-            limit: 20,
-          );
-          break;
-      }
-      if (mounted) {
-        setState(() {
-          _questions = questions;
-          _loading = false;
-          _startTime = DateTime.now();
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+  void _onControllerChanged() {
+    if (mounted) setState(() {});
+    if (_controller.remainingSeconds <= 0 &&
+        _controller.mode == QuizMode.mock &&
+        _controller.hasQuestions) {
+      _submit();
     }
   }
 
-  void _startMockTimer() {
-    _remainingSeconds = 60 * 60;
-    _mockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
+  Future<void> _load() async {
+    final resumed = await _controller.restoreInflightSession();
+    if (resumed && mounted) {
+      final shouldResume = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Resume previous session?'),
+          content: const Text(
+            'You have an unfinished test. Would you like to resume where you left off?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _controller.abandon();
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Start New'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Resume'),
+            ),
+          ],
+        ),
+      );
+      if (shouldResume != true && mounted) {
+        await _startNewSession();
       }
-      setState(() => _remainingSeconds--);
-      if (_remainingSeconds <= 0) {
-        timer.cancel();
-        _submit();
-      }
-    });
+    } else if (mounted) {
+      await _startNewSession();
+    }
+  }
+
+  Future<void> _startNewSession() async {
+    await _controller.start(
+      mode: widget.mode,
+      subjectId: widget.subjectId,
+      topicId: widget.topicId,
+    );
   }
 
   String get _title {
@@ -123,7 +121,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
           title: _title,
           actions: [
             if (widget.mode == QuizMode.mock)
-              TimerWidget(seconds: _remainingSeconds),
+              TimerWidget(seconds: _controller.remainingSeconds),
             if (widget.mode == QuizMode.mock)
               IconButton(
                 icon: const Icon(Icons.grid_view),
@@ -132,19 +130,27 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
               ),
           ],
         ),
-        body: _loading
+        body: _controller.loading
             ? const NursingLoading()
-            : _error != null
-                ? NursingError(message: _error!, onRetry: _load)
-                : _buildBody(),
-        bottomNavigationBar: _loading || _questions.isEmpty
+            : _controller.error != null
+                ? NursingError(message: _controller.error!, onRetry: _load)
+                : _controller.hasQuestions
+                    ? _buildBody()
+                    : const Center(child: Text('No questions available')),
+        bottomNavigationBar: _controller.loading ||
+                _controller.error != null ||
+                !_controller.hasQuestions
             ? null
             : SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: ElevatedButton(
-                    onPressed: _isLastQuestion ? _confirmSubmit : _next,
-                    child: Text(_isLastQuestion ? 'Submit' : 'Next'),
+                    onPressed: _controller.isLastQuestion
+                        ? _confirmSubmit
+                        : _next,
+                    child: Text(
+                      _controller.isLastQuestion ? 'Submit' : 'Next',
+                    ),
                   ),
                 ),
               ),
@@ -152,43 +158,34 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
     );
   }
 
-  bool get _isLastQuestion => _currentIndex == _questions.length - 1;
-
   Widget _buildBody() {
-    final q = _questions[_currentIndex];
+    final q = _controller.currentQuestion!;
+    final index = _controller.currentIndex;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Question ${_currentIndex + 1} of ${_questions.length}'),
+          Text('Question ${index + 1} of ${_controller.questions.length}'),
           const SizedBox(height: 8),
           LinearProgressIndicator(
-            value: (_currentIndex + 1) / _questions.length,
+            value: (index + 1) / _controller.questions.length,
           ),
           const SizedBox(height: 16),
           QuestionCard(
             question: q,
-            questionNumber: _currentIndex + 1,
-            totalQuestions: _questions.length,
-            selectedAnswer: _selectedAnswers[_currentIndex],
-            onSelect: (value) => setState(
-              () => _selectedAnswers[_currentIndex] = value,
-            ),
+            questionNumber: index + 1,
+            totalQuestions: _controller.questions.length,
+            selectedAnswer: _controller.selectedAnswers[index],
+            onSelect: (value) => _controller.selectAnswer(index, value),
             onReport: () => _reportQuestion(q),
           ),
           if (widget.mode == QuizMode.mock) ...[
             const SizedBox(height: 12),
             CheckboxListTile(
               title: const Text('Mark for review'),
-              value: _markedForReview.contains(_currentIndex),
-              onChanged: (value) => setState(() {
-                if (value == true) {
-                  _markedForReview.add(_currentIndex);
-                } else {
-                  _markedForReview.remove(_currentIndex);
-                }
-              }),
+              value: _controller.markedForReview.contains(index),
+              onChanged: (value) => _controller.toggleMarkForReview(index),
               controlAffinity: ListTileControlAffinity.leading,
             ),
           ],
@@ -198,9 +195,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
   }
 
   void _next() {
-    if (_selectedAnswers.containsKey(_currentIndex)) {
-      setState(() => _currentIndex++);
-    } else {
+    if (!_controller.next()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select an answer')),
       );
@@ -208,7 +203,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
   }
 
   void _goToQuestion(int index) {
-    setState(() => _currentIndex = index);
+    _controller.goToQuestion(index);
     Navigator.of(context).pop();
   }
 
@@ -216,10 +211,10 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
     showModalBottomSheet<void>(
       context: context,
       builder: (context) => _QuestionGridSheet(
-        totalQuestions: _questions.length,
-        currentIndex: _currentIndex,
-        answeredIndices: _selectedAnswers.keys.toSet(),
-        markedIndices: _markedForReview,
+        totalQuestions: _controller.questions.length,
+        currentIndex: _controller.currentIndex,
+        answeredIndices: _controller.selectedAnswers.keys.toSet(),
+        markedIndices: _controller.markedForReview,
         onSelect: _goToQuestion,
       ),
     );
@@ -239,9 +234,9 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
       return;
     }
 
-    final answered = _selectedAnswers.length;
-    final unanswered = _questions.length - answered;
-    final marked = _markedForReview.length;
+    final answered = _controller.answeredCount;
+    final unanswered = _controller.unansweredCount;
+    final marked = _controller.markedForReview.length;
 
     final shouldSubmit = await showDialog<bool>(
       context: context,
@@ -251,7 +246,7 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total questions: ${_questions.length}'),
+            Text('Total questions: ${_controller.questions.length}'),
             Text('Answered: $answered'),
             Text('Unanswered: $unanswered'),
             Text('Marked for review: $marked'),
@@ -280,31 +275,8 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
   }
 
   Future<void> _submit() async {
-    _mockTimer?.cancel();
-    final elapsed = _startTime != null
-        ? DateTime.now().difference(_startTime!).inSeconds
-        : 0;
-    final perQuestion = _questions.isNotEmpty
-        ? (elapsed / _questions.length).clamp(1, 9999).toDouble()
-        : 30.0;
-
-    final attempts = <Attempt>[];
-    for (var i = 0; i < _questions.length; i++) {
-      final q = _questions[i];
-      final selected = _selectedAnswers[i] ?? '';
-      attempts.add(Attempt(
-        questionId: q.id,
-        selectedOption: selected,
-        isCorrect: selected == q.correctAnswer,
-        timeSeconds: perQuestion,
-        confidence: 3,
-        subjectId: q.subjectId,
-        topicId: q.topicId,
-        cognitiveLevel: q.cognitiveLevel,
-      ));
-    }
-
-    await _storage.appendAttempts(attempts);
+    final attempts = _controller.buildAttempts();
+    await _controller.submit();
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
@@ -320,6 +292,8 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
     final shouldPop = await _confirmExit();
     if (!mounted) return;
     if (shouldPop) {
+      await _controller.abandon();
+      if (!mounted) return;
       setState(() => _canPop = true);
       Navigator.of(context).pop();
     }

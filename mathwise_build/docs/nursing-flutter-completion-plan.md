@@ -516,6 +516,35 @@ class NursingSessionLogger {
 
 **File:** `lib/features/nursing/controllers/nursing_session_controller.dart`
 
+**Implemented API:**
+```dart
+class NursingSessionController extends ChangeNotifier {
+  QuizMode? mode;
+  String? subjectId;
+  String? topicId;
+  List<NursingQuestion> questions = [];
+  int currentIndex = 0;
+  Map<int, String> selectedAnswers = {};
+  Set<int> markedForReview = {};
+  bool loading = false;
+  String? error;
+  DateTime? startTime;
+  int remainingSeconds = 60 * 60;
+
+  Future<void> start({required QuizMode mode, ...});
+  void selectAnswer(int index, String answer);
+  void toggleMarkForReview(int index);
+  void goToQuestion(int index);
+  bool next();
+  List<Attempt> buildAttempts();
+  Future<void> submit();
+  Future<void> abandon();
+  Future<bool> restoreInflightSession();
+}
+```
+
+**Integration:** `NursingQuizScreen` now creates, listens to, and disposes a `NursingSessionController`. `QuizMode` was moved from the screen file into the controller so other screens can import it without a circular dependency.
+
 ### 6.2 Persist quiz progress against process death
 
 **File:** `lib/features/nursing/controllers/nursing_session_controller.dart` and `lib/features/nursing/services/nursing_storage_service.dart`
@@ -636,7 +665,7 @@ Add `androidTapTargetGuideline` and `iOSTapTargetGuideline` assertions in widget
 1. **Update ADR-018** (already drafted) and get approval. ✅
 2. **Fix compile issues** (Phase 1) — SDK constraint, `PopScope`. ✅
 3. **Generate fallback asset** (Phase 3 offline-first) — run `scripts/generate_nursing_flutter_assets.sh`. ✅
-4. **Create session controller** (Phase 6 state management) — `NursingSessionController`.
+4. **Create session controller** (Phase 6 state management) — `NursingSessionController`. ✅
 5. **Refactor widgets** (Phase 2) — extract question/option/explanation/capability/timer/glossary. ✅
 6. **Add mock navigation widgets** (Phase 4.6) — question grid sheet, submit summary dialog. ✅
 7. **Add offline fallback wiring** (Phase 3) — API service fallback + pending queue. ✅
