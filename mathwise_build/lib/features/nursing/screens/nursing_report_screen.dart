@@ -9,15 +9,16 @@ import '../widgets/question_card.dart';
 /// Report a questionable nursing question.
 class NursingReportScreen extends StatefulWidget {
   final NursingQuestion question;
+  final NursingApiService? api;
 
-  const NursingReportScreen({super.key, required this.question});
+  const NursingReportScreen({super.key, required this.question, this.api});
 
   @override
   State<NursingReportScreen> createState() => _NursingReportScreenState();
 }
 
 class _NursingReportScreenState extends State<NursingReportScreen> {
-  final _api = NursingApiService();
+  late final NursingApiService _api = widget.api ?? NursingApiService();
   final _reasonController = TextEditingController();
   final _quickReasons = const [
     'Wrong answer',

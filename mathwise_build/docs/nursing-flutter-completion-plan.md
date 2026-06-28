@@ -678,6 +678,43 @@ Each phase gets one commit with a conventional message and a test/build gate.
 
 ---
 
+## 12. Plan Revisions — Round 3 (2026-05-14)
+
+### 12.1 Root-cause fix: quiz submit timeout
+The Phase 7 quiz submit widget test timed out at `pumpAndSettle` after tapping Submit. Two root causes were identified:
+
+1. **Missing dependency propagation.** `NursingQuizScreen._submit()` constructed `NursingResultsScreen(attempts: attempts)` without passing the injected `api`/`storage`. The results screen therefore created a fresh `NursingApiService()` and, in the widget-test harness, received HTTP 400 responses. The test appeared to mock `/api/nursing/analyze`, but the mocked client was never used by the results screen.
+2. **Incomplete loading state machine.** `NursingResultsScreen._load()` set `_loading = false` only on success and on offline error. The non-offline `NursingApiException` branch set `_error` but left `_loading = true`, causing the indeterminate `NursingLoading` widget to spin forever and `pumpAndSettle` to time out. This is a production bug visible on any non-offline API failure.
+
+**Required code changes:**
+- Pass `widget.api`, `widget.storage`, and a `NursingSessionLogger` from `NursingQuizScreen` to `NursingResultsScreen`.
+- Set `_loading = false` in every terminal branch of `NursingResultsScreen._load()`, including the non-offline `NursingApiException` branch and the generic `catch` branch.
+
+### 12.2 Test seam: configurable `maxAttempts`
+Expose `maxAttempts` as a constructor parameter on `NursingApiService` (default `3`, tests may pass `1`). This eliminates exponential-backoff timeouts when a test accidentally misses an endpoint, making failures fast and diagnostic.
+
+### 12.3 Resilience improvement: jitter in retry backoff
+Add decorrelated jitter to the `_retry` delay calculation. Bounded exponential backoff without jitter can create a thundering herd when many clients retry a recovering server [^22]. Keep the 5 s cap and 3-attempt default.
+
+### 12.4 Navigation dependency-propagation checklist
+Every `Navigator.push` / `pushReplacement` / `pushAndRemoveUntil` that constructs a nursing screen must propagate injected services. Add the following checklist to every future nursing screen change:
+
+- [ ] If the destination screen accepts `api`, pass the same `NursingApiService` instance.
+- [ ] If the destination screen accepts `storage`, pass the same `NursingStorageService` instance.
+- [ ] If the destination screen accepts `logger`, pass the same `NursingSessionLogger` instance.
+- [ ] If the destination screen accepts `controller`, pass the same `NursingSessionController` instance.
+
+### 12.5 Widget-test discipline
+Documented lesson: `pumpAndSettle` waits for all animations to complete; an indeterminate progress indicator causes it to time out. Tests must either:
+- mock every endpoint the screen calls, or
+- inject `NursingApiService(client: mockClient, maxAttempts: 1)`.
+
+### 12.6 Updated execution order (remaining)
+1. Fix `_loading = false` and dependency propagation (Phase 7 bug fix).
+2. Add `maxAttempts` constructor parameter and jitter (Phase 5 hardening).
+3. Re-run `flutter test test/features/nursing` and `flutter build apk --debug`.
+4. Commit with conventional message.
+
 ## 11. Key Research Citations
 
 [^1]: Flutter breaking changes. *Generic types in PopScope*. https://docs.flutter.dev/release/breaking-changes/popscope-with-result
@@ -701,4 +738,5 @@ Each phase gets one commit with a conventional message and a test/build gate.
 [^18]: Flutter docs. *Measuring your app's size*. https://docs.flutter.dev/perf/app-size
 [^19]: GeekyAnts (2026). *Offline-First Flutter: Implementation Blueprint for Real-World Apps*. https://techblog.geekyants.com/offline-first-flutter-implementation-blueprint-for-real-world-apps
 [^20]: Dart docs. *The pubspec file — SDK constraints*. https://dart.dev/tools/pub/pubspec#sdk-constraints
-[^21]: 掘金 (2025). *Flutter PopScope 返回拦截完整指南：易错点＋正确姿势＋实战示例*. https://juejin.cn/post/7580592190020452386
+[^21]: 掘金 (2025). *Flutter PopScope 返回拦截完整指南：易错点＋正确姿势＋实战示例*. https://juejin.cn/post/7580592190020452386  
+[^22]: AWS Architecture Blog. *Exponential Backoff and Jitter*. https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/

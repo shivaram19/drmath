@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../controllers/nursing_session_controller.dart';
 import '../services/nursing_api_service.dart';
+import '../services/nursing_storage_service.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/nursing_app_bar.dart';
 import 'nursing_quiz_screen.dart';
@@ -9,15 +10,22 @@ import 'nursing_quiz_screen.dart';
 /// Shows topics for a selected nursing subject.
 class NursingSubjectScreen extends StatefulWidget {
   final String subjectId;
+  final NursingApiService? api;
+  final NursingStorageService? storage;
 
-  const NursingSubjectScreen({super.key, required this.subjectId});
+  const NursingSubjectScreen({
+    super.key,
+    required this.subjectId,
+    this.api,
+    this.storage,
+  });
 
   @override
   State<NursingSubjectScreen> createState() => _NursingSubjectScreenState();
 }
 
 class _NursingSubjectScreenState extends State<NursingSubjectScreen> {
-  final _api = NursingApiService();
+  late final NursingApiService _api = widget.api ?? NursingApiService();
   bool _loading = true;
   String? _error;
   List<String> _topics = [];
@@ -96,6 +104,8 @@ class _NursingSubjectScreenState extends State<NursingSubjectScreen> {
           mode: QuizMode.practice,
           subjectId: widget.subjectId,
           topicId: topicId,
+          api: widget.api,
+          storage: widget.storage,
         ),
       ),
     );

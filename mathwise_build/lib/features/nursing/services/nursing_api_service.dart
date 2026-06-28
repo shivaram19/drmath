@@ -21,12 +21,16 @@ class NursingApiService {
   final Duration timeout;
   final AssetBundle? assetBundle;
   final Client? client;
+  final int maxAttempts;
+  final Duration maxDelay;
 
   NursingApiService({
     this.baseUrl = 'https://drmath.trelolabs.com',
     this.timeout = const Duration(seconds: 10),
     this.assetBundle,
     this.client,
+    this.maxAttempts = 3,
+    this.maxDelay = const Duration(seconds: 5),
   });
 
   Future<Map<String, dynamic>> fetchStatus() async {
@@ -202,10 +206,10 @@ class NursingApiService {
 
   Future<T> _retry<T>(
     Future<T> Function() call, {
-    int maxAttempts = 3,
     Duration baseDelay = const Duration(milliseconds: 300),
   }) async {
     var attempt = 0;
+    final random = Random();
     while (true) {
       try {
         return await call();
@@ -216,13 +220,15 @@ class NursingApiService {
         if (!shouldRetry || attempt >= maxAttempts) {
           rethrow;
         }
-        // Exponential backoff: 300ms, 600ms, 1200ms, ... capped at 5s.
-        final delay = Duration(
-          milliseconds: min(
-            baseDelay.inMilliseconds * (1 << (attempt - 1)),
-            5000,
-          ),
+        // Exponential backoff with equal jitter to avoid thundering herd.
+        // delay = baseDelay * 2^(attempt-1), capped at maxDelay.
+        final exponentialDelayMs = min(
+          baseDelay.inMilliseconds * (1 << (attempt - 1)),
+          maxDelay.inMilliseconds,
         );
+        final halfDelayMs = (exponentialDelayMs / 2).ceil();
+        final jitterMs = random.nextInt(halfDelayMs + 1);
+        final delay = Duration(milliseconds: halfDelayMs + jitterMs);
         await Future<void>.delayed(delay);
       }
     }

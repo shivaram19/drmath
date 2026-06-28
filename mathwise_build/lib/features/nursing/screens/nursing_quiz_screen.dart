@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../controllers/nursing_session_controller.dart';
 import '../models/nursing_question.dart';
 import '../services/nursing_api_service.dart';
+import '../services/nursing_session_logger.dart';
 import '../services/nursing_storage_service.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/nursing_app_bar.dart';
@@ -15,12 +16,18 @@ class NursingQuizScreen extends StatefulWidget {
   final QuizMode mode;
   final String? subjectId;
   final String? topicId;
+  final NursingApiService? api;
+  final NursingStorageService? storage;
+  final NursingSessionLogger? logger;
 
   const NursingQuizScreen({
     super.key,
     required this.mode,
     this.subjectId,
     this.topicId,
+    this.api,
+    this.storage,
+    this.logger,
   });
 
   @override
@@ -35,8 +42,8 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
   void initState() {
     super.initState();
     _controller = NursingSessionController(
-      api: NursingApiService(),
-      storage: NursingStorageService(),
+      api: widget.api,
+      storage: widget.storage,
     );
     _controller.addListener(_onControllerChanged);
     _load();
@@ -223,7 +230,10 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
   void _reportQuestion(NursingQuestion question) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => NursingReportScreen(question: question),
+        builder: (_) => NursingReportScreen(
+          question: question,
+          api: widget.api,
+        ),
       ),
     );
   }
@@ -281,7 +291,12 @@ class _NursingQuizScreenState extends State<NursingQuizScreen> {
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
-          builder: (_) => NursingResultsScreen(attempts: attempts),
+          builder: (_) => NursingResultsScreen(
+            attempts: attempts,
+            api: widget.api,
+            storage: widget.storage,
+            logger: widget.logger,
+          ),
         ),
       );
     }

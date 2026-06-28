@@ -15,17 +15,26 @@ import 'nursing_quiz_screen.dart';
 /// Shows diagnostic/mock results and capability map.
 class NursingResultsScreen extends StatefulWidget {
   final List<Attempt> attempts;
+  final NursingApiService? api;
+  final NursingStorageService? storage;
+  final NursingSessionLogger? logger;
 
-  const NursingResultsScreen({super.key, required this.attempts});
+  const NursingResultsScreen({
+    super.key,
+    required this.attempts,
+    this.api,
+    this.storage,
+    this.logger,
+  });
 
   @override
   State<NursingResultsScreen> createState() => _NursingResultsScreenState();
 }
 
 class _NursingResultsScreenState extends State<NursingResultsScreen> {
-  final _api = NursingApiService();
-  final _storage = NursingStorageService();
-  final _logger = NursingSessionLogger();
+  late final NursingApiService _api = widget.api ?? NursingApiService();
+  late final NursingStorageService _storage = widget.storage ?? NursingStorageService();
+  late final NursingSessionLogger _logger = widget.logger ?? NursingSessionLogger();
   bool _loading = true;
   String? _error;
   CapabilityAnalysis? _analysis;
@@ -117,10 +126,20 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
           });
         }
       } else {
-        if (mounted) setState(() => _error = e.message);
+        if (mounted) {
+          setState(() {
+            _error = e.message;
+            _loading = false;
+          });
+        }
       }
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -218,8 +237,10 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute<void>(
-                            builder: (_) => const NursingQuizScreen(
+                            builder: (_) => NursingQuizScreen(
                               mode: QuizMode.diagnostic,
+                              api: widget.api,
+                              storage: widget.storage,
                             ),
                           ),
                           (route) => route.isFirst,

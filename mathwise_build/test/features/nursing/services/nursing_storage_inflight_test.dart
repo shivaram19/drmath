@@ -18,7 +18,7 @@ void main() {
         'selected_answers': {'0': 'A', '1': 'B'},
         'marked_for_review': [2],
         'remaining_seconds': 1800,
-        'questions': [],
+        'questions': <Map<String, dynamic>>[],
       });
 
       final session = await storage.loadInflightSession();

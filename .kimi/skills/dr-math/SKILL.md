@@ -124,6 +124,16 @@ Before ANY deploy:
 | DNS fails | Namecheap A record propagation (5-30 min) |
 | Docker fails | Port 80/443 not in use by other services |
 
+## Flutter Nursing Module Notes
+
+When working in `mathwise_build/lib/features/nursing`:
+
+- **Build gate per phase:** `flutter analyze lib/features/nursing`, `flutter test test/features/nursing`, `flutter build apk --debug`.
+- **Injectable services:** `NursingApiService`, `NursingStorageService`, `NursingSessionLogger`, and `NursingSessionController` are accepted as optional constructor parameters. Always propagate them through every `Navigator.push`/`pushReplacement`/`pushAndRemoveUntil` hop.
+- **Widget-test timeout lesson:** `pumpAndSettle` times out if an indeterminate `CircularProgressIndicator` keeps spinning. This happens when a screen starts an unmocked network call or fails to clear its loading state. Either mock every endpoint the screen touches or inject `NursingApiService(client: mockClient, maxAttempts: 1)`.
+- **Loading-state completeness:** every async loading state must transition to `_loading = false` in every terminal branch (success, offline error, non-offline error, generic exception).
+- **Retry behavior:** `NursingApiService` retries up to `maxAttempts` (default 3) on offline errors and HTTP 5xx, with exponential backoff plus jitter capped at 5 s. It does not retry 4xx.
+
 ## Never Forget
 
 - This project is **research-driven, citation-backed**.
