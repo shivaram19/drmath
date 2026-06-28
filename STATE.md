@@ -138,7 +138,7 @@ No passwords. Open access.
 4. **~~Phase 10.8c~~ ✅** — Web composition root created (`web/dependencies.py`); `NursingService` and `AnalyticsSink` injected via FastAPI `Depends`. `web/main.py` left intact; router split deferred to incremental cleanup.
 5. **🟡 Phase 10.9 — Backend** — WhatsApp daily quiz reminder experiment: explicit opt-in flow, BSP evaluation (Chat Mitra Starter / Meta Cloud API), Meta template approval, backend scheduler + STOP handling, cost/engagement reversal trigger. **Unblocked by Phase 10.8c. Tracked in #52.**
 6. **Phase 10.10** — Expand nursing seed bank to 100 verified questions across INC GNM domains with `source_url`, `source_section`, and `verified_at` metadata.
-7. **ADR-024** — Write Architecture Decision Record for WhatsApp channel choice, consent model, and data retention before any bot code is merged.
+7. **🟡 ADR-024** — Architecture Decision Record drafted (`docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md`, status **Proposed**). Approval required before bot code is merged.
 8. **ADR-025** — Write Architecture Decision Record for pragmatic SOLID refactor strategy (ports for volatile boundaries, Strangler Fig, delete `src/`).
 9. **Structural cleanup** — Delete empty `src/` tree, update `AGENTS.md`, remove runtime artifacts from production Docker image.
 10. **Manager requests features** — export ratings CSV, bulk generate, prompt templates from research personas.
@@ -177,6 +177,7 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-05-05 | ADR-024: WhatsApp channel, consent model, and data retention decision drafted (Proposed) | #52 / `1d15a74` |
 | 2026-05-05 | Phase 10.8c: Web composition root + `NursingService`/`AnalyticsSink` injection; 57 tests passing | #51 |
 | 2026-05-05 | Phase 10.8b: Pipeline ports/adapters/use-case refactor; `run_pipeline()` compatibility wrapper; 55 tests passing | #50 |
 | 2026-05-05 | Phase 10.8a: Characterization tests for pipeline runner and web routes; 52 tests passing | `e403018` / #49 |
