@@ -177,9 +177,9 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 
 | Date | Change | Commit |
 |---|---|---|
-| 2026-05-05 | Phase 10.8c: Web composition root + `NursingService`/`AnalyticsSink` injection; 57 tests passing | — |
-| 2026-05-05 | Phase 10.8b: Pipeline ports/adapters/use-case refactor; `run_pipeline()` compatibility wrapper; 55 tests passing | — |
-| 2026-05-05 | Phase 10.8a: Characterization tests for pipeline runner and web routes; 52 tests passing | `e403018` |
+| 2026-05-05 | Phase 10.8c: Web composition root + `NursingService`/`AnalyticsSink` injection; 57 tests passing | #51 |
+| 2026-05-05 | Phase 10.8b: Pipeline ports/adapters/use-case refactor; `run_pipeline()` compatibility wrapper; 55 tests passing | #50 |
+| 2026-05-05 | Phase 10.8a: Characterization tests for pipeline runner and web routes; 52 tests passing | `e403018` / #49 |
 | 2026-06-28 | Phase 10.1: Nursing PWA landing live at /nursing/ | `cb71528` |
 | 2026-06-28 | ADR-019: PWA-first distribution for Nursing | `8b199d5` |
 | 2026-06-28 | Phase 10.6a: Consent-gated analytics endpoint and client events | — |
