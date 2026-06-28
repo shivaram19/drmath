@@ -3,7 +3,7 @@
 **Date:** 2026-06-28  
 **Scope:** How to act on the SOLID audit findings without over-engineering the codebase or blocking product delivery.  
 **Research Phase:** Bidirectional / cross-domain impact analysis, informed by `docs/research/bidirectional/bidirectional-09-introspection-solid-unknowns.md`.  
-**Status:** Proposed.
+**Status:** Accepted.
 
 ---
 

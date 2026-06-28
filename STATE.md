@@ -134,7 +134,8 @@ No passwords. Open access.
 
 1. **Phase 10.8+** — Monitor APK conversion funnel (`apk_prompt_shown` → `apk_download_clicked` → `app_first_open`) for at least 100 impressions; decide whether to spike a Play Console release based on click-to-open gap.
 2. **~~Phase 10.8a~~ ✅** — Characterization tests for `pipeline/run.py` and core web routes committed.
-3. **🟡 Phase 10.8b** — Decouple math pipeline: create `pipeline/interfaces.py`, implement LLM/scraper/content-store ports, and introduce `GenerateContentUseCase` behind a compatibility wrapper.
+3. **~~Phase 10.8b~~ ✅** — Math pipeline decoupled behind ports (`pipeline/interfaces.py`, `pipeline/adapters.py`, `pipeline/use_cases.py`); `run_pipeline()` is now a compatibility wrapper.
+4. **🟡 Phase 10.8c** — Web composition root: inject `NursingService`, extract `AnalyticsSink`, and split `web/main.py` into focused routers incrementally.
 4. **Phase 10.8c** — Web composition root: inject `NursingService`, extract `AnalyticsSink`, and split `web/main.py` into focused routers incrementally.
 5. **Phase 10.9** — WhatsApp daily quiz reminder experiment: explicit opt-in flow, BSP evaluation (Chat Mitra Starter / Meta Cloud API), Meta template approval, backend scheduler + STOP handling, cost/engagement reversal trigger. **Gated by Phase 10.8c.**
 6. **Phase 10.10** — Expand nursing seed bank to 100 verified questions across INC GNM domains with `source_url`, `source_section`, and `verified_at` metadata.
@@ -177,6 +178,7 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-05-05 | Phase 10.8b: Pipeline ports/adapters/use-case refactor; `run_pipeline()` compatibility wrapper; 55 tests passing | — |
 | 2026-05-05 | Phase 10.8a: Characterization tests for pipeline runner and web routes; 52 tests passing | `e403018` |
 | 2026-06-28 | Phase 10.1: Nursing PWA landing live at /nursing/ | `cb71528` |
 | 2026-06-28 | ADR-019: PWA-first distribution for Nursing | `8b199d5` |
