@@ -196,7 +196,11 @@ class _HomeTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text(DemoData.currentTopic, style: Theme.of(context).textTheme.displayMedium),
+          Text(
+            DemoData.currentTopic,
+            style: Theme.of(context).textTheme.displayMedium,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 4),
           Text(
             'Mastering chords, tangents, and sectors.',
@@ -208,12 +212,21 @@ class _HomeTab extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Course Progress', style: Theme.of(context).textTheme.bodyLarge),
-              Text(
-                '${(DemoData.currentTopicProgress * 100).toInt()}%',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+              Expanded(
+                child: Text(
+                  'Course Progress',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Flexible(
+                child: Text(
+                  '${(DemoData.currentTopicProgress * 100).toInt()}%',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -335,7 +348,11 @@ class _HomeTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Math Playground', style: Theme.of(context).textTheme.displaySmall),
+                Text(
+                  'Math Playground',
+                  style: Theme.of(context).textTheme.displaySmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -371,15 +388,19 @@ class _HomeTab extends StatelessWidget {
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () => _navigate(context, const GamesScreen()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.surfaceContainerHighest,
-              foregroundColor: AppColors.primaryFixedDim,
-              side: const BorderSide(color: AppColors.primary, width: 0.5),
-              elevation: 0,
+          const SizedBox(width: 12),
+          Flexible(
+            child: ElevatedButton(
+              onPressed: () => _navigate(context, const GamesScreen()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.surfaceContainerHighest,
+                foregroundColor: AppColors.primaryFixedDim,
+                side: const BorderSide(color: AppColors.primary, width: 0.5),
+                elevation: 0,
+                minimumSize: const Size(0, 48),
+              ),
+              child: const Text('Enter Games'),
             ),
-            child: const Text('Enter Games'),
           ),
         ],
       ),
@@ -410,7 +431,12 @@ class _HomeTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Telangana Staff Nurse', style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Telangana Staff Nurse',
+                  style: Theme.of(context).textTheme.titleLarge,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   'Topic-wise practice for ANM/GNM recruitment',
@@ -423,14 +449,18 @@ class _HomeTab extends StatelessWidget {
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () => _navigate(context, const NursingEntryScreen()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          const SizedBox(width: 12),
+          Flexible(
+            child: ElevatedButton(
+              onPressed: () => _navigate(context, const NursingEntryScreen()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                minimumSize: const Size(0, 48),
+              ),
+              child: const Text('Open'),
             ),
-            child: const Text('Open'),
           ),
         ],
       ),

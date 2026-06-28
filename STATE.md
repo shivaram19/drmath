@@ -100,6 +100,8 @@ No passwords. Open access.
 | ADR-007 | Adaptive engine design | Accepted |
 | **ADR-008** | **SQLite for prompt experimentation** | **Accepted** |
 | **ADR-019** | **PWA-first distribution for Nursing** | **Accepted** |
+| **ADR-020** | **DPDPA privacy notice & consent for Nursing** | **Accepted** |
+| **ADR-021** | **Android release build toolchain** | **Accepted** |
 
 ---
 
@@ -121,9 +123,12 @@ No passwords. Open access.
 
 ## 🎯 Next Immediate Work
 
-1. **Phase 10.5** — Fix `HomeScreen` nursing card overflow on narrow screens (Issue #37)
-3. **Phase 10.5** — Fix `HomeScreen` nursing card overflow on narrow screens (Issue #37)
-4. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
+1. **Phase 10.6a** — Consent-gated analytics events (`landing_quiz_started`, `share_clicked`)
+2. **Phase 10.6b** — Server-log retention policy and DPDPA notice hardening (Grievance Officer, retention, DPB info)
+3. **Phase 10.6c** — Open Graph / WhatsApp link preview for `/nursing/`
+4. **Phase 10.7** — HomeScreen 320–360 dp responsive pass (Course Progress, Games card, bottom nav)
+5. **Phase 10.8+** — Content expansion with source verification; user interviews on channel preference
+6. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
 
 ---
 

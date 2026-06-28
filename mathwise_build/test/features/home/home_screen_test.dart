@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mathwise/features/home/home_screen.dart';
 import 'package:mathwise/shared/widgets/bottom_nav_bar.dart';
@@ -36,5 +37,8 @@ void main() {
 
       expect(find.byType(MathWiseBottomNav), findsOneWidget);
     });
+
+    // TODO(phase10.7): Add narrow-screen overflow test once the full HomeScreen
+    // responsive pass (Course Progress row, Games card, bottom nav) is complete.
   });
 }
