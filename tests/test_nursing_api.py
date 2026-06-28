@@ -105,6 +105,8 @@ def test_nursing_landing_page_returns_200(client):
     response = client.get("/nursing")
     assert response.status_code == 200
     assert "MathWise Nursing" in response.text
+    assert 'property="og:title"' in response.text
+    assert 'og:image' in response.text
 
 
 def test_nursing_privacy_page_returns_200(client):

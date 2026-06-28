@@ -8,6 +8,7 @@ const SHELL_ASSETS = [
   '/nursing/app.js',
   '/nursing/manifest.json',
   '/nursing/daily.json',
+  '/nursing/og-image.png',
   '/nursing/icon-192.png',
   '/nursing/icon-512.png',
   '/nursing/favicon.png',

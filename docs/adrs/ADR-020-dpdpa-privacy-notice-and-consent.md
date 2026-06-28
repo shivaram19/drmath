@@ -102,6 +102,8 @@ Specifically:
 - [x] Serve `/nursing/privacy` via nginx `try_files $uri.html` and FastAPI fallback.
 - [x] Update deploy script to copy nursing static assets (including `privacy.html`) to nginx webroot.
 - [x] Update nursing landing test and close Issue #34.
+- [ ] Add Open Graph tags and shareable image for WhatsApp link previews (Phase 10.6c).
+- [ ] Add named Grievance Officer, retention details, and DPB complaint info to privacy notice (Phase 10.6b).
 
 ---
 
