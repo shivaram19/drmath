@@ -1,6 +1,6 @@
 # Dr. Math — Current State
 
-**Last Updated:** 2026-05-05  
+**Last Updated:** 2026-06-28  
 **Branch:** `main`  
 **Commits:** 35+ total (conventional format)  
 **Environment:** Production VM `20.193.129.119`  
@@ -129,13 +129,11 @@ No passwords. Open access.
 
 ## 🎯 Next Immediate Work
 
-1. **Phase 10.9** — WhatsApp bot experiment for daily quiz reminders
-2. **Phase 10.10** — Expanded nursing seed bank with source verification
-3. **Phase 10.8+** — Content expansion with source verification; user interviews on channel preference
-4. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
-4. **Phase 10.10** — Expanded nursing seed bank with source verification
-5. **Phase 10.8+** — Content expansion with source verification; user interviews on channel preference
-6. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
+1. **Phase 10.8+** — Monitor APK conversion funnel (`apk_prompt_shown` → `apk_download_clicked` → `app_first_open`) for at least 100 impressions; decide whether to spike a Play Console release based on click-to-open gap.
+2. **Phase 10.9** — WhatsApp daily quiz reminder experiment: explicit opt-in flow, BSP evaluation (Chat Mitra Starter / Meta Cloud API), Meta template approval, backend scheduler + STOP handling, cost/engagement reversal trigger.
+3. **Phase 10.10** — Expand nursing seed bank to 100 verified questions across INC GNM domains with `source_url`, `source_section`, and `verified_at` metadata.
+4. **ADR-024** — Write Architecture Decision Record for WhatsApp channel choice, consent model, and data retention before any bot code is merged.
+5. **Manager requests features** — export ratings CSV, bulk generate, prompt templates from research personas.
 
 ---
 
@@ -177,6 +175,7 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 | 2026-06-28 | ADR-022: Consent-gated analytics for Nursing | — |
 | 2026-06-28 | Phase 10.7: HomeScreen + shared widgets 320–430 dp responsive pass | — |
 | 2026-06-28 | Full narrow-screen audit: fixed overflows in topic/subtopic/curriculum/concept screens; corrected visual-test viewport config | — |
+| 2026-06-28 | Research: Phase 10.8 retrospective, WhatsApp/DPDPA/source-verification findings, refined plan in `docs/research/introspection-phase10_8-and-beyond-2026-06-28.md` | — |
 | 2026-05-03 | Prompt versioning, expand/collapse, pipeline timestamps | `3ee765d` |
 | 2026-05-03 | Web UI: prompt families, generation timeline, Lab updates | `0bd98aa` |
 | 2026-05-03 | **LIVE: Deployed to production with HTTPS** | `e264acb` |
