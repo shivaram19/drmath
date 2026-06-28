@@ -192,9 +192,11 @@
   // APK conversion prompt
   // ---------------------------------------------------------------------------
 
+  const PHONE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12" y2="18.01"></line></svg>`;
+
   function renderPromptContent(dismissible) {
     return `
-      <div class="apk-prompt-icon" aria-hidden="true">📱</div>
+      <div class="apk-prompt-icon" aria-hidden="true">${PHONE_ICON}</div>
       <div class="apk-prompt-text">
         <strong data-key="apkPromptTitle">${t('apkPromptTitle')}</strong>
         <span data-key="apkPromptBody">${t('apkPromptBody')}</span>

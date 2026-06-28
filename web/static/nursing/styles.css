@@ -253,8 +253,16 @@ html, body {
 }
 
 .apk-prompt-icon {
-  font-size: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
   margin-bottom: 8px;
+}
+
+.apk-prompt-icon svg {
+  width: 2rem;
+  height: 2rem;
 }
 
 .apk-prompt-text strong {
@@ -281,8 +289,12 @@ html, body {
 }
 
 .apk-prompt-banner .apk-prompt-icon {
-  font-size: 1.6rem;
   margin: 0;
+}
+
+.apk-prompt-banner .apk-prompt-icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
 }
 
 .apk-prompt-banner .apk-prompt-text {
