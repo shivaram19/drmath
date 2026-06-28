@@ -119,6 +119,13 @@ if [ -d "/etc/nginx/sites-enabled" ]; then
     echo "✅ nginx site config installed and reloaded"
 fi
 
+# Install DPDPA-aligned logrotate config for dedicated nginx logs.
+if [ -d "/etc/logrotate.d" ]; then
+    run_as_root cp "$PROJECT_DIR/scripts/logrotate-drmath.conf" /etc/logrotate.d/drmath
+    run_as_root chmod 644 /etc/logrotate.d/drmath
+    echo "✅ Log retention config installed (30 days)"
+fi
+
 # ------------------------------------------------------------------
 # 4. Generate runtime artifacts
 # ------------------------------------------------------------------

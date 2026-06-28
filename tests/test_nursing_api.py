@@ -114,6 +114,9 @@ def test_nursing_privacy_page_returns_200(client):
     assert response.status_code == 200
     assert "Privacy Notice" in response.text
     assert "Digital Personal Data Protection Act" in response.text
+    assert "Grievance Officer" in response.text
+    assert "Server logs" in response.text
+    assert "30 days" in response.text
 
 
 def test_pdf_export_post(client):
