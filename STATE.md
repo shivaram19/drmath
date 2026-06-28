@@ -109,7 +109,7 @@ No passwords. Open access.
 | **ADR-021** | **Android release build toolchain** | **Accepted** |
 | **ADR-022** | **Consent-gated analytics for Nursing** | **Accepted** |
 | **ADR-023** | **Web-to-APK conversion measurement** | **Accepted** |
-| **ADR-024** | **WhatsApp channel choice, consent model, and data retention** | **Proposed** |
+| **ADR-024** | **WhatsApp + Telegram channel strategy, consent model, and data retention** | **Proposed — dual-channel architecture with Telegram-first phased MVP** |
 | **ADR-025** | **Pragmatic SOLID refactor strategy** | **Proposed** |
 
 ---
@@ -136,9 +136,14 @@ No passwords. Open access.
 2. **~~Phase 10.8a~~ ✅** — Characterization tests for `pipeline/run.py` and core web routes committed.
 3. **~~Phase 10.8b~~ ✅** — Math pipeline decoupled behind ports (`pipeline/interfaces.py`, `pipeline/adapters.py`, `pipeline/use_cases.py`); `run_pipeline()` is now a compatibility wrapper.
 4. **~~Phase 10.8c~~ ✅** — Web composition root created (`web/dependencies.py`); `NursingService` and `AnalyticsSink` injected via FastAPI `Depends`. `web/main.py` left intact; router split deferred to incremental cleanup.
-5. **🟡 Phase 10.9 — Backend** — WhatsApp daily quiz reminder experiment: explicit opt-in flow, BSP evaluation (Chat Mitra Starter / Meta Cloud API), Meta template approval, backend scheduler + STOP handling, cost/engagement reversal trigger. **Unblocked by Phase 10.8c. Tracked in #52.**
-6. **Phase 10.10** — Expand nursing seed bank to 100 verified questions across INC GNM domains with `source_url`, `source_section`, and `verified_at` metadata.
-7. **🟡 ADR-024** — Architecture Decision Record drafted (`docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md`, status **Proposed**). Approval required before bot code is merged.
+5. **🟡 Phase 10.9 — Backend** — Daily quiz nudge experiment, reframed as a phased behavioral-intervention test:
+   - **10.9a** — User discovery (survey/interviews) + 60+ verified nursing questions pre-flight.
+   - **10.9b** — **Telegram-only MVP** testing active-retrieval nudge vs. generic reminder.
+   - **10.9c** — Port winning arm to WhatsApp; offer channel choice; validate CPAU.
+   - **10.9d** — Automatic channel fallback, cadence preference, and scale.
+   **Tracked in #52. No sender code until 10.9a pre-conditions are met.**
+6. **Phase 10.10** — Expand nursing seed bank to 100 verified questions across INC GNM domains with `source_url`, `source_section`, and `verified_at` metadata. **Must reach 60+ questions before 10.9b launch.**
+7. **🟡 ADR-024** — Architecture Decision Record revised (`docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md`, status **Proposed**) for a **dual-channel WhatsApp + Telegram** strategy with **Telegram-first implementation sequencing**, DPDP Rules, 2025 multilingual-notice and one-click-withdrawal requirements, and 1-year send-log retention. Approval required before bot code is merged.
 8. **ADR-025** — Write Architecture Decision Record for pragmatic SOLID refactor strategy (ports for volatile boundaries, Strangler Fig, delete `src/`).
 9. **Structural cleanup** — Delete empty `src/` tree, update `AGENTS.md`, remove runtime artifacts from production Docker image.
 10. **Manager requests features** — export ratings CSV, bulk generate, prompt templates from research personas.
@@ -177,7 +182,11 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-05-05 | Phase 10.9 introspection: surfaced market, cadence, content-readiness, and DPDP-Rule unknowns; documented in `docs/research/bidirectional/bidirectional-11-phase10_9-introspection.md` | — |
+| 2026-05-05 | ADR-024 revised: Telegram-first phased MVP, DPDP Rules 2025 multilingual notice + one-click withdrawal, 1-year send-log retention, nursing market context | `docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md` |
 | 2026-05-05 | ADR-024: WhatsApp channel, consent model, and data retention decision drafted (Proposed) | #52 / `1d15a74` |
+| 2026-05-05 | Research review: WhatsApp reminders in India health RCT showed null effect; Phase 10.9 redesign proposed as behavioral intervention | `docs/research/bidirectional/bidirectional-10-whatsapp-reminder-efficacy-phase10_9.md` |
+| 2026-05-05 | ADR-024 revised for dual-channel WhatsApp + Telegram strategy; 2026 pricing and Telegram regulatory risk incorporated | `docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md` |
 | 2026-05-05 | Phase 10.8c: Web composition root + `NursingService`/`AnalyticsSink` injection; 57 tests passing | #51 |
 | 2026-05-05 | Phase 10.8b: Pipeline ports/adapters/use-case refactor; `run_pipeline()` compatibility wrapper; 55 tests passing | #50 |
 | 2026-05-05 | Phase 10.8a: Characterization tests for pipeline runner and web routes; 52 tests passing | `e403018` / #49 |
