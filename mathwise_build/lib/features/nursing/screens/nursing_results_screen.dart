@@ -10,6 +10,7 @@ import '../services/nursing_storage_service.dart';
 import '../widgets/capability_bar.dart';
 import '../widgets/loading_state.dart';
 import '../widgets/nursing_app_bar.dart';
+import 'nursing_pdf_screen.dart';
 import 'nursing_quiz_screen.dart';
 
 /// Shows diagnostic/mock results and capability map.
@@ -233,6 +234,21 @@ class _NursingResultsScreenState extends State<NursingResultsScreen> {
                           ),
                         ),
                     const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => NursingPdfScreen(
+                              attempts: widget.attempts,
+                              api: widget.api,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.picture_as_pdf),
+                      label: const Text('Generate Practice PDF'),
+                    ),
+                    const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(

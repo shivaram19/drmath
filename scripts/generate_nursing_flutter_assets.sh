@@ -1,32 +1,37 @@
 #!/usr/bin/env bash
-# Generate the bundled nursing fallback asset from the backend seed bank.
+# Generate the nursing Flutter fallback asset from the backend seed bank.
+#
+# Usage: ./scripts/generate_nursing_flutter_assets.sh
+
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SOURCE="$ROOT/output/nursing_staff_nurse_output.json"
-TARGET="$ROOT/mathwise_build/assets/nursing/nursing_seed_questions.json"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SOURCE="${REPO_ROOT}/output/nursing_staff_nurse_output.json"
+TARGET="${REPO_ROOT}/mathwise_build/assets/nursing/nursing_seed_questions.json"
 
 if [[ ! -f "$SOURCE" ]]; then
-  echo "Error: source seed bank not found: $SOURCE"
+  echo "Error: source seed bank not found at $SOURCE"
+  echo "Generate or copy the nursing output first."
   exit 1
 fi
 
-mkdir -p "$(dirname "$TARGET")"
+python3 - <<PY
+import json
+import sys
 
-# Extract only the questions array and write compact JSON.
-python3 - <<PY "$SOURCE" "$TARGET"
-import json, sys
-
-with open(sys.argv[1], "r", encoding="utf-8") as f:
+with open("$SOURCE", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 questions = data.get("questions", [])
-with open(sys.argv[2], "w", encoding="utf-8") as f:
-    json.dump(questions, f, separators=(",", ":"), ensure_ascii=False)
+if not questions:
+    print("Error: no questions found in source", file=sys.stderr)
+    sys.exit(1)
 
-print(f"Generated {sys.argv[2]} with {len(questions)} questions")
+with open("$TARGET", "w", encoding="utf-8") as f:
+    json.dump(questions, f, ensure_ascii=False, separators=(",", ":"))
+
+size_kb = len(json.dumps(questions, ensure_ascii=False, separators=(",", ":"))) / 1024
+print(f"Generated $TARGET")
+print(f"  Questions: {len(questions)}")
+print(f"  Size: {size_kb:.1f} KB")
 PY
-
-SIZE_BYTES=$(stat -c%s "$TARGET")
-SIZE_KB=$(( SIZE_BYTES / 1024 ))
-echo "File size: ${SIZE_KB} KB (${SIZE_BYTES} bytes)"

@@ -11,15 +11,16 @@ import '../widgets/nursing_app_bar.dart';
 /// Generate a weak-area practice PDF and copy the HTML to the clipboard.
 class NursingPdfScreen extends StatefulWidget {
   final List<Attempt> attempts;
+  final NursingApiService? api;
 
-  const NursingPdfScreen({super.key, required this.attempts});
+  const NursingPdfScreen({super.key, required this.attempts, this.api});
 
   @override
   State<NursingPdfScreen> createState() => _NursingPdfScreenState();
 }
 
 class _NursingPdfScreenState extends State<NursingPdfScreen> {
-  final _api = NursingApiService();
+  late final NursingApiService _api = widget.api ?? NursingApiService();
   List<Capability> _weakTopics = [];
   final Set<String> _selectedTopics = {};
   bool _generating = false;

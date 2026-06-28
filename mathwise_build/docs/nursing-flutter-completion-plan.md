@@ -710,10 +710,18 @@ Documented lesson: `pumpAndSettle` waits for all animations to complete; an inde
 - inject `NursingApiService(client: mockClient, maxAttempts: 1)`.
 
 ### 12.6 Updated execution order (remaining)
-1. Fix `_loading = false` and dependency propagation (Phase 7 bug fix).
-2. Add `maxAttempts` constructor parameter and jitter (Phase 5 hardening).
-3. Re-run `flutter test test/features/nursing` and `flutter build apk --debug`.
-4. Commit with conventional message.
+1. ✅ Fix `_loading = false` and dependency propagation (Phase 7 bug fix).
+2. ✅ Add `maxAttempts` constructor parameter and jitter (Phase 5 hardening).
+3. ✅ Re-run `flutter test test/features/nursing` and `flutter build apk --debug`.
+4. ✅ Commit with conventional message.
+5. ✅ Phase 8: Wire remaining screens (disclaimer, onboarding, settings, PDF) with injected services, add widget tests, create asset generation script.
+
+### 12.7 Phase 8 completion summary
+- `NursingDisclaimerScreen`, `NursingOnboardingScreen`, `NursingSettingsScreen` now accept optional `storage`; `NursingOnboardingScreen` and `NursingDisclaimerScreen` also accept `api`.
+- `NursingPdfScreen` accepts optional `api` and is reachable from `NursingResultsScreen`.
+- `NursingHomeScreen` propagates `storage` to `NursingSettingsScreen`.
+- Added widget tests for disclaimer, onboarding, settings, and PDF screens.
+- Created `scripts/generate_nursing_flutter_assets.sh` to regenerate `assets/nursing/nursing_seed_questions.json` from `output/nursing_staff_nurse_output.json`.
 
 ## 11. Key Research Citations
 

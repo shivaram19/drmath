@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../services/nursing_api_service.dart';
 import '../services/nursing_storage_service.dart';
 import '../widgets/nursing_app_bar.dart';
 import 'nursing_home_screen.dart';
 
 /// Brief 3-card onboarding for first-time nursing users.
 class NursingOnboardingScreen extends StatefulWidget {
-  const NursingOnboardingScreen({super.key});
+  final NursingStorageService? storage;
+  final NursingApiService? api;
+
+  const NursingOnboardingScreen({super.key, this.storage, this.api});
 
   @override
   State<NursingOnboardingScreen> createState() => _NursingOnboardingScreenState();
 }
 
 class _NursingOnboardingScreenState extends State<NursingOnboardingScreen> {
-  final _storage = NursingStorageService();
+  late final NursingStorageService _storage = widget.storage ?? NursingStorageService();
   final _pageController = PageController();
   int _currentPage = 0;
 
@@ -50,7 +54,12 @@ class _NursingOnboardingScreenState extends State<NursingOnboardingScreen> {
     await _storage.setOnboardingSeen(true);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const NursingHomeScreen()),
+      MaterialPageRoute<void>(
+        builder: (_) => NursingHomeScreen(
+          api: widget.api,
+          storage: widget.storage,
+        ),
+      ),
     );
   }
 

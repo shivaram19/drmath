@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/nursing_api_service.dart';
 import '../services/nursing_storage_service.dart';
 import '../widgets/nursing_app_bar.dart';
 import 'nursing_home_screen.dart';
@@ -7,14 +8,17 @@ import 'nursing_onboarding_screen.dart';
 
 /// First-launch disclaimer for the nursing module.
 class NursingDisclaimerScreen extends StatefulWidget {
-  const NursingDisclaimerScreen({super.key});
+  final NursingStorageService? storage;
+  final NursingApiService? api;
+
+  const NursingDisclaimerScreen({super.key, this.storage, this.api});
 
   @override
   State<NursingDisclaimerScreen> createState() => _NursingDisclaimerScreenState();
 }
 
 class _NursingDisclaimerScreenState extends State<NursingDisclaimerScreen> {
-  final _storage = NursingStorageService();
+  late final NursingStorageService _storage = widget.storage ?? NursingStorageService();
   bool _accepted = false;
   bool _loading = true;
 
@@ -45,7 +49,10 @@ class _NursingDisclaimerScreenState extends State<NursingDisclaimerScreen> {
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
-          builder: (_) => const NursingOnboardingScreen(),
+          builder: (_) => NursingOnboardingScreen(
+            storage: widget.storage,
+            api: widget.api,
+          ),
         ),
       );
     }
@@ -53,7 +60,12 @@ class _NursingDisclaimerScreenState extends State<NursingDisclaimerScreen> {
 
   void _goHome() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const NursingHomeScreen()),
+      MaterialPageRoute<void>(
+        builder: (_) => NursingHomeScreen(
+          api: widget.api,
+          storage: widget.storage,
+        ),
+      ),
     );
   }
 

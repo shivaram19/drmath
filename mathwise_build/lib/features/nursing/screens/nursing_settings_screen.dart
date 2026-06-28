@@ -7,14 +7,16 @@ import 'nursing_disclaimer_screen.dart';
 
 /// Language and data preferences for the nursing module.
 class NursingSettingsScreen extends StatefulWidget {
-  const NursingSettingsScreen({super.key});
+  final NursingStorageService? storage;
+
+  const NursingSettingsScreen({super.key, this.storage});
 
   @override
   State<NursingSettingsScreen> createState() => _NursingSettingsScreenState();
 }
 
 class _NursingSettingsScreenState extends State<NursingSettingsScreen> {
-  final _storage = NursingStorageService();
+  late final NursingStorageService _storage = widget.storage ?? NursingStorageService();
   bool _hasPendingAnalysis = false;
   String _language = 'en';
 
@@ -70,7 +72,7 @@ class _NursingSettingsScreenState extends State<NursingSettingsScreen> {
   Future<void> _showDisclaimer() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const NursingDisclaimerScreen(),
+        builder: (_) => NursingDisclaimerScreen(storage: widget.storage),
       ),
     );
   }

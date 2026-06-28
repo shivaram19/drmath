@@ -69,7 +69,9 @@ class _NursingHomeScreenState extends State<NursingHomeScreen> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => const NursingSettingsScreen(),
+                  builder: (_) => NursingSettingsScreen(
+                    storage: widget.storage,
+                  ),
                 ),
               );
             },
