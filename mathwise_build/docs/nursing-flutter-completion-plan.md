@@ -812,7 +812,66 @@ Documented lesson: `pumpAndSettle` waits for all animations to complete; an inde
 - Offline PDF requests are queued and retried.
 - CI runs analyze, unit/widget tests, and release build on every PR.
 
-## 15. Phase 11 backlog
+## 15. Plan Revisions — Round 6 (2026-06-28)
+
+Round 6 stepped back from engineering to question the product's channel, value proposition, trust model, and fit for the target learner. Full synthesis is in `nursing-flutter-introspection-round6.md`.
+
+### 15.1 Deeper unknowns surfaced after Round 5
+
+1. **Native APK may not be the right primary channel.** Bharat users are app-install-averse and storage-constrained; PWAs and shareable web quizzes can reach 2–3× more users.
+2. **The moat against Testbook/Adda247/PW is undefined.** We are a feature, not a product, unless we anchor on hyper-local, adult-learner-centered design.
+3. **The UX is not yet adult-learner centered.** It lacks self-direction cues, relevance framing, and interruption-resilient micro-sessions.
+4. **There is no habit-formation layer.** No tiny daily task, anchored reminder, or celebration of small wins.
+5. **Vernacular-first is more than Telugu translation.** It needs voice, bilingual glossary, and conversational Telugu-English mixed copy.
+6. **DPDPA compliance and data minimization are missing.** First launch must include a clear privacy notice and consent flow.
+7. **Community is missing.** Exam prep in India is social; solo offline-first risks low retention.
+8. **Emotional support and re-engagement are absent.** Burnout and comparison are major churn drivers for aspirants.
+
+### 15.2 Strategic decisions for Phase 10
+
+1. **Treat web/PWA as a first-class channel.** Create a lightweight daily-quiz web path before committing fully to native-APK optimization.
+2. **Define the one-sentence value proposition:** *Daily Telangana/Andhra staff-nurse practice, in the language you speak, on the device you already have.*
+3. **Prioritize syllabus accuracy and trust signals over adaptive AI.** Tag every seed question to a real syllabus; add source citations and expert-review badges.
+4. **Design for micro-sessions and interruption.** Add 5/10/20 question modes, auto-save, and one-tap resume.
+5. **Implement bilingual, voice-friendly UX.** TTS question reading, glossary tooltips, and conversational mixed-language copy.
+6. **Add DPDPA-compliant privacy notice and minimal-data policy before analytics.**
+7. **Add community-share hooks, not in-app chat.** WhatsApp/Telegram deep links for scores and daily quizzes.
+8. **Add habit prompts and tiny-win celebrations.**
+9. **Conduct a problem interview with the target learner before the next engineering sprint.**
+
+### 15.3 Revised Phase 10 execution order
+
+1. Define value proposition and create a lightweight landing/PWA quiz path.
+2. Add privacy notice, consent flow, and data-minimization policy.
+3. Fix Java/Gradle/AGP toolchain and verify release builds.
+4. Set a 20 MB release-APK size budget and run `flutter build apk --analyze-size`.
+5. Fix `HomeScreen` nursing-card overflow and add narrow-width widget test.
+6. Audit and tag nursing seed questions against AIIMS/ESIC/RRB/Telangana ANM-GNM syllabi.
+7. Set up bilingual ARB localization + TTS glossary for high-friction screens.
+8. Add micro-session lengths and resume-after-interruption support.
+9. Add daily habit prompt and tiny-win celebration.
+10. Make PDF generation offline-first with persisted retry queue.
+11. Add WhatsApp/Telegram share hooks for daily quizzes and scores.
+12. Add GitHub Actions CI/CD workflow for analyze, test, and release build.
+13. Add crash reporting and minimal analytics with opt-in consent.
+14. Document manual device smoke-test checklist.
+15. Draft ADR-019: Native vs. PWA-first distribution strategy.
+16. Conduct and document problem interview with target learners.
+
+### 15.4 Phase 10 completion criteria
+
+- Web/PWA daily-quiz path is reachable from a shareable link.
+- Privacy notice and consent flow are present at first launch.
+- Release APK/AAB builds deterministically.
+- Release APK size is under 20 MB (ideally under 15 MB).
+- All widget tests pass without overflow exceptions.
+- Seed questions are tagged by exam and syllabus topic.
+- Bilingual copy + TTS glossary exist for disclaimer, onboarding, quiz, results, and PDF screens.
+- Micro-sessions (5/10/20 questions) and resume-after-interruption are implemented.
+- Offline PDF requests are queued and retried.
+- CI runs analyze, unit/widget tests, and release build on every PR.
+
+## 16. Phase 11 backlog
 1. Run integration tests on a real device or device farm.
 2. Add Play Store internal testing track deployment via Fastlane/GitHub Actions.
 3. Implement spaced-repetition and interleaving for quiz sessions.
