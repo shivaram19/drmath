@@ -40,6 +40,7 @@
 | **Nursing Analytics** | ✅ | Anonymous `sendBeacon` events gated by `mw_privacy_consent`; JSONL retention 30 days |
 | **Web-to-APK Conversion** | ✅ | UTM-tagged prompts on result, landing banner, share text; `apk_download_clicked` + `app_first_open` events |
 | **Native App Analytics Consent** | ✅ | One-time in-app dialog; separate `mw_native_consent` record; DPDPA-aligned |
+| **Native APK network permissions** | ✅ | `INTERNET` + `ACCESS_NETWORK_STATE` added to `AndroidManifest.xml`; fixes installed-APK "No internet connection" error |
 | **Pre-commit** | ✅ | Blocks `.env`, runtime artifacts, `__pycache__`. Enforces conventional commits. |
 | **Docker** | ✅ | `Dockerfile` + `docker-compose.yml` + nginx configs ready |
 | **Deploy automation** | ✅ | `scripts/deploy.sh` installs nginx config, selects SSL, copies static assets, reloads nginx, health-checks endpoints |
@@ -176,6 +177,7 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 | 2026-06-28 | Phase 10.7: HomeScreen + shared widgets 320–430 dp responsive pass | — |
 | 2026-06-28 | Full narrow-screen audit: fixed overflows in topic/subtopic/curriculum/concept screens; corrected visual-test viewport config | — |
 | 2026-06-28 | Research: Phase 10.8 retrospective, WhatsApp/DPDPA/source-verification findings, refined plan in `docs/research/introspection-phase10_8-and-beyond-2026-06-28.md` | — |
+| 2026-06-28 | Fixed installed APK "No internet connection": added `INTERNET`/`ACCESS_NETWORK_STATE` permissions; rebuilt + redeployed APK; local/remote SHA-256 verified | — |
 | 2026-05-03 | Prompt versioning, expand/collapse, pipeline timestamps | `3ee765d` |
 | 2026-05-03 | Web UI: prompt families, generation timeline, Lab updates | `0bd98aa` |
 | 2026-05-03 | **LIVE: Deployed to production with HTTPS** | `e264acb` |
