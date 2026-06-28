@@ -83,7 +83,7 @@ Specifically:
 
 - [x] ADR written.
 - [x] Implement PWA landing page (Issue #33).
-- [ ] Add privacy notice and consent before public distribution (Issue #34).
+- [x] Add privacy notice and consent before public distribution (Issue #34).
 - [ ] Add web-side analytics event for `landing_quiz_started`.
 - [ ] Measure reversal trigger metrics after 30 days of deployment.
 

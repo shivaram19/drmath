@@ -17,6 +17,7 @@
 | https://drmath.trelolabs.com/api/topics | ✅ API |
 | **https://drmath.trelolabs.com/nursing/** | ✅ **Phase 10.1 PWA landing quiz** |
 | https://drmath.trelolabs.com/api/nursing/status | ✅ Nursing API health |
+| https://drmath.trelolabs.com/nursing/privacy | ✅ DPDPA privacy notice |
 | https://drmath.trelolabs.com/mathwise.apk | ✅ Flutter APK download |
 
 ---
@@ -34,6 +35,7 @@
 | **Grounding** | ✅ | Every generation logs IXL skills + MathIsFun URL used |
 | **Web UI** | ✅ | FastAPI + Jinja2. Home, topic pages, prompt builder, history, lab, compare |
 | **Nursing PWA** | ✅ | `/nursing/` daily 5-question quiz, offline fallback, share-to-WhatsApp, installable manifest + service worker |
+| **Privacy & Consent** | ✅ | DPDPA notice at `/nursing/privacy`, consent banner, conditional share, withdrawal link |
 | **Pre-commit** | ✅ | Blocks `.env`, runtime artifacts, `__pycache__`. Enforces conventional commits. |
 | **Docker** | ✅ | `Dockerfile` + `docker-compose.yml` + nginx configs ready |
 | **Deploy automation** | ✅ | `scripts/deploy.sh` installs nginx config, selects SSL, copies static assets, reloads nginx, health-checks endpoints |
@@ -48,7 +50,7 @@
 | **Azure OpenAI** | No model deployment exists | Optional — OpenAI working fine |
 | **HTTPS/SSL** | ✅ Done | Let's Encrypt ECDSA cert active; auto-renewal cron set |
 | **Student session UI** | Not built yet | Phase after manager workflow stabilizes |
-| **DPDPA privacy notice** | Required before public share campaigns | Phase 10.2 (Issue #34) |
+| **DPDPA privacy notice** | ✅ Done | `/nursing/privacy` live with consent banner |
 | **Flutter release build** | `bcprov-jdk18on-1.80` major version 65 toolchain mismatch | Phase 10.3 (Issue #35) |
 | **HomeScreen nursing card overflow** | Narrow-screen layout bug | Phase 10.5 (Issue #37) |
 
@@ -118,8 +120,7 @@ No passwords. Open access.
 
 ## 🎯 Next Immediate Work
 
-1. **Phase 10.2** — DPDPA privacy notice + consent flow before public share campaigns (Issue #34)
-2. **Phase 10.3** — Fix Flutter release build toolchain (Issue #35)
+1. **Phase 10.3** — Fix Flutter release build toolchain (Issue #35)
 3. **Phase 10.5** — Fix `HomeScreen` nursing card overflow on narrow screens (Issue #37)
 4. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
 

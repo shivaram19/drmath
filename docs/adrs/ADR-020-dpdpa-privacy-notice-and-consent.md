@@ -96,13 +96,12 @@ Specifically:
 
 ## Action Items
 
-- [ ] Create `web/static/privacy.html` with DPDPA-aligned disclosures in English + Telugu.
-- [ ] Add consent banner and conditional share logic to `web/static/nursing/app.js`.
-- [ ] Cache `/privacy` in `web/static/nursing/sw.js`.
-- [ ] Add nginx `/privacy` location in both HTTP and SSL configs.
-- [ ] Add FastAPI `/privacy` fallback route for local development.
-- [ ] Update deploy script to copy `privacy.html` to nginx webroot.
-- [ ] Update nursing landing test and close Issue #34.
+- [x] Create `web/static/nursing/privacy.html` with DPDPA-aligned disclosures in English + Telugu.
+- [x] Add consent banner and conditional share logic to `web/static/nursing/app.js`.
+- [x] Cache `/nursing/privacy` in `web/static/nursing/sw.js`.
+- [x] Serve `/nursing/privacy` via nginx `try_files $uri.html` and FastAPI fallback.
+- [x] Update deploy script to copy nursing static assets (including `privacy.html`) to nginx webroot.
+- [x] Update nursing landing test and close Issue #34.
 
 ---
 
