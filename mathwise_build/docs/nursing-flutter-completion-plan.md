@@ -814,7 +814,7 @@ Documented lesson: `pumpAndSettle` waits for all animations to complete; an inde
 
 ## 15. Plan Revisions — Round 6 (2026-06-28)
 
-Round 6 stepped back from engineering to question the product's channel, value proposition, trust model, and fit for the target learner. Full synthesis is in `nursing-flutter-introspection-round6.md`.
+Round 6 stepped back from engineering to question the product's channel, value proposition, trust model, and fit for the target learner. Full synthesis is in `nursing-flutter-introspection-round6.md`. A fine-grained, persona-governed execution plan is in `nursing-flutter-phase10-detailed-plan.md`.
 
 ### 15.1 Deeper unknowns surfaced after Round 5
 
