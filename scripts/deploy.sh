@@ -30,7 +30,7 @@ echo ""
 # ------------------------------------------------------------------
 # 1. Pre-flight checks
 # ------------------------------------------------------------------
-echo "[1/8] Checking dependencies..."
+echo "[1/9] Checking dependencies..."
 
 if ! command -v docker &> /dev/null; then
     echo "❌ Docker not found. Install it first:"
@@ -55,7 +55,7 @@ echo "✅ Docker and '$DOCKER_COMPOSE' found"
 # 2. Environment file
 # ------------------------------------------------------------------
 echo ""
-echo "[2/8] Checking .env file..."
+echo "[2/9] Checking .env file..."
 
 if [ ! -f "$PROJECT_DIR/.env" ]; then
     echo "⚠️  .env not found. Creating template..."
@@ -94,7 +94,7 @@ echo "✅ .env configured"
 # 3. Prepare nginx config (HTTP first, SSL later)
 # ------------------------------------------------------------------
 echo ""
-echo "[3/8] Preparing nginx config..."
+echo "[3/9] Preparing nginx config..."
 
 # Create certbot webroot if missing
 mkdir -p "$PROJECT_DIR/certbot-www"
@@ -123,16 +123,33 @@ fi
 # 4. Generate runtime artifacts
 # ------------------------------------------------------------------
 echo ""
-echo "[4/8] Generating runtime artifacts..."
+echo "[4/9] Generating runtime artifacts..."
 
 # Nursing seed bank is gitignored but required by the repository.
 python3 "$PROJECT_DIR/scripts/generate_nursing_seed.py"
 
 # ------------------------------------------------------------------
-# 5. Deploy static PWA assets to nginx webroot
+# 5. Build Flutter release APK (optional)
 # ------------------------------------------------------------------
 echo ""
-echo "[5/8] Deploying static PWA assets to nginx webroot..."
+echo "[5/9] Building Flutter release APK (optional)..."
+
+FLUTTER_DIR="$PROJECT_DIR/mathwise_build"
+if [ -d "$FLUTTER_DIR" ] && command -v flutter &> /dev/null; then
+    cd "$FLUTTER_DIR"
+    flutter clean
+    flutter build apk --release
+    cp "$FLUTTER_DIR/build/app/outputs/flutter-apk/app-release.apk" "$PROJECT_DIR/web/static/mathwise.apk"
+    echo "✅ Flutter release APK copied to web/static/mathwise.apk"
+else
+    echo "ℹ️  Flutter SDK or mathwise_build/ not found; skipping APK build"
+fi
+
+# ------------------------------------------------------------------
+# 6. Deploy static PWA assets to nginx webroot
+# ------------------------------------------------------------------
+echo ""
+echo "[6/9] Deploying static PWA assets to nginx webroot..."
 
 NGINX_HTML="/usr/share/nginx/html"
 run_as_root rm -rf "$NGINX_HTML/static/nursing" "$NGINX_HTML/nursing"
@@ -151,10 +168,10 @@ fi
 echo "✅ Static assets copied to $NGINX_HTML"
 
 # ------------------------------------------------------------------
-# 6. Build & start
+# 7. Build & start
 # ------------------------------------------------------------------
 echo ""
-echo "[6/8] Building and starting containers..."
+echo "[7/9] Building and starting containers..."
 
 cd "$PROJECT_DIR"
 $DOCKER_COMPOSE down 2>/dev/null || true
@@ -163,10 +180,10 @@ $DOCKER_COMPOSE up --build -d
 echo "✅ Containers started"
 
 # ------------------------------------------------------------------
-# 7. Health check
+# 8. Health check
 # ------------------------------------------------------------------
 echo ""
-echo "[7/8] Health check..."
+echo "[8/9] Health check..."
 
 sleep 3
 
@@ -195,7 +212,7 @@ else
 fi
 
 # ------------------------------------------------------------------
-# 8. Next steps
+# 9. Next steps
 # ------------------------------------------------------------------
 echo ""
 echo "=========================================="
@@ -205,6 +222,10 @@ echo ""
 echo "Nursing module:"
 echo "  Landing:  http://localhost/nursing"
 echo "  API:      http://localhost/api/nursing/status"
+echo ""
+echo "Flutter APK:"
+echo "  Local:    $PROJECT_DIR/web/static/mathwise.apk"
+echo "  Public:   http://localhost/mathwise.apk"
 echo ""
 echo "Next steps:"
 echo "  1. Ensure DNS A-record points to this server:"
