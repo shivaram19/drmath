@@ -91,7 +91,10 @@ Specifically:
 
 - The PWA shell is served as static files from `/usr/share/nginx/html/nursing/`, managed by `scripts/deploy.sh`.
 - The FastAPI `/nursing/*` HTML sub-routes (`/practice`, `/mock`, `/diagnostic`) were removed so that nginx serves the landing page without route shadowing; the exact `/nursing` path still falls back to `FileResponse(index.html)` for TestClient smoke tests.
-- Nginx configs (`nginx.http.conf`, `nginx.ssl.conf`) include a `/nursing/` alias, a `/nursing` → `/nursing/` redirect, and the existing `/static/` alias for shared assets.
+- Nginx configs (`nginx.http.conf`, `nginx.ssl.conf`) include a `/nursing/` alias, a `/nursing` → `/nursing/` redirect, the existing `/static/` alias, direct-download APK routes, and rate-limiting/security headers on HTTPS.
+- `scripts/deploy.sh` now detects existing SSL certs (using `sudo`) and installs the active nginx config into `/etc/nginx/sites-enabled/drmath.trelolabs.com`.
+- `scripts/init-ssl.sh` was fixed for host-level nginx: uses `PYTHONNOUSERSITE=1` to avoid urllib3 conflicts, `sudo -E` for certbot, and reloads the host nginx process.
+- Verified: `https://drmath.trelolabs.com/nursing/` returns 200, manifest/sw.js/styles/app.js/daily.json are reachable, and `/api/nursing/questions?limit=5` returns MCQs.
 
 ---
 

@@ -38,13 +38,18 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null; then
-    echo "❌ docker-compose not found. Install it first:"
-    echo "    pip install docker-compose"
+# Prefer Docker Compose v2 plugin; fall back to legacy docker-compose binary.
+if docker compose version &> /dev/null; then
+    DOCKER_COMPOSE="docker compose"
+elif command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo "❌ docker compose not found. Install it first:"
+    echo "    curl -fsSL https://get.docker.com | sh"
     exit 1
 fi
 
-echo "✅ Docker and docker-compose found"
+echo "✅ Docker and '$DOCKER_COMPOSE' found"
 
 # ------------------------------------------------------------------
 # 2. Environment file
@@ -86,20 +91,33 @@ fi
 echo "✅ .env configured"
 
 # ------------------------------------------------------------------
-# 3. Prepare nginx (HTTP first, SSL later)
+# 3. Prepare nginx config (HTTP first, SSL later)
 # ------------------------------------------------------------------
 echo ""
-echo "[3/8] Preparing nginx config (HTTP mode)..."
-
-if [ ! -f "$NGINX_ACTIVE_CONF" ]; then
-    cp "$NGINX_HTTP_CONF" "$NGINX_ACTIVE_CONF"
-    echo "✅ Copied nginx.http.conf → nginx.conf"
-else
-    echo "ℹ️  nginx.conf already exists (keeping current)"
-fi
+echo "[3/8] Preparing nginx config..."
 
 # Create certbot webroot if missing
 mkdir -p "$PROJECT_DIR/certbot-www"
+
+DOMAIN="drmath.trelolabs.com"
+NGINX_SITE_CONF="/etc/nginx/sites-enabled/$DOMAIN"
+
+if run_as_root test -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem"; then
+    cp "$NGINX_SSL_CONF" "$NGINX_ACTIVE_CONF"
+    echo "✅ SSL certificate found; copied nginx.ssl.conf → nginx.conf"
+else
+    cp "$NGINX_HTTP_CONF" "$NGINX_ACTIVE_CONF"
+    echo "✅ No SSL certificate yet; copied nginx.http.conf → nginx.conf"
+fi
+
+# Install the active config into nginx's sites-enabled directory so it is used
+# by the host-level nginx process. If nginx is containerised, this step can be
+# skipped manually.
+if [ -d "/etc/nginx/sites-enabled" ]; then
+    run_as_root cp "$NGINX_ACTIVE_CONF" "$NGINX_SITE_CONF"
+    run_as_root nginx -t && run_as_root nginx -s reload
+    echo "✅ nginx site config installed and reloaded"
+fi
 
 # ------------------------------------------------------------------
 # 4. Generate runtime artifacts
@@ -139,8 +157,8 @@ echo ""
 echo "[6/8] Building and starting containers..."
 
 cd "$PROJECT_DIR"
-docker-compose down 2>/dev/null || true
-docker-compose up --build -d
+$DOCKER_COMPOSE down 2>/dev/null || true
+$DOCKER_COMPOSE up --build -d
 
 echo "✅ Containers started"
 
@@ -164,13 +182,13 @@ else
     echo "⚠️  Nursing module not responding yet (may need a few more seconds)"
 fi
 
-if curl -fsS -o /dev/null http://localhost:80/ 2>/dev/null || curl -fsS -o /dev/null http://127.0.0.1:80/ 2>/dev/null; then
+if curl -fsS -o /dev/null -H "Host: drmath.trelolabs.com" http://127.0.0.1:80/ 2>/dev/null; then
     echo "✅ nginx responding on port 80"
 else
     echo "⚠️  nginx not responding yet (may need a few more seconds)"
 fi
 
-if curl -fsS -o /dev/null http://localhost/nursing/ 2>/dev/null; then
+if curl -fsS -o /dev/null -H "Host: drmath.trelolabs.com" http://127.0.0.1/nursing/ 2>/dev/null; then
     echo "✅ Nursing PWA landing served at /nursing/"
 else
     echo "⚠️  Nursing PWA landing not reachable at /nursing/ yet"
@@ -196,7 +214,7 @@ echo "  2. To enable HTTPS, run:"
 echo "     ./scripts/init-ssl.sh"
 echo ""
 echo "  3. To view logs:"
-echo "     docker-compose logs -f"
+echo "     $DOCKER_COMPOSE logs -f"
 echo ""
 echo "  4. To update after code changes:"
 echo "     git pull && ./scripts/deploy.sh"

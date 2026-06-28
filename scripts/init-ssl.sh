@@ -9,12 +9,26 @@
 
 set -e
 
+# The system certbot package conflicts with newer user-site urllib3.
+# Force certbot to use only system packages.
+export PYTHONNOUSERSITE=1
+
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 DOMAIN="drmath.trelolabs.com"
 NGINX_HTTP_CONF="$PROJECT_DIR/nginx.http.conf"
 NGINX_SSL_CONF="$PROJECT_DIR/nginx.ssl.conf"
 NGINX_ACTIVE_CONF="$PROJECT_DIR/nginx.conf"
-CERTBOT_WEBROOT="$PROJECT_DIR/certbot-www"
+CERTBOT_WEBROOT="/var/www/certbot"
+NGINX_SITE_CONF="/etc/nginx/sites-enabled/$DOMAIN"
+
+# Run commands as root only when we are not already root.
+run_as_root() {
+    if [ "$EUID" -eq 0 ]; then
+        "$@"
+    else
+        sudo -E "$@"
+    fi
+}
 
 echo "=========================================="
 echo "🔒 Dr. Math SSL Initialization"
@@ -55,9 +69,9 @@ echo "[2/5] Checking certbot..."
 if ! command -v certbot &> /dev/null; then
     echo "📦 Installing certbot..."
     if command -v apt-get &> /dev/null; then
-        apt-get update && apt-get install -y certbot
+        run_as_root apt-get update && run_as_root apt-get install -y certbot
     elif command -v yum &> /dev/null; then
-        yum install -y certbot
+        run_as_root yum install -y certbot
     else
         echo "❌ Could not install certbot automatically."
         echo "   Install it manually: https://certbot.eff.org/"
@@ -75,21 +89,25 @@ echo "[3/5] Obtaining SSL certificate for $DOMAIN..."
 
 mkdir -p "$CERTBOT_WEBROOT"
 
-certbot certonly \
+run_as_root certbot certonly \
+    --cert-name "$DOMAIN" \
+    --key-type ecdsa \
     --webroot \
     -w "$CERTBOT_WEBROOT" \
     -d "$DOMAIN" \
     --agree-tos \
     --non-interactive \
     --email "admin@$DOMAIN" 2>/dev/null || \
-certbot certonly \
+run_as_root certbot certonly \
+    --cert-name "$DOMAIN" \
+    --key-type ecdsa \
     --standalone \
     -d "$DOMAIN" \
     --agree-tos \
     --non-interactive \
     --email "admin@$DOMAIN"
 
-if [ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]; then
+if ! run_as_root test -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem"; then
     echo "❌ Certificate not found at /etc/letsencrypt/live/$DOMAIN/"
     exit 1
 fi
@@ -103,8 +121,8 @@ echo ""
 echo "[4/5] Switching nginx to HTTPS..."
 
 cp "$NGINX_SSL_CONF" "$NGINX_ACTIVE_CONF"
-cd "$PROJECT_DIR"
-docker-compose restart nginx
+run_as_root cp "$NGINX_ACTIVE_CONF" "$NGINX_SITE_CONF"
+run_as_root nginx -t && run_as_root nginx -s reload
 
 echo "✅ nginx restarted with SSL config"
 
@@ -115,7 +133,7 @@ echo ""
 echo "[5/5] Setting up auto-renewal..."
 
 # Add cron job for renewal
-CRON_JOB="0 3 * * * certbot renew --webroot -w $CERTBOT_WEBROOT --quiet --deploy-hook 'cd $PROJECT_DIR && docker-compose restart nginx'"
+CRON_JOB="0 3 * * * PYTHONNOUSERSITE=1 sudo -E certbot renew --webroot -w $CERTBOT_WEBROOT --quiet --deploy-hook 'sudo nginx -s reload'"
 
 if crontab -l 2>/dev/null | grep -q "certbot renew.*drmath"; then
     echo "ℹ️  Renewal cron job already exists"
