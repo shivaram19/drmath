@@ -204,3 +204,35 @@ html, body {
 }
 
 .footer a { color: var(--primary); text-decoration: none; }
+
+.consent-banner {
+  background: #FFF3E0;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.consent-banner p {
+  margin: 0 0 10px;
+}
+
+.consent-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.consent-actions button {
+  flex: 1;
+  margin-top: 0;
+}
+
+.primary-btn.small,
+.secondary-btn.small {
+  padding: 10px;
+  font-size: 0.9rem;
+  min-height: 40px;
+}
+
+.center { text-align: center; }

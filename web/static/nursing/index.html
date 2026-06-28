@@ -23,6 +23,14 @@
     </header>
 
     <main class="main">
+      <section id="consentBanner" class="consent-banner hidden" role="status" aria-live="polite">
+        <p id="consentText">We only collect anonymous data if you agree. <a href="privacy">Read privacy notice</a>.</p>
+        <div class="consent-actions">
+          <button id="consentAgree" class="primary-btn small">I agree</button>
+          <button id="consentDecline" class="secondary-btn small">Not now</button>
+        </div>
+      </section>
+
       <section id="intro" class="card">
         <p id="introText">ఒక రోజుకి కేవలం 5 ప్రశ్నలతో మీ exam preparation మొదలుపెట్టండి. ఫోన్‌లో చోటు తక్కువ ఉన్నవారికి కూడా సులభం.</p>
         <button id="startBtn" class="primary-btn">Start 5 Questions</button>
@@ -54,7 +62,7 @@
     </main>
 
     <footer class="footer">
-      <p>© MathWise · <a href="/privacy">Privacy</a></p>
+      <p>© MathWise · <a href="privacy">Privacy</a> · <a href="#" id="manageConsentLink">Manage consent</a></p>
     </footer>
   </div>
 

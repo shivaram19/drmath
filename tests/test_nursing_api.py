@@ -107,6 +107,13 @@ def test_nursing_landing_page_returns_200(client):
     assert "MathWise Nursing" in response.text
 
 
+def test_nursing_privacy_page_returns_200(client):
+    response = client.get("/nursing/privacy")
+    assert response.status_code == 200
+    assert "Privacy Notice" in response.text
+    assert "Digital Personal Data Protection Act" in response.text
+
+
 def test_pdf_export_post(client):
     attempts = [
         Attempt(

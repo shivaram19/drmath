@@ -2,6 +2,8 @@ const CACHE_NAME = 'mathwise-nursing-v1';
 const SHELL_ASSETS = [
   '/nursing/',
   '/nursing/index.html',
+  '/nursing/privacy',
+  '/nursing/privacy.html',
   '/nursing/styles.css',
   '/nursing/app.js',
   '/nursing/manifest.json',

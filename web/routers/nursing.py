@@ -17,6 +17,7 @@ api_router = APIRouter(prefix="/api/nursing", tags=["nursing-api"])
 service = NursingService()
 
 NURSING_LANDING_PATH = Path(__file__).resolve().parent.parent / "static" / "nursing" / "index.html"
+NURSING_PRIVACY_PATH = Path(__file__).resolve().parent.parent / "static" / "nursing" / "privacy.html"
 
 
 # ---------------------------------------------------------------------------
@@ -27,6 +28,12 @@ NURSING_LANDING_PATH = Path(__file__).resolve().parent.parent / "static" / "nurs
 def nursing_home():
     """Serve the PWA landing page as a fallback when nginx is not in front."""
     return FileResponse(NURSING_LANDING_PATH)
+
+
+@router.get("/privacy", response_class=HTMLResponse)
+def nursing_privacy():
+    """Serve the DPDPA privacy notice as a fallback when nginx is not in front."""
+    return FileResponse(NURSING_PRIVACY_PATH)
 
 
 # ---------------------------------------------------------------------------

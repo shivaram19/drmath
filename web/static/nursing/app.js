@@ -17,6 +17,16 @@
       correct: 'Correct!',
       wrong: 'Wrong. Correct answer:',
       shareText: (score, total) => `I scored ${score}/${total} in today's Telangana Staff Nurse practice on MathWise. Can you beat me?`,
+      consentTitle: 'We only collect anonymous data if you agree.',
+      consentPrivacy: 'Read privacy notice',
+      consentAgree: 'I agree',
+      consentDecline: 'Not now',
+      consentManage: 'Manage consent',
+      consentTitle: 'We only collect anonymous data if you agree.',
+      consentPrivacy: 'Read privacy notice',
+      consentAgree: 'I agree',
+      consentDecline: 'Not now',
+      consentManage: 'Manage consent',
     },
     en: {
       heroTitle: 'Telangana Staff Nurse',
@@ -36,6 +46,9 @@
     },
   };
 
+  const CONSENT_KEY = 'mw_privacy_consent';
+  const CONSENT_VERSION = '2026-06-28';
+
   let lang = 'te';
   let questions = [];
   let currentIndex = 0;
@@ -49,6 +62,54 @@
   function t(key, ...args) {
     const s = STRINGS[lang][key];
     return typeof s === 'function' ? s(...args) : s;
+  }
+
+  function getConsent() {
+    try {
+      return JSON.parse(localStorage.getItem(CONSENT_KEY));
+    } catch {
+      return null;
+    }
+  }
+
+  function hasConsent() {
+    const c = getConsent();
+    return c && c.version === CONSENT_VERSION && c.accepted === true;
+  }
+
+  function recordConsent(accepted) {
+    const record = {
+      version: CONSENT_VERSION,
+      accepted: accepted === true,
+      timestamp: new Date().toISOString(),
+    };
+    try {
+      localStorage.setItem(CONSENT_KEY, JSON.stringify(record));
+    } catch {
+      // Private mode or storage disabled — ignore.
+    }
+    updateConsentUI();
+  }
+
+  function withdrawConsent() {
+    recordConsent(false);
+    showConsentBanner();
+  }
+
+  function updateConsentUI() {
+    const banner = $('consentBanner');
+    if (hasConsent()) {
+      banner.classList.add('hidden');
+    }
+  }
+
+  function showConsentBanner() {
+    const banner = $('consentBanner');
+    $('consentText').innerHTML = `${t('consentTitle')} <a href="privacy">${t('consentPrivacy')}</a>.`;
+    $('consentAgree').textContent = t('consentAgree');
+    $('consentDecline').textContent = t('consentDecline');
+    $('manageConsentLink').textContent = t('consentManage');
+    banner.classList.remove('hidden');
   }
 
   function setLang(next) {
@@ -68,6 +129,9 @@
     $('installBtn').textContent = t('installBtn');
     $('shareBtn').textContent = t('shareBtn');
     $('offlineText').textContent = t('offlineText');
+    if (!$('consentBanner').classList.contains('hidden')) {
+      showConsentBanner();
+    }
   }
 
   async function loadQuestions() {
@@ -171,6 +235,15 @@
   }
 
   function shareScore() {
+    if (!hasConsent()) {
+      showConsentBanner();
+      // Re-bind agree button to continue sharing after consent.
+      $('consentAgree').onclick = () => {
+        recordConsent(true);
+        shareScore();
+      };
+      return;
+    }
     const text = t('shareText', score, questions.length) + ' ' + window.location.href;
     if (navigator.share) {
       navigator.share({ title: 'MathWise Nursing', text, url: window.location.href }).catch(() => {});
@@ -194,6 +267,15 @@
   $('retryBtn').addEventListener('click', startQuiz);
   $('shareBtn').addEventListener('click', shareScore);
   $('installBtn').addEventListener('click', installPWA);
+  $('consentAgree').addEventListener('click', () => recordConsent(true));
+  $('consentDecline').addEventListener('click', () => {
+    recordConsent(false);
+    $('consentBanner').classList.add('hidden');
+  });
+  $('manageConsentLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    withdrawConsent();
+  });
   $('nextBtn').addEventListener('click', () => {
     currentIndex += 1;
     if (currentIndex >= questions.length) {
@@ -219,4 +301,8 @@
   }
 
   setLang('te');
+
+  if (!getConsent()) {
+    showConsentBanner();
+  }
 })();
