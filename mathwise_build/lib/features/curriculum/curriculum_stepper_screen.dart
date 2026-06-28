@@ -327,12 +327,17 @@ class _StepItem extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          title,
-                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            fontSize: 18,
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                              fontSize: 18,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
@@ -387,7 +392,9 @@ class _StepItem extends StatelessWidget {
                       ),
                     ] else if (isCurrent) ...[
                       const SizedBox(height: 12),
-                      Row(
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
                         children: [
                           ElevatedButton(
                             onPressed: () {
@@ -402,7 +409,6 @@ class _StepItem extends StatelessWidget {
                             ),
                             child: const Text('Resume Journey'),
                           ),
-                          const SizedBox(width: 12),
                           OutlinedButton(
                             onPressed: () {
                               Navigator.of(context).push(

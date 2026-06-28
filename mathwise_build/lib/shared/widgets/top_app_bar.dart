@@ -35,6 +35,7 @@ class MathWiseAppBar extends StatelessWidget implements PreferredSizeWidget {
               style: Theme.of(context).appBarTheme.titleTextStyle,
             )
           : Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
                   Icons.menu_book,

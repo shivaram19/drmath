@@ -19,6 +19,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../../core/constants/app_breakpoints.dart';
 import '../../core/constants/app_colors.dart';
 
 class MathWiseBottomNav extends StatelessWidget {
@@ -48,24 +49,32 @@ class MathWiseBottomNav extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildItem(Icons.home, 'Home', 0),
-              _buildItem(Icons.import_contacts, 'Learning', 1),
-              _buildItem(Icons.sports_esports, 'Games', 2),
-              _buildItem(Icons.person, 'Profile', 3),
-            ],
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Material 3 guidance: with four or five destinations, inactive
+            // views can be shown as icons only to avoid crowding [^2].
+            final showAllLabels = constraints.maxWidth >= Breakpoints.medium;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildItem(Icons.home, 'Home', 0, showAllLabels),
+                  _buildItem(Icons.import_contacts, 'Learning', 1, showAllLabels),
+                  _buildItem(Icons.sports_esports, 'Games', 2, showAllLabels),
+                  _buildItem(Icons.person, 'Profile', 3, showAllLabels),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildItem(IconData icon, String label, int index) {
+  Widget _buildItem(IconData icon, String label, int index, bool showAllLabels) {
     final isActive = currentIndex == index;
+    final showLabel = showAllLabels || isActive;
     return Semantics(
       selected: isActive,
       button: true,
@@ -90,16 +99,17 @@ class MathWiseBottomNav extends StatelessWidget {
                 color: isActive ? AppColors.primaryContainer : AppColors.outline,
                 size: 24,
               ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Lexend',
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: isActive ? AppColors.primaryContainer : AppColors.outline,
+              if (showLabel) const SizedBox(height: 4),
+              if (showLabel)
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Lexend',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: isActive ? AppColors.primaryContainer : AppColors.outline,
+                  ),
                 ),
-              ),
             ],
           ),
         ),

@@ -165,99 +165,121 @@ class _HomeTab extends StatelessWidget {
     // "Continue Learning" card: competence feedback + autonomy.
     // Student sees their exact progress (68%) and decides to resume.
     // Rationale: SDT — competence + autonomy = intrinsic motivation [^23].
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.primaryContainer.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'CONTINUE LEARNING',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AppColors.primary,
-                letterSpacing: 0.05,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth <= 360;
+        final padding = isCompact ? 16.0 : 24.0;
+        return Container(
+          padding: EdgeInsets.all(padding),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            DemoData.currentTopic,
-            style: Theme.of(context).textTheme.displayMedium,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Mastering chords, tangents, and sectors.',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 child: Text(
-                  'Course Progress',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  overflow: TextOverflow.ellipsis,
+                  'CONTINUE LEARNING',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppColors.primary,
+                    letterSpacing: 0.05,
+                  ),
                 ),
               ),
-              Flexible(
-                child: Text(
-                  '${(DemoData.currentTopicProgress * 100).toInt()}%',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+              const SizedBox(height: 16),
+              Text(
+                DemoData.currentTopic,
+                style: Theme.of(context).textTheme.displayMedium,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Mastering chords, tangents, and sectors.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 20),
+              _buildCourseProgressRow(context, isCompact),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: const LinearProgressIndicator(
+                  value: DemoData.currentTopicProgress,
+                  minHeight: 8,
+                  backgroundColor: AppColors.surfaceContainer,
+                  valueColor: AlwaysStoppedAnimation(AppColors.primary),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _navigate(context, const TopicChoiceScreen()),
+                  icon: const Icon(Icons.play_arrow, size: 20),
+                  label: const Text('Resume Lesson'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: const LinearProgressIndicator(
-              value: DemoData.currentTopicProgress,
-              minHeight: 8,
-              backgroundColor: AppColors.surfaceContainer,
-              valueColor: AlwaysStoppedAnimation(AppColors.primary),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _navigate(context, const TopicChoiceScreen()),
-              icon: const Icon(Icons.play_arrow, size: 20),
-              label: const Text('Resume Lesson'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCourseProgressRow(BuildContext context, bool isCompact) {
+    final label = Text(
+      'Course Progress',
+      style: Theme.of(context).textTheme.bodyLarge,
+      overflow: TextOverflow.ellipsis,
+    );
+    final value = Text(
+      '${(DemoData.currentTopicProgress * 100).toInt()}%',
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+        color: AppColors.primary,
       ),
+      overflow: TextOverflow.ellipsis,
+    );
+
+    if (isCompact) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          label,
+          const SizedBox(height: 2),
+          value,
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(child: label),
+        Flexible(child: value),
+      ],
     );
   }
 
@@ -325,145 +347,229 @@ class _HomeTab extends StatelessWidget {
     // "Lifelines" = attempts remaining (competence signal), not coins.
     // Rationale: Hamari et al. (2014): competence-linked gamification works;
     // extrinsic currency crowds out intrinsic motivation [^19][^21].
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceContainerHigh),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth <= 360;
+        final padding = isCompact ? 16.0 : 24.0;
+        return Container(
+          padding: EdgeInsets.all(padding),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.surfaceContainerHigh),
+          ),
+          child: isCompact
+              ? _buildGamesCompactLayout(context)
+              : _buildGamesWideLayout(context),
+        );
+      },
+    );
+  }
+
+  Widget _buildGamesWideLayout(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            color: AppColors.tertiaryFixed,
+            borderRadius: BorderRadius.circular(36),
+          ),
+          child: const Icon(Icons.sports_esports, color: AppColors.onTertiaryFixed, size: 36),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildGamesInfoColumn(context),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: _buildGamesEnterButton(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGamesCompactLayout(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: AppColors.tertiaryFixed,
+            borderRadius: BorderRadius.circular(32),
+          ),
+          child: const Icon(Icons.sports_esports, color: AppColors.onTertiaryFixed, size: 32),
+        ),
+        const SizedBox(height: 12),
+        _buildGamesInfoColumn(context, center: true),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: _buildGamesEnterButton(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGamesInfoColumn(BuildContext context, {bool center = false}) {
+    return Column(
+      crossAxisAlignment: center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Math Playground',
+          style: Theme.of(context).textTheme.displaySmall,
+          overflow: TextOverflow.ellipsis,
+          textAlign: center ? TextAlign.center : TextAlign.start,
+        ),
+        const SizedBox(height: 8),
+        _buildStatRow(context, Icons.schedule, AppColors.primary, '1h 30m Today'),
+        const SizedBox(height: 4),
+        _buildStatRow(context, Icons.star, AppColors.tertiary, '3 Lifelines Available'),
+      ],
+    );
+  }
+
+  Widget _buildStatRow(BuildContext context, IconData icon, Color color, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGamesEnterButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () => _navigate(context, const GamesScreen()),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.surfaceContainerHighest,
+        foregroundColor: AppColors.primaryFixedDim,
+        side: const BorderSide(color: AppColors.primary, width: 0.5),
+        elevation: 0,
+        minimumSize: const Size(0, 48),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: AppColors.tertiaryFixed,
-              borderRadius: BorderRadius.circular(36),
-            ),
-            child: const Icon(Icons.sports_esports, color: AppColors.onTertiaryFixed, size: 36),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Math Playground',
-                  style: Theme.of(context).textTheme.displaySmall,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.schedule, color: AppColors.primary, size: 18),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        '1h 30m Today',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: AppColors.tertiary, size: 18),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        '3 Lifelines Available',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Flexible(
-            child: ElevatedButton(
-              onPressed: () => _navigate(context, const GamesScreen()),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.surfaceContainerHighest,
-                foregroundColor: AppColors.primaryFixedDim,
-                side: const BorderSide(color: AppColors.primary, width: 0.5),
-                elevation: 0,
-                minimumSize: const Size(0, 48),
-              ),
-              child: const Text('Enter Games'),
-            ),
-          ),
-        ],
-      ),
+      child: const Text('Enter Games'),
     );
   }
 
   Widget _buildNursingCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.local_hospital, color: AppColors.primary),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth <= 360;
+        final padding = isCompact ? 16.0 : 24.0;
+        return Container(
+          padding: EdgeInsets.all(padding),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Telangana Staff Nurse',
-                  style: Theme.of(context).textTheme.titleLarge,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Topic-wise practice for ANM/GNM recruitment',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
-              ],
-            ),
+          child: isCompact
+              ? _buildNursingCompactLayout(context)
+              : _buildNursingWideLayout(context),
+        );
+      },
+    );
+  }
+
+  Widget _buildNursingWideLayout(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: AppColors.primaryContainer,
+            borderRadius: BorderRadius.circular(16),
           ),
-          const SizedBox(width: 12),
-          Flexible(
-            child: ElevatedButton(
-              onPressed: () => _navigate(context, const NursingEntryScreen()),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                minimumSize: const Size(0, 48),
+          child: const Icon(Icons.local_hospital, color: AppColors.primary),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildNursingInfoColumn(context),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: _buildNursingOpenButton(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNursingCompactLayout(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: const Text('Open'),
+              child: const Icon(Icons.local_hospital, color: AppColors.primary, size: 24),
             ),
+            const SizedBox(width: 12),
+            Expanded(child: _buildNursingInfoColumn(context)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: _buildNursingOpenButton(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNursingInfoColumn(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Telangana Staff Nurse',
+          style: Theme.of(context).textTheme.titleLarge,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Topic-wise practice for ANM/GNM recruitment',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppColors.onSurfaceVariant,
           ),
-        ],
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNursingOpenButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () => _navigate(context, const NursingEntryScreen()),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        minimumSize: const Size(0, 48),
       ),
+      child: const Text('Open'),
     );
   }
 
@@ -593,12 +699,16 @@ class _HomeTab extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: AppColors.primary,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   Text(
                     'Tap to switch class',
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: AppColors.onSurfaceVariant,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ],
               ),

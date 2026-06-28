@@ -142,10 +142,14 @@ echo ""
 echo "[5/9] Building Flutter release APK (optional)..."
 
 FLUTTER_DIR="$PROJECT_DIR/mathwise_build"
-if [ -d "$FLUTTER_DIR" ] && command -v flutter &> /dev/null; then
+FLUTTER_BIN="flutter"
+if [ -x "$HOME/flutter/bin/flutter" ]; then
+    FLUTTER_BIN="$HOME/flutter/bin/flutter"
+fi
+if [ -d "$FLUTTER_DIR" ] && [ -x "$FLUTTER_BIN" ]; then
     cd "$FLUTTER_DIR"
-    flutter clean
-    flutter build apk --release
+    "$FLUTTER_BIN" clean
+    "$FLUTTER_BIN" build apk --release
     cp "$FLUTTER_DIR/build/app/outputs/flutter-apk/app-release.apk" "$PROJECT_DIR/web/static/mathwise.apk"
     echo "✅ Flutter release APK copied to web/static/mathwise.apk"
 else

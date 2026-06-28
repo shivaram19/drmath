@@ -1,6 +1,6 @@
 # Dr. Math — Current State
 
-**Last Updated:** 2026-06-28  
+**Last Updated:** 2026-05-05  
 **Branch:** `main`  
 **Commits:** 35+ total (conventional format)  
 **Environment:** Production VM `20.193.129.119`  
@@ -18,7 +18,8 @@
 | **https://drmath.trelolabs.com/nursing/** | ✅ **Phase 10.1 PWA landing quiz** |
 | https://drmath.trelolabs.com/api/nursing/status | ✅ Nursing API health |
 | https://drmath.trelolabs.com/nursing/privacy | ✅ DPDPA privacy notice |
-| https://drmath.trelolabs.com/mathwise.apk | ✅ Flutter release APK (15.4 MB) |
+| https://drmath.trelolabs.com/mathwise.apk | ✅ Flutter release APK (15.5 MB) |
+| https://drmath.trelolabs.com/api/nursing/analytics | ✅ Consent-gated analytics beacon |
 
 ---
 
@@ -36,6 +37,9 @@
 | **Web UI** | ✅ | FastAPI + Jinja2. Home, topic pages, prompt builder, history, lab, compare |
 | **Nursing PWA** | ✅ | `/nursing/` daily 5-question quiz, offline fallback, share-to-WhatsApp, installable manifest + service worker |
 | **Privacy & Consent** | ✅ | DPDPA notice at `/nursing/privacy`, consent banner, conditional share, withdrawal link |
+| **Nursing Analytics** | ✅ | Anonymous `sendBeacon` events gated by `mw_privacy_consent`; JSONL retention 30 days |
+| **Web-to-APK Conversion** | ✅ | UTM-tagged prompts on result, landing banner, share text; `apk_download_clicked` + `app_first_open` events |
+| **Native App Analytics Consent** | ✅ | One-time in-app dialog; separate `mw_native_consent` record; DPDPA-aligned |
 | **Pre-commit** | ✅ | Blocks `.env`, runtime artifacts, `__pycache__`. Enforces conventional commits. |
 | **Docker** | ✅ | `Dockerfile` + `docker-compose.yml` + nginx configs ready |
 | **Deploy automation** | ✅ | `scripts/deploy.sh` installs nginx config, selects SSL, copies static assets, reloads nginx, health-checks endpoints |
@@ -53,7 +57,7 @@
 | **DPDPA privacy notice** | ✅ Done | `/nursing/privacy` live with consent banner |
 | **Flutter release build** | ✅ Done | Jetifier ignore-list + ABI filter; `flutter build apk --release` succeeds |
 | **Release APK size** | ✅ Done | 15.4 MB (target ≤ 20 MB) |
-| **HomeScreen nursing card overflow** | Narrow-screen layout bug | Phase 10.5 (Issue #37) |
+| **HomeScreen / app-wide narrow-screen overflow** | ✅ Done | 320–430 dp responsive pass; visual tests now use correct logical viewports |
 
 ---
 
@@ -102,6 +106,8 @@ No passwords. Open access.
 | **ADR-019** | **PWA-first distribution for Nursing** | **Accepted** |
 | **ADR-020** | **DPDPA privacy notice & consent for Nursing** | **Accepted** |
 | **ADR-021** | **Android release build toolchain** | **Accepted** |
+| **ADR-022** | **Consent-gated analytics for Nursing** | **Accepted** |
+| **ADR-023** | **Web-to-APK conversion measurement** | **Accepted** |
 
 ---
 
@@ -123,10 +129,11 @@ No passwords. Open access.
 
 ## 🎯 Next Immediate Work
 
-1. **Phase 10.6a** — Consent-gated analytics events (`landing_quiz_started`, `share_clicked`)
-2. **Phase 10.6b** — Server-log retention policy and DPDPA notice hardening (Grievance Officer, retention, DPB info)
-3. **Phase 10.6c** — Open Graph / WhatsApp link preview for `/nursing/`
-4. **Phase 10.7** — HomeScreen 320–360 dp responsive pass (Course Progress, Games card, bottom nav)
+1. **Phase 10.9** — WhatsApp bot experiment for daily quiz reminders
+2. **Phase 10.10** — Expanded nursing seed bank with source verification
+3. **Phase 10.8+** — Content expansion with source verification; user interviews on channel preference
+4. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
+4. **Phase 10.10** — Expanded nursing seed bank with source verification
 5. **Phase 10.8+** — Content expansion with source verification; user interviews on channel preference
 6. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
 
@@ -166,6 +173,10 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 |---|---|---|
 | 2026-06-28 | Phase 10.1: Nursing PWA landing live at /nursing/ | `cb71528` |
 | 2026-06-28 | ADR-019: PWA-first distribution for Nursing | `8b199d5` |
+| 2026-06-28 | Phase 10.6a: Consent-gated analytics endpoint and client events | — |
+| 2026-06-28 | ADR-022: Consent-gated analytics for Nursing | — |
+| 2026-06-28 | Phase 10.7: HomeScreen + shared widgets 320–430 dp responsive pass | — |
+| 2026-06-28 | Full narrow-screen audit: fixed overflows in topic/subtopic/curriculum/concept screens; corrected visual-test viewport config | — |
 | 2026-05-03 | Prompt versioning, expand/collapse, pipeline timestamps | `3ee765d` |
 | 2026-05-03 | Web UI: prompt families, generation timeline, Lab updates | `0bd98aa` |
 | 2026-05-03 | **LIVE: Deployed to production with HTTPS** | `e264acb` |

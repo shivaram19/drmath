@@ -90,15 +90,18 @@ class TopicChoiceScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.arrow_back, color: AppColors.primary, size: 18),
               const SizedBox(width: 8),
-              Text(
-                'Geometry Foundations'.toUpperCase(),
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.primary,
-                  letterSpacing: 0.1,
+              Expanded(
+                child: Text(
+                  'Geometry Foundations'.toUpperCase(),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppColors.primary,
+                    letterSpacing: 0.1,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],

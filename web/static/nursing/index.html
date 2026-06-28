@@ -31,6 +31,8 @@
     </header>
 
     <main class="main">
+      <section id="apkPromptBanner" class="apk-prompt apk-prompt-banner hidden" aria-live="polite"></section>
+
       <section id="consentBanner" class="consent-banner hidden" role="status" aria-live="polite">
         <p id="consentText">We only collect anonymous data if you agree. <a href="privacy">Read privacy notice</a>.</p>
         <div class="consent-actions">
@@ -59,6 +61,7 @@
         <h2 id="resultTitle">Great effort!</h2>
         <p id="resultScore" class="score"></p>
         <p id="resultMessage"></p>
+        <div id="apkPromptResult" class="apk-prompt apk-prompt-result hidden" aria-live="polite"></div>
         <button id="retryBtn" class="primary-btn">Try Again</button>
         <button id="installBtn" class="secondary-btn hidden">Add to Home Screen</button>
         <button id="shareBtn" class="secondary-btn">Share Score</button>

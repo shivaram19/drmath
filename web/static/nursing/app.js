@@ -22,11 +22,10 @@
       consentAgree: 'I agree',
       consentDecline: 'Not now',
       consentManage: 'Manage consent',
-      consentTitle: 'We only collect anonymous data if you agree.',
-      consentPrivacy: 'Read privacy notice',
-      consentAgree: 'I agree',
-      consentDecline: 'Not now',
-      consentManage: 'Manage consent',
+      apkPromptTitle: 'Full app download చేసుకోండి',
+      apkPromptBody: 'మరిన్ని mock tests, PDFs, daily reminders కోసం MathWise app install చేసుకోండి.',
+      apkPromptBtn: 'Android app download',
+      apkPromptDismiss: 'తర్వాత చూద్దాం',
     },
     en: {
       heroTitle: 'Telangana Staff Nurse',
@@ -43,11 +42,30 @@
       correct: 'Correct!',
       wrong: 'Wrong. Correct answer:',
       shareText: (score, total) => `I scored ${score}/${total} in today's Telangana Staff Nurse practice on MathWise. Can you beat me?`,
+      consentTitle: 'We only collect anonymous data if you agree.',
+      consentPrivacy: 'Read privacy notice',
+      consentAgree: 'I agree',
+      consentDecline: 'Not now',
+      consentManage: 'Manage consent',
+      apkPromptTitle: 'Get the full app',
+      apkPromptBody: 'Install MathWise for full mock tests, PDFs, and daily reminders.',
+      apkPromptBtn: 'Download Android app',
+      apkPromptDismiss: 'Maybe later',
     },
   };
 
   const CONSENT_KEY = 'mw_privacy_consent';
   const CONSENT_VERSION = '2026-06-28';
+  const COMPLETED_KEY = 'mw_nursing_completed';
+  const BANNER_DISMISSED_KEY = 'mw_nursing_apk_banner_dismissed';
+  const UTM_KEY = 'mw_utm';
+  const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
+  const DEFAULT_UTM = {
+    utm_source: 'web_nursing',
+    utm_medium: 'result_cta',
+    utm_campaign: 'nursing_full_app_install',
+    utm_content: 'v1',
+  };
 
   let lang = 'te';
   let questions = [];
@@ -112,6 +130,144 @@
     banner.classList.remove('hidden');
   }
 
+  // ---------------------------------------------------------------------------
+  // UTM / campaign helpers
+  // ---------------------------------------------------------------------------
+
+  function parseUtmFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const parsed = {};
+    let hasAny = false;
+    UTM_FIELDS.forEach((field) => {
+      const value = params.get(field);
+      if (value) {
+        parsed[field] = value;
+        hasAny = true;
+      }
+    });
+    return hasAny ? parsed : null;
+  }
+
+  function getStoredUtm() {
+    try {
+      const raw = sessionStorage.getItem(UTM_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function storeUtm(utm) {
+    try {
+      sessionStorage.setItem(UTM_KEY, JSON.stringify(utm));
+    } catch {
+      // Storage disabled — ignore.
+    }
+  }
+
+  function getUtmParams() {
+    const fromUrl = parseUtmFromUrl();
+    if (fromUrl) {
+      storeUtm(fromUrl);
+      return { ...DEFAULT_UTM, ...fromUrl };
+    }
+    const stored = getStoredUtm();
+    return { ...DEFAULT_UTM, ...(stored || {}) };
+  }
+
+  function buildApkUrl(overrides = {}) {
+    const utm = { ...getUtmParams(), ...overrides };
+    const qs = new URLSearchParams();
+    UTM_FIELDS.forEach((field) => {
+      const value = utm[field];
+      if (value && typeof value === 'string') {
+        qs.set(field, value);
+      }
+    });
+    const query = qs.toString();
+    return '/mathwise.apk' + (query ? `?${query}` : '');
+  }
+
+  // ---------------------------------------------------------------------------
+  // APK conversion prompt
+  // ---------------------------------------------------------------------------
+
+  function renderPromptContent(dismissible) {
+    return `
+      <div class="apk-prompt-icon" aria-hidden="true">📱</div>
+      <div class="apk-prompt-text">
+        <strong data-key="apkPromptTitle">${t('apkPromptTitle')}</strong>
+        <span data-key="apkPromptBody">${t('apkPromptBody')}</span>
+      </div>
+      <a id="apkPromptBtn" class="primary-btn" href="#" data-key="apkPromptBtn">${t('apkPromptBtn')}</a>
+      ${dismissible ? `<button id="apkPromptDismiss" class="secondary-btn small" data-key="apkPromptDismiss">${t('apkPromptDismiss')}</button>` : ''}
+    `;
+  }
+
+  function bindPromptEvents(container, placement, overrides, dismissible) {
+    const btn = container.querySelector('#apkPromptBtn');
+    const url = buildApkUrl(overrides);
+    btn.setAttribute('href', url);
+    btn.setAttribute('download', 'mathwise.apk');
+    btn.addEventListener('click', () => {
+      trackEvent('apk_download_clicked', {
+        placement,
+        ...getUtmParams(),
+        ...overrides,
+      });
+    });
+
+    if (dismissible) {
+      const dismiss = container.querySelector('#apkPromptDismiss');
+      dismiss.addEventListener('click', () => {
+        try {
+          localStorage.setItem(BANNER_DISMISSED_KEY, '1');
+        } catch {}
+        container.classList.add('hidden');
+      });
+    }
+  }
+
+  function showApkPrompt(containerId, placement, overrides = {}, dismissible = false) {
+    const container = $(containerId);
+    if (!container) return;
+    container.innerHTML = renderPromptContent(dismissible);
+    container.classList.remove('hidden');
+    bindPromptEvents(container, placement, overrides, dismissible);
+    trackEvent('apk_prompt_shown', {
+      placement,
+      ...getUtmParams(),
+      ...overrides,
+    });
+  }
+
+  function tryShowLandingBanner() {
+    try {
+      if (!localStorage.getItem(COMPLETED_KEY)) return;
+      if (localStorage.getItem(BANNER_DISMISSED_KEY)) return;
+    } catch {
+      return;
+    }
+    showApkPrompt('apkPromptBanner', 'landing_banner', { utm_medium: 'landing_banner', utm_content: 'returning_user' }, true);
+  }
+
+  function tryShowResultPrompt() {
+    showApkPrompt('apkPromptResult', 'result_cta', { utm_medium: 'result_cta', utm_content: 'after_quiz' }, false);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Language / UI
+  // ---------------------------------------------------------------------------
+
+  function updateDataKeyLabels() {
+    document.querySelectorAll('[data-key]').forEach((el) => {
+      const key = el.dataset.key;
+      if (STRINGS[lang][key]) {
+        el.textContent = t(key);
+      }
+    });
+  }
+
   function setLang(next) {
     lang = next;
     $('btnTe').classList.toggle('active', lang === 'te');
@@ -129,6 +285,7 @@
     $('installBtn').textContent = t('installBtn');
     $('shareBtn').textContent = t('shareBtn');
     $('offlineText').textContent = t('offlineText');
+    updateDataKeyLabels();
     if (!$('consentBanner').classList.contains('hidden')) {
       showConsentBanner();
     }
@@ -206,6 +363,15 @@
     $('feedbackBox').innerHTML = isCorrect
       ? `<strong>${t('correct')}</strong> ${q.explanation}`
       : `<strong>${t('wrong')} ${correct}</strong>. ${q.explanation}`;
+    trackEvent('question_answered', {
+      question_index: currentIndex,
+      total: questions.length,
+      selected: key,
+      correct,
+      is_correct: isCorrect,
+      topic_id: q.topic_id || null,
+    });
+
     $('feedbackBox').classList.remove('hidden');
     $('nextBtn').classList.remove('hidden');
   }
@@ -215,9 +381,15 @@
     $('result').classList.remove('hidden');
     $('resultScore').textContent = `${score} / ${questions.length}`;
     $('resultMessage').textContent = t('resultMessage');
+    trackEvent('quiz_completed', { score, total: questions.length });
+    try {
+      localStorage.setItem(COMPLETED_KEY, '1');
+    } catch {}
+    tryShowResultPrompt();
   }
 
   function startQuiz() {
+    trackEvent('landing_quiz_started');
     loadQuestions().then((data) => {
       if (!data.length) {
         $('intro').classList.add('hidden');
@@ -228,10 +400,34 @@
       currentIndex = 0;
       score = 0;
       $('intro').classList.add('hidden');
+      $('apkPromptBanner').classList.add('hidden');
       $('result').classList.add('hidden');
       $('quiz').classList.remove('hidden');
       renderQuestion();
     });
+  }
+
+  function trackEvent(event, metadata = {}) {
+    if (!hasConsent()) return;
+    const payload = {
+      event,
+      timestamp: new Date().toISOString(),
+      consent_version: CONSENT_VERSION,
+      metadata,
+    };
+    if ('sendBeacon' in navigator) {
+      navigator.sendBeacon(
+        '/api/nursing/analytics',
+        new Blob([JSON.stringify(payload)], { type: 'application/json' })
+      );
+    } else {
+      fetch('/api/nursing/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => {});
+    }
   }
 
   function shareScore() {
@@ -244,7 +440,21 @@
       };
       return;
     }
-    const text = t('shareText', score, questions.length) + ' ' + window.location.href;
+    const appLink = buildApkUrl({
+      utm_source: 'whatsapp_share',
+      utm_medium: 'share_text',
+      utm_content: 'score_share',
+    });
+    const text = `${t('shareText', score, questions.length)} ${window.location.href} ${appLink}`;
+    trackEvent('score_shared', {
+      score,
+      total: questions.length,
+      includes_app_link: true,
+      utm_source: 'whatsapp_share',
+      utm_medium: 'share_text',
+      utm_campaign: getUtmParams().utm_campaign,
+      utm_content: 'score_share',
+    });
     if (navigator.share) {
       navigator.share({ title: 'MathWise Nursing', text, url: window.location.href }).catch(() => {});
     } else {
@@ -301,6 +511,7 @@
   }
 
   setLang('te');
+  tryShowLandingBanner();
 
   if (!getConsent()) {
     showConsentBanner();

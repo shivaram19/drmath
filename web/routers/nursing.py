@@ -1,11 +1,13 @@
 """FastAPI router for the nursing practice module."""
+import json
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pathlib import Path
 
 from fastapi import APIRouter, Query, Request, Form
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from web.domain.constants import DEFAULT_PATTERN_KEY, CognitiveLevel, QuestionContext
 from web.domain.models import Attempt, Question
@@ -159,3 +161,49 @@ def weak_area_pdf(payload: PdfRequest) -> HTMLResponse:
         content=html_bytes.decode("utf-8"),
         headers={"Content-Disposition": "attachment; filename=weak-area-practice.html"},
     )
+
+
+# ---------------------------------------------------------------------------
+# Analytics events (consent-gated)
+# ---------------------------------------------------------------------------
+
+EVENTS_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "nursing_events.jsonl"
+
+
+class EventRequest(BaseModel):
+    event: str
+    timestamp: str
+    consent_version: str
+    metadata: Dict[str, Any] = {}
+
+    @field_validator('metadata')
+    @classmethod
+    def _validate_utm_fields(cls, value: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize campaign UTM fields to prevent log injection."""
+        if not isinstance(value, dict):
+            raise ValueError('metadata must be an object')
+        for field in ('utm_source', 'utm_medium', 'utm_campaign', 'utm_content'):
+            val = value.get(field)
+            if val is not None and (not isinstance(val, str) or len(val) > 128):
+                raise ValueError(f'{field} must be a string with max 128 characters')
+        return value
+
+
+@api_router.post("/analytics")
+def record_event(payload: EventRequest) -> JSONResponse:
+    """Record an anonymous, consent-gated analytics event.
+
+    No IP, device ID, or personal identifiers are stored. Events are appended
+    to a local JSONL file and retained in line with the DPDPA privacy notice.
+    """
+    EVENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "received_at": datetime.utcnow().isoformat(),
+        "event": payload.event,
+        "client_timestamp": payload.timestamp,
+        "consent_version": payload.consent_version,
+        "metadata": payload.metadata,
+    }
+    with EVENTS_PATH.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return JSONResponse({"status": "recorded"})

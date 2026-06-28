@@ -391,7 +391,15 @@ class _ConceptContentScreenState extends State<ConceptContentScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Quick Check', style: Theme.of(context).textTheme.displaySmall),
+              Expanded(
+                child: Text(
+                  'Quick Check',
+                  style: Theme.of(context).textTheme.displaySmall,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(

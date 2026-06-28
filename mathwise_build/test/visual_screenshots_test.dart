@@ -10,6 +10,7 @@
 /// Note: Uses system fallback fonts to avoid GoogleFonts async network
 /// requests in test environment. Layout, color, and spacing evaluation
 /// remains fully accurate.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,8 +27,7 @@ import 'package:mathwise/features/practice/practice_question_screen.dart';
 import 'package:mathwise/features/profile/profile_screen.dart';
 import 'package:mathwise/features/topics/topic_choice_screen.dart';
 import 'package:mathwise/features/topics/topics_subtopics_screen.dart';
-import 'package:mathwise/shared/widgets/bottom_nav_bar.dart';
-import 'package:mathwise/shared/widgets/top_app_bar.dart';
+
 
 /// Minimal theme that preserves the app's color scheme without triggering
 /// GoogleFonts network requests in tests.
@@ -100,8 +100,14 @@ void main() {
         final vpName = viewport.$1;
         final vpSize = viewport.$2;
         testWidgets('$screenName @ $vpName', (tester) async {
-          tester.view.physicalSize = vpSize;
-          tester.view.devicePixelRatio = 2.0;
+          // physicalSize is in pixels; devicePixelRatio converts to logical dp.
+          // Multiply the named viewport by the DPR so logical size equals vpSize.
+          const dpr = 2.0;
+          tester.view.physicalSize = Size(
+            vpSize.width * dpr,
+            vpSize.height * dpr,
+          );
+          tester.view.devicePixelRatio = dpr;
           addTearDown(tester.view.reset);
 
           await tester.pumpWidget(

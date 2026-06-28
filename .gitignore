@@ -20,6 +20,7 @@ data/*_antigravity.md
 data/generations_db.json
 data/prompts_db.json
 data/drmath.db
+data/nursing_events.jsonl
 output/*.json
 
 # IDE

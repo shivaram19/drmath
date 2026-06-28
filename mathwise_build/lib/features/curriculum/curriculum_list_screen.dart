@@ -321,10 +321,10 @@ class _SubTopicRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       // 48dp touch target: padding ensures minimum hit area.
+      behavior: HitTestBehavior.translucent,
       onTap: isLocked ? null : onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         margin: const EdgeInsets.only(bottom: 4),

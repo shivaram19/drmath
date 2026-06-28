@@ -359,6 +359,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.2"
+  referrer:
+    dependency: "direct main"
+    description:
+      name: referrer
+      sha256: b809a1d5ee10d8f9219f2d21d4152cb403df8b9681d159bea5bd50dd65fe14a0
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   rxdart:
     dependency: transitive
     description:

@@ -16,6 +16,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../../core/constants/app_breakpoints.dart';
 import '../../core/constants/app_colors.dart';
 import '../../shared/widgets/top_app_bar.dart';
 import '../practice/practice_question_screen.dart';
@@ -90,116 +91,144 @@ class CurriculumGridScreen extends StatelessWidget {
   }
 
   Widget _buildCTASection(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 200,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final canFitSideBySide =
+            constraints.maxWidth >= ContentMinWidths.twoStatCardsSideBySide;
+        final cards = [
+          _buildPracticeChallengeCard(context),
+          _buildVisualGlossaryCard(context),
+        ];
+        if (canFitSideBySide) {
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Practice Challenge',
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Test your skills with the Weekly Geometry Battle.',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                  child: const Text('Start Now'),
-                ),
+                Expanded(child: cards[0]),
+                const SizedBox(width: 16),
+                Expanded(child: cards[1]),
               ],
             ),
+          );
+        }
+        return Column(
+          children: [
+            cards[0],
+            const SizedBox(height: 16),
+            cards[1],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPracticeChallengeCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Practice Challenge',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Test your skills with the Weekly Geometry Battle.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            height: 200,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const PracticeQuestionScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Visual Glossary', style: Theme.of(context).textTheme.displaySmall),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Interactive definitions for all geometric terms.',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainer,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.menu_book, color: AppColors.primary),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainer,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.search, color: AppColors.primary),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            child: const Text('Start Now'),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVisualGlossaryCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Visual Glossary', style: Theme.of(context).textTheme.displaySmall),
+              const SizedBox(height: 4),
+              Text(
+                'Interactive definitions for all geometric terms.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.menu_book, color: AppColors.primary),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.search, color: AppColors.primary),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -395,16 +424,19 @@ class _ExpandedChapterGrid extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 1.4,
-              children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final useTwoColumns = constraints.maxWidth >= 360;
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: useTwoColumns ? 2 : 1,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: useTwoColumns ? 1.4 : 2.4,
+                  children: [
                 _TopicTile(
                   title: 'Lines',
                   icon: Icons.linear_scale,
@@ -442,11 +474,13 @@ class _ExpandedChapterGrid extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
-    );
-  }
+    ],
+  ),
+);
+}
 }
 
 class _TopicTile extends StatelessWidget {
@@ -471,7 +505,7 @@ class _TopicTile extends StatelessWidget {
     return GestureDetector(
       onTap: isLocked ? null : onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(12),
@@ -494,18 +528,18 @@ class _TopicTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: isCurrent
                         ? AppColors.primaryContainer
                         : AppColors.surfaceDim.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     icon,
                     color: isCurrent ? Colors.white : AppColors.onSurfaceVariant,
-                    size: 20,
+                    size: 18,
                   ),
                 ),
                 Icon(
@@ -519,7 +553,7 @@ class _TopicTile extends StatelessWidget {
                       : isCurrent
                           ? AppColors.primary
                           : AppColors.outline,
-                  size: 18,
+                  size: 16,
                 ),
               ],
             ),
@@ -530,8 +564,10 @@ class _TopicTile extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 15,
+                    fontSize: 14,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -541,7 +577,7 @@ class _TopicTile extends StatelessWidget {
                           ? 'In Progress'
                           : 'Next Up',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 10,
                     color: isCurrent ? AppColors.primary : AppColors.onSurfaceVariant,
                     fontWeight: isCurrent ? FontWeight.w500 : FontWeight.normal,
                   ),

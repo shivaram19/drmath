@@ -19,6 +19,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../../core/constants/app_breakpoints.dart';
 import '../../core/constants/app_colors.dart';
 import '../../shared/data/demo_data.dart';
 import '../../shared/models/curriculum.dart';
@@ -137,116 +138,156 @@ class _TopicsSubtopicsScreenState extends State<TopicsSubtopicsScreen> {
   }
 
   Widget _buildProgressOverview(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final canFitSideBySide =
+            constraints.maxWidth >= ContentMinWidths.twoStatCardsSideBySide;
+        final cards = [
+          _buildOverallProgressCard(context),
+          _buildNextConceptCard(context),
+        ];
+        if (canFitSideBySide) {
+          return Row(
+            children: [
+              Expanded(child: cards[0]),
+              const SizedBox(width: 16),
+              Expanded(child: cards[1]),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            cards[0],
+            const SizedBox(height: 16),
+            cards[1],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildOverallProgressCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Overall Progress', style: Theme.of(context).textTheme.displaySmall),
+          const SizedBox(height: 12),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 8,
+            children: [
+              Text(
+                '64%',
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  color: AppColors.primary,
+                  fontSize: 36,
                 ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Overall Progress', style: Theme.of(context).textTheme.displaySmall),
-                const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '64%',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        color: AppColors.primary,
-                        fontSize: 36,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        'of curriculum completed',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: const LinearProgressIndicator(
-                    value: 0.64,
-                    minHeight: 8,
-                    backgroundColor: AppColors.surfaceContainerLow,
-                    valueColor: AlwaysStoppedAnimation(AppColors.primaryContainer),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  'of curriculum completed',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.onSurfaceVariant,
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: const LinearProgressIndicator(
+              value: 0.64,
+              minHeight: 8,
+              backgroundColor: AppColors.surfaceContainerLow,
+              valueColor: AlwaysStoppedAnimation(AppColors.primaryContainer),
             ),
           ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNextConceptCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final canFitRow = constraints.maxWidth >= ContentMinWidths.statBoxRowLayout + 120;
+          final image = ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=200',
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
             ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=200',
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
-                  ),
+          );
+          final content = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Next Concept',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Mastering the Pythagorean Theorem',
+                style: Theme.of(context).textTheme.bodyMedium,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => _navigateToTopicChoice(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.onPrimary,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  minimumSize: const Size(0, 36),
                 ),
+                child: const Text('Resume Learning'),
+              ),
+            ],
+          );
+          if (canFitRow) {
+            return Row(
+              children: [
+                image,
                 const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Next Concept',
-                        style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 16),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Mastering the Pythagorean Theorem',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () => _navigateToTopicChoice(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.onPrimary,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          minimumSize: const Size(0, 36),
-                        ),
-                        child: const Text('Resume Learning'),
-                      ),
-                    ],
-                  ),
-                ),
+                Expanded(child: content),
               ],
-            ),
-          ),
-        ),
-      ],
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              image,
+              const SizedBox(height: 12),
+              content,
+            ],
+          );
+        },
+      ),
     );
   }
 }
