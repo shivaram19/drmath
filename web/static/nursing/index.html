@@ -46,6 +46,14 @@
         <button id="startBtn" class="primary-btn">Start 5 Questions</button>
       </section>
 
+      <section id="surveyBanner" class="survey-banner hidden" role="status" aria-live="polite">
+        <p id="surveyBannerText" data-key="surveyBannerText">Help us improve — 30 sec survey.</p>
+        <div class="survey-banner-actions">
+          <button id="surveyOpenBtn" class="primary-btn small" data-key="surveyOpenBtn">Take survey</button>
+          <button id="surveyDismissBtn" class="secondary-btn small" data-key="surveyCancel">Later</button>
+        </div>
+      </section>
+
       <section id="quiz" class="card hidden" aria-live="polite">
         <div class="progress" aria-label="Progress">
           <div class="progress-bar" id="progressBar"></div>
@@ -75,6 +83,61 @@
     <footer class="footer">
       <p>© MathWise · <a href="privacy">Privacy</a> · <a href="#" id="manageConsentLink">Manage consent</a></p>
     </footer>
+  </div>
+
+  <div id="surveyModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="surveyTitle">
+    <div class="modal-content">
+      <h2 id="surveyTitle" data-key="surveyTitle">Quick survey</h2>
+      <form id="surveyForm">
+        <div class="survey-field">
+          <label for="surveyInterested" id="surveyInterestedLabel" data-key="surveyInterestedLabel">Would you use a free daily 5-question nursing quiz?</label>
+          <select id="surveyInterested" name="interested" required>
+            <option value="">— Select —</option>
+            <option value="yes">Yes</option>
+            <option value="maybe">Maybe</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="survey-field">
+          <label for="surveyChannel" id="surveyChannelLabel" data-key="surveyChannelLabel">Preferred channel</label>
+          <select id="surveyChannel" name="preferred_channel" required>
+            <option value="">— Select —</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="telegram">Telegram</option>
+            <option value="none">No preference</option>
+          </select>
+        </div>
+        <div class="survey-field">
+          <label for="surveyCadence" id="surveyCadenceLabel" data-key="surveyCadenceLabel">How often?</label>
+          <select id="surveyCadence" name="cadence" required>
+            <option value="">— Select —</option>
+            <option value="daily">Daily</option>
+            <option value="thrice_weekly">3 times a week</option>
+            <option value="weekends">Weekends only</option>
+          </select>
+        </div>
+        <div class="survey-field">
+          <label for="surveyChallenge" id="surveyChallengeLabel" data-key="surveyChallengeLabel">Biggest exam-prep challenge</label>
+          <select id="surveyChallenge" name="biggest_challenge" required>
+            <option value="">— Select —</option>
+            <option value="syllabus_coverage">Syllabus coverage</option>
+            <option value="mock_tests">Mock tests</option>
+            <option value="previous_papers">Previous papers</option>
+            <option value="time_management">Time management</option>
+            <option value="job_alerts">Job alerts</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="survey-field">
+          <label for="surveyOther" id="surveyOtherLabel" data-key="surveyOtherLabel">Anything else? (optional)</label>
+          <textarea id="surveyOther" name="other_challenge" maxlength="500" placeholder="Tell us more..."></textarea>
+        </div>
+        <button type="submit" class="primary-btn" data-key="surveySubmit">Submit</button>
+        <button type="button" id="surveyCancelBtn" class="secondary-btn" data-key="surveyCancel">Cancel</button>
+        <p class="survey-note" data-key="surveyNote">No phone number or personal details are collected.</p>
+      </form>
+      <p id="surveyThanks" class="hidden center" data-key="surveyThanks">Thank you for helping us improve MathWise Nursing!</p>
+    </div>
   </div>
 
   <script src="app.js"></script>

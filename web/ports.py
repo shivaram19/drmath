@@ -24,3 +24,17 @@ class AnalyticsSink(ABC):
     ) -> None:
         """Record a single analytics event."""
         ...
+
+
+class SurveyStore(ABC):
+    """Persist voluntary, non-PII discovery-survey responses.
+
+    Responses are written to durable storage for analysis and then erased once
+    the research purpose is complete. No raw phone numbers, chat_ids, or other
+    personal identifiers are stored.
+    """
+
+    @abstractmethod
+    def save_response(self, response: Dict[str, Any]) -> None:
+        """Save a single survey response."""
+        ...

@@ -21,6 +21,7 @@ data/generations_db.json
 data/prompts_db.json
 data/drmath.db
 data/nursing_events.jsonl
+data/nursing_discovery_survey.jsonl
 output/*.json
 
 # IDE

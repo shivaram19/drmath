@@ -9,10 +9,10 @@ from fastapi import APIRouter, Query, Request, Form, Depends
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel, field_validator
 
-from web.dependencies import get_analytics_sink, get_nursing_service
+from web.dependencies import get_analytics_sink, get_nursing_service, get_survey_store
 from web.domain.constants import DEFAULT_PATTERN_KEY, CognitiveLevel, QuestionContext
 from web.domain.models import Attempt, Question
-from web.ports import AnalyticsSink
+from web.ports import AnalyticsSink, SurveyStore
 from web.services.nursing_service import NursingService
 
 
@@ -152,6 +152,69 @@ def report_question(
         user_id=payload.user_id,
     )
     return ReportResponse(status="recorded", report=record)
+
+
+# ---------------------------------------------------------------------------
+# Discovery survey (Phase 10.9a)
+# ---------------------------------------------------------------------------
+
+class DiscoverySurveyRequest(BaseModel):
+    interested: str  # yes | maybe | no
+    preferred_channel: str  # whatsapp | telegram | none
+    cadence: str  # daily | thrice_weekly | weekends
+    biggest_challenge: str
+    other_challenge: Optional[str] = None
+    language: str = "te"
+
+    @field_validator("interested")
+    @classmethod
+    def _validate_interested(cls, value: str) -> str:
+        value = value.strip().lower()
+        if value not in {"yes", "maybe", "no"}:
+            raise ValueError("interested must be yes, maybe, or no")
+        return value
+
+    @field_validator("preferred_channel")
+    @classmethod
+    def _validate_channel(cls, value: str) -> str:
+        value = value.strip().lower()
+        if value not in {"whatsapp", "telegram", "none"}:
+            raise ValueError("preferred_channel must be whatsapp, telegram, or none")
+        return value
+
+    @field_validator("cadence")
+    @classmethod
+    def _validate_cadence(cls, value: str) -> str:
+        value = value.strip().lower()
+        if value not in {"daily", "thrice_weekly", "weekends"}:
+            raise ValueError("cadence must be daily, thrice_weekly, or weekends")
+        return value
+
+    @field_validator("biggest_challenge", "language")
+    @classmethod
+    def _strip_and_lower(cls, value: str) -> str:
+        if not isinstance(value, str):
+            raise ValueError("must be a string")
+        return value.strip().lower()
+
+
+class DiscoverySurveyResponse(BaseModel):
+    status: str
+
+
+@api_router.post("/discovery-survey", response_model=DiscoverySurveyResponse)
+def discovery_survey(
+    payload: DiscoverySurveyRequest,
+    store: SurveyStore = Depends(get_survey_store),
+) -> DiscoverySurveyResponse:
+    """Record a voluntary, non-PII discovery-survey response.
+
+    The response is stored independently of analytics consent because it is an
+    explicit user submission, not passive telemetry. No phone numbers or chat_ids
+    are collected at this stage.
+    """
+    store.save_response(payload.model_dump())
+    return DiscoverySurveyResponse(status="recorded")
 
 
 @api_router.post("/analyze")

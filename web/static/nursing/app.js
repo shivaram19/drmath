@@ -22,6 +22,18 @@
       consentAgree: 'I agree',
       consentDecline: 'Not now',
       consentManage: 'Manage consent',
+      surveyBannerText: 'మీకు 30 సెకన్ల సర్వే సహాయం చేయండి.',
+      surveyOpenBtn: 'సర్వే తీసుకోండి',
+      surveyTitle: 'త్వరిత సర్వే',
+      surveyInterestedLabel: 'ఉచిత రోజువారీ 5 ప్రశ్నల నర్సింగ్ క్విజ్ ఉపయోగిస్తారా?',
+      surveyChannelLabel: 'ఏ చానెల్ ఇష్టం?',
+      surveyCadenceLabel: 'ఎంత తరచుగా?',
+      surveyChallengeLabel: 'పెద్ద సమస్య ఏమిటి?',
+      surveyOtherLabel: 'మరేదైనా (ఐచ్ఛికం)',
+      surveySubmit: 'Submit చేయండి',
+      surveyCancel: 'రద్దు చేయండి',
+      surveyNote: 'ఫోన్ నంబర్ లేదా వ్యక్తిగత వివరాలు సేకరించబడవు.',
+      surveyThanks: 'సహాయానికి ధన్యవాదాలు!',
       apkPromptTitle: 'Full app download చేసుకోండి',
       apkPromptBody: 'మరిన్ని mock tests, PDFs, daily reminders కోసం MathWise app install చేసుకోండి.',
       apkPromptBtn: 'Android app download',
@@ -47,6 +59,18 @@
       consentAgree: 'I agree',
       consentDecline: 'Not now',
       consentManage: 'Manage consent',
+      surveyBannerText: 'Help us improve — 30 sec survey.',
+      surveyOpenBtn: 'Take survey',
+      surveyTitle: 'Quick survey',
+      surveyInterestedLabel: 'Would you use a free daily 5-question nursing quiz?',
+      surveyChannelLabel: 'Preferred channel',
+      surveyCadenceLabel: 'How often?',
+      surveyChallengeLabel: 'Biggest exam-prep challenge',
+      surveyOtherLabel: 'Anything else? (optional)',
+      surveySubmit: 'Submit',
+      surveyCancel: 'Cancel',
+      surveyNote: 'No phone number or personal details are collected.',
+      surveyThanks: 'Thank you for helping us improve MathWise Nursing!',
       apkPromptTitle: 'Get the full app',
       apkPromptBody: 'Install MathWise for full mock tests, PDFs, and daily reminders.',
       apkPromptBtn: 'Download Android app',
@@ -59,6 +83,9 @@
   const COMPLETED_KEY = 'mw_nursing_completed';
   const BANNER_DISMISSED_KEY = 'mw_nursing_apk_banner_dismissed';
   const UTM_KEY = 'mw_utm';
+  const SURVEY_COMPLETED_KEY = 'mw_nursing_survey_completed';
+  const SURVEY_DISMISSED_AT_KEY = 'mw_nursing_survey_dismissed_at';
+  const SURVEY_DISMISS_DAYS = 7;
   const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
   const DEFAULT_UTM = {
     utm_source: 'web_nursing',
@@ -255,6 +282,109 @@
 
   function tryShowResultPrompt() {
     showApkPrompt('apkPromptResult', 'result_cta', { utm_medium: 'result_cta', utm_content: 'after_quiz' }, false);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Discovery survey (Phase 10.9a)
+  // ---------------------------------------------------------------------------
+
+  function shouldShowSurveyBanner() {
+    try {
+      if (localStorage.getItem(SURVEY_COMPLETED_KEY)) return false;
+      const dismissedAt = localStorage.getItem(SURVEY_DISMISSED_AT_KEY);
+      if (dismissedAt) {
+        const elapsed = Date.now() - parseInt(dismissedAt, 10);
+        if (elapsed < SURVEY_DISMISS_DAYS * 24 * 60 * 60 * 1000) return false;
+      }
+    } catch {
+      return false;
+    }
+    return true;
+  }
+
+  function showSurveyBanner() {
+    const banner = $('surveyBanner');
+    if (!banner || !shouldShowSurveyBanner()) return;
+    $('surveyBannerText').textContent = t('surveyBannerText');
+    $('surveyOpenBtn').textContent = t('surveySubmit').replace('Submit చేయండి', 'Take survey').replace('Submit', 'Take survey');
+    $('surveyDismissBtn').textContent = t('surveyCancel');
+    banner.classList.remove('hidden');
+  }
+
+  function hideSurveyBanner() {
+    const banner = $('surveyBanner');
+    if (banner) banner.classList.add('hidden');
+  }
+
+  function openSurveyModal() {
+    $('surveyModal').classList.remove('hidden');
+    hideSurveyBanner();
+  }
+
+  function closeSurveyModal() {
+    $('surveyModal').classList.add('hidden');
+    $('surveyForm').classList.remove('hidden');
+    $('surveyThanks').classList.add('hidden');
+    $('surveyForm').reset();
+  }
+
+  function markSurveyCompleted() {
+    try {
+      localStorage.setItem(SURVEY_COMPLETED_KEY, '1');
+    } catch {}
+  }
+
+  function markSurveyDismissed() {
+    try {
+      localStorage.setItem(SURVEY_DISMISSED_AT_KEY, String(Date.now()));
+    } catch {}
+  }
+
+  async function submitSurvey(e) {
+    e.preventDefault();
+    const form = $('surveyForm');
+    const data = {
+      interested: form.interested.value,
+      preferred_channel: form.preferred_channel.value,
+      cadence: form.cadence.value,
+      biggest_challenge: form.biggest_challenge.value,
+      other_challenge: form.other_challenge.value.trim() || null,
+      language: lang,
+    };
+
+    try {
+      const response = await fetch('/api/nursing/discovery-survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Survey save failed');
+    } catch (err) {
+      console.error(err);
+    }
+
+    trackEvent('discovery_survey_submitted', data);
+    markSurveyCompleted();
+    form.classList.add('hidden');
+    $('surveyThanks').textContent = t('surveyThanks');
+    $('surveyThanks').classList.remove('hidden');
+    setTimeout(closeSurveyModal, 2000);
+  }
+
+  function initSurvey() {
+    const banner = $('surveyBanner');
+    if (!banner) return;
+
+    $('surveyOpenBtn').addEventListener('click', openSurveyModal);
+    $('surveyDismissBtn').addEventListener('click', () => {
+      markSurveyDismissed();
+      hideSurveyBanner();
+    });
+    $('surveyCancelBtn').addEventListener('click', closeSurveyModal);
+    $('surveyForm').addEventListener('submit', submitSurvey);
+
+    // Show banner after a short delay so the landing page renders first.
+    setTimeout(showSurveyBanner, 1500);
   }
 
   // ---------------------------------------------------------------------------
@@ -514,6 +644,7 @@
 
   setLang('te');
   tryShowLandingBanner();
+  initSurvey();
 
   if (!getConsent()) {
     showConsentBanner();

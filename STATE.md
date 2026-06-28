@@ -137,7 +137,7 @@ No passwords. Open access.
 3. **~~Phase 10.8b~~ ✅** — Math pipeline decoupled behind ports (`pipeline/interfaces.py`, `pipeline/adapters.py`, `pipeline/use_cases.py`); `run_pipeline()` is now a compatibility wrapper.
 4. **~~Phase 10.8c~~ ✅** — Web composition root created (`web/dependencies.py`); `NursingService` and `AnalyticsSink` injected via FastAPI `Depends`. `web/main.py` left intact; router split deferred to incremental cleanup.
 5. **🟡 Phase 10.9 — Backend** — Daily quiz nudge experiment, reframed as a phased behavioral-intervention test:
-   - **10.9a** — User discovery (survey/interviews) + 60+ verified nursing questions pre-flight.
+   - **10.9a** — User discovery (survey/interviews) + 60+ verified nursing questions pre-flight. **In progress: discovery-survey endpoint and PWA modal live.**
    - **10.9b** — **Telegram-only MVP** testing active-retrieval nudge vs. generic reminder.
    - **10.9c** — Port winning arm to WhatsApp; offer channel choice; validate CPAU.
    - **10.9d** — Automatic channel fallback, cadence preference, and scale.
@@ -182,6 +182,7 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-05-05 | Phase 10.9a: discovery-survey endpoint, JSONL survey store, and PWA modal/banner for channel/cadence/challenge preferences; 61 tests passing | — |
 | 2026-05-05 | Phase 10.9 introspection: surfaced market, cadence, content-readiness, and DPDP-Rule unknowns; documented in `docs/research/bidirectional/bidirectional-11-phase10_9-introspection.md` | — |
 | 2026-05-05 | ADR-024 revised: Telegram-first phased MVP, DPDP Rules 2025 multilingual notice + one-click withdrawal, 1-year send-log retention, nursing market context | `docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md` |
 | 2026-05-05 | ADR-024: WhatsApp channel, consent model, and data retention decision drafted (Proposed) | #52 / `1d15a74` |

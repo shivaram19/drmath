@@ -318,3 +318,92 @@ html, body {
   font-size: 0.9rem;
   min-height: 40px;
 }
+
+/* ---------------------------------------------------------------------------
+   Discovery survey (Phase 10.9a)
+   --------------------------------------------------------------------------- */
+
+.survey-banner {
+  background: #E8F5E9;
+  border: 1px solid var(--success);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.survey-banner p {
+  margin: 0 0 12px;
+  color: var(--text);
+}
+
+.survey-banner-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.survey-banner-actions button {
+  flex: 1;
+  margin-top: 0;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: var(--primary);
+  font-size: 1.25rem;
+}
+
+.survey-field {
+  margin-bottom: 14px;
+}
+
+.survey-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.survey-field select,
+.survey-field textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+}
+
+.survey-field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.survey-note {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 12px;
+}

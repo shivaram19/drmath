@@ -5,7 +5,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from web.adapters.analytics import JSONLAnalyticsSink
-from web.dependencies import get_analytics_sink
+from web.adapters.survey_store import JSONLSurveyStore
+from web.dependencies import get_analytics_sink, get_survey_store
 from web.domain.constants import CognitiveLevel, QuestionContext
 from web.domain.models import Attempt
 from web.main import app
@@ -228,3 +229,68 @@ def test_record_analytics_event_rejects_long_utm(client, tmp_path):
 def test_existing_math_homepage_unaffected(client):
     response = client.get("/")
     assert response.status_code == 200
+
+
+def test_discovery_survey_records_response(client, tmp_path):
+    path = tmp_path / "nursing_discovery_survey.jsonl"
+    app.dependency_overrides[get_survey_store] = lambda: JSONLSurveyStore(path=path)
+    try:
+        response = client.post(
+            "/api/nursing/discovery-survey",
+            json={
+                "interested": "yes",
+                "preferred_channel": "telegram",
+                "cadence": "daily",
+                "biggest_challenge": "time_management",
+                "other_challenge": "Working night shifts",
+                "language": "en",
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_survey_store, None)
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "recorded"
+    assert path.exists()
+    lines = path.read_text(encoding="utf-8").strip().split("\n")
+    assert len(lines) == 1
+    record = json.loads(lines[0])
+    assert record["response"]["interested"] == "yes"
+    assert record["response"]["preferred_channel"] == "telegram"
+    assert record["response"]["other_challenge"] == "Working night shifts"
+
+
+def test_discovery_survey_rejects_invalid_interested(client):
+    response = client.post(
+        "/api/nursing/discovery-survey",
+        json={
+            "interested": "",
+            "preferred_channel": "telegram",
+            "cadence": "daily",
+            "biggest_challenge": "time_management",
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_discovery_survey_optional_other_challenge(client, tmp_path):
+    path = tmp_path / "nursing_discovery_survey.jsonl"
+    app.dependency_overrides[get_survey_store] = lambda: JSONLSurveyStore(path=path)
+    try:
+        response = client.post(
+            "/api/nursing/discovery-survey",
+            json={
+                "interested": "maybe",
+                "preferred_channel": "whatsapp",
+                "cadence": "thrice_weekly",
+                "biggest_challenge": "syllabus_coverage",
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_survey_store, None)
+
+    assert response.status_code == 200
+    lines = path.read_text(encoding="utf-8").strip().split("\n")
+    record = json.loads(lines[0])
+    assert record["response"]["other_challenge"] is None
+    assert record["response"]["language"] == "te"

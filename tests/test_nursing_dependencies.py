@@ -9,9 +9,9 @@ from typing import Any, Dict
 import pytest
 from fastapi.testclient import TestClient
 
-from web.dependencies import get_analytics_sink, get_nursing_service
+from web.dependencies import get_analytics_sink, get_nursing_service, get_survey_store
 from web.main import app
-from web.ports import AnalyticsSink
+from web.ports import AnalyticsSink, SurveyStore
 from web.services.nursing_service import NursingService
 
 
@@ -48,6 +48,16 @@ class FakeAnalyticsSink(AnalyticsSink):
                 "metadata": metadata,
             }
         )
+
+
+class FakeSurveyStore(SurveyStore):
+    """Captures survey responses instead of writing to disk."""
+
+    def __init__(self):
+        self.responses: list = []
+
+    def save_response(self, response: Dict[str, Any]) -> None:
+        self.responses.append(response)
 
 
 @pytest.fixture
@@ -89,3 +99,26 @@ def test_analytics_sink_can_be_overridden(client):
     assert len(sink.events) == 1
     assert sink.events[0]["event"] == "test_event"
     assert sink.events[0]["metadata"]["source"] == "dependency_test"
+
+
+def test_survey_store_can_be_overridden(client):
+    store = FakeSurveyStore()
+    app.dependency_overrides[get_survey_store] = lambda: store
+    try:
+        response = client.post(
+            "/api/nursing/discovery-survey",
+            json={
+                "interested": "yes",
+                "preferred_channel": "telegram",
+                "cadence": "daily",
+                "biggest_challenge": "mock_tests",
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_survey_store, None)
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "recorded"
+    assert len(store.responses) == 1
+    assert store.responses[0]["interested"] == "yes"
+    assert store.responses[0]["preferred_channel"] == "telegram"
