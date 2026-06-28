@@ -95,6 +95,7 @@ Specifically:
 - `scripts/deploy.sh` now detects existing SSL certs (using `sudo`) and installs the active nginx config into `/etc/nginx/sites-enabled/drmath.trelolabs.com`.
 - `scripts/init-ssl.sh` was fixed for host-level nginx: uses `PYTHONNOUSERSITE=1` to avoid urllib3 conflicts, `sudo -E` for certbot, and reloads the host nginx process.
 - Verified: `https://drmath.trelolabs.com/nursing/` returns 200, manifest/sw.js/styles/app.js/daily.json are reachable, and `/api/nursing/questions?limit=5` returns MCQs.
+- Service worker uses cache-first for shell assets and network-first for questions, falling back to the bundled `daily.json` when offline.
 
 ---
 

@@ -32,14 +32,15 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
-  // API: network first, fallback to cache
+  // API: network first, fallback to cache or offline daily.json
   if (request.url.includes('/api/nursing/questions')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          return response;
+          return caches.open(CACHE_NAME)
+            .then((cache) => cache.put(request, clone))
+            .then(() => response);
         })
         .catch(() => caches.match(request).then((r) => r || caches.match('/nursing/daily.json')))
     );
@@ -52,7 +53,7 @@ self.addEventListener('fetch', (event) => {
       if (cached) return cached;
       return fetch(request).then((response) => {
         const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.add(request, clone));
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         return response;
       });
     })
