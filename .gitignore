@@ -48,3 +48,9 @@ Thumbs.db
 mathwise_build/reports/
 mathwise_build/screenshots/
 mathwise_build/test/goldens/
+
+# Local / runtime artifacts
+paddleocr-venv/
+reports/
+web/static/mathwise-web/
+web/static/mathwise.apk

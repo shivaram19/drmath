@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0D47A1">
+  <meta name="description" content="Daily Telangana Staff Nurse practice — 5 questions, zero install.">
+  <title>MathWise Nursing — Daily 5 Questions</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="hero">
+      <div class="logo" aria-label="MathWise">MW</div>
+      <h1 id="heroTitle">Telangana Staff Nurse</h1>
+      <p id="heroSubtitle">రోజుకి 5 questions — app install అవసరం లేదు</p>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button id="btnTe" class="active" aria-pressed="true">తెలుగు</button>
+        <button id="btnEn" aria-pressed="false">English</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="intro" class="card">
+        <p id="introText">ఒక రోజుకి కేవలం 5 ప్రశ్నలతో మీ exam preparation మొదలుపెట్టండి. ఫోన్‌లో చోటు తక్కువ ఉన్నవారికి కూడా సులభం.</p>
+        <button id="startBtn" class="primary-btn">Start 5 Questions</button>
+      </section>
+
+      <section id="quiz" class="card hidden" aria-live="polite">
+        <div class="progress" aria-label="Progress">
+          <div class="progress-bar" id="progressBar"></div>
+          <span id="progressText">1 / 5</span>
+        </div>
+        <div id="questionBox" class="question-box"></div>
+        <div id="optionsBox" class="options-box"></div>
+        <div id="feedbackBox" class="feedback-box hidden"></div>
+        <button id="nextBtn" class="primary-btn hidden">Next →</button>
+      </section>
+
+      <section id="result" class="card hidden">
+        <h2 id="resultTitle">Great effort!</h2>
+        <p id="resultScore" class="score"></p>
+        <p id="resultMessage"></p>
+        <button id="retryBtn" class="primary-btn">Try Again</button>
+        <button id="installBtn" class="secondary-btn hidden">Add to Home Screen</button>
+        <button id="shareBtn" class="secondary-btn">Share Score</button>
+      </section>
+
+      <section id="offline" class="card hidden">
+        <p id="offlineText">You are offline. The daily practice will load from your phone.</p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>© MathWise · <a href="/privacy">Privacy</a></p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

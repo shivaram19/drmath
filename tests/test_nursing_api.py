@@ -101,11 +101,10 @@ def test_analyze_attempts(client):
     assert "dimension_capabilities" in data
 
 
-def test_html_pages_return_200(client):
-    for path in ["/nursing", "/nursing/practice", "/nursing/mock", "/nursing/diagnostic"]:
-        response = client.get(path)
-        assert response.status_code == 200
-        assert "Dr. Math Nursing" in response.text
+def test_nursing_landing_page_returns_200(client):
+    response = client.get("/nursing")
+    assert response.status_code == 200
+    assert "MathWise Nursing" in response.text
 
 
 def test_pdf_export_post(client):

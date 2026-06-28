@@ -82,10 +82,16 @@ Specifically:
 ## Action Items
 
 - [x] ADR written.
-- [ ] Implement PWA landing page (Issue #33).
+- [x] Implement PWA landing page (Issue #33).
 - [ ] Add privacy notice and consent before public distribution (Issue #34).
 - [ ] Add web-side analytics event for `landing_quiz_started`.
 - [ ] Measure reversal trigger metrics after 30 days of deployment.
+
+## Implementation Notes (2026-05-05)
+
+- The PWA shell is served as static files from `/usr/share/nginx/html/nursing/`, managed by `scripts/deploy.sh`.
+- The FastAPI `/nursing/*` HTML sub-routes (`/practice`, `/mock`, `/diagnostic`) were removed so that nginx serves the landing page without route shadowing; the exact `/nursing` path still falls back to `FileResponse(index.html)` for TestClient smoke tests.
+- Nginx configs (`nginx.http.conf`, `nginx.ssl.conf`) include a `/nursing/` alias, a `/nursing` → `/nursing/` redirect, and the existing `/static/` alias for shared assets.
 
 ---
 

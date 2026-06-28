@@ -4,12 +4,8 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 
 from fastapi import APIRouter, Query, Request, Form
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel
-
-TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
-templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 from web.domain.constants import DEFAULT_PATTERN_KEY, CognitiveLevel, QuestionContext
 from web.domain.models import Attempt, Question
@@ -20,29 +16,17 @@ router = APIRouter(prefix="/nursing", tags=["nursing"])
 api_router = APIRouter(prefix="/api/nursing", tags=["nursing-api"])
 service = NursingService()
 
+NURSING_LANDING_PATH = Path(__file__).resolve().parent.parent / "static" / "nursing" / "index.html"
+
 
 # ---------------------------------------------------------------------------
-# HTML pages
+# HTML landing page (PWA shell)
 # ---------------------------------------------------------------------------
 
 @router.get("", response_class=HTMLResponse)
-def nursing_home(request: Request):
-    return templates.TemplateResponse(request, "nursing/index.html")
-
-
-@router.get("/practice", response_class=HTMLResponse)
-def nursing_practice(request: Request):
-    return templates.TemplateResponse(request, "nursing/practice.html")
-
-
-@router.get("/mock", response_class=HTMLResponse)
-def nursing_mock(request: Request):
-    return templates.TemplateResponse(request, "nursing/mock.html")
-
-
-@router.get("/diagnostic", response_class=HTMLResponse)
-def nursing_diagnostic(request: Request):
-    return templates.TemplateResponse(request, "nursing/diagnostic.html")
+def nursing_home():
+    """Serve the PWA landing page as a fallback when nginx is not in front."""
+    return FileResponse(NURSING_LANDING_PATH)
 
 
 # ---------------------------------------------------------------------------
