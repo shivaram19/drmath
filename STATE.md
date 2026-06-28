@@ -1,8 +1,8 @@
 # Dr. Math — Current State
 
-**Last Updated:** 2026-05-03  
+**Last Updated:** 2026-06-28  
 **Branch:** `main`  
-**Commits:** 12 total (conventional format)  
+**Commits:** 35+ total (conventional format)  
 **Environment:** Production VM `20.193.129.119`  
 **Domain:** `drmath.trelolabs.com` ✅ Live with HTTPS
 
@@ -15,6 +15,9 @@
 | https://drmath.trelolabs.com | ✅ Live |
 | https://drmath.trelolabs.com/lab | ✅ Manager Lab |
 | https://drmath.trelolabs.com/api/topics | ✅ API |
+| **https://drmath.trelolabs.com/nursing/** | ✅ **Phase 10.1 PWA landing quiz** |
+| https://drmath.trelolabs.com/api/nursing/status | ✅ Nursing API health |
+| https://drmath.trelolabs.com/mathwise.apk | ✅ Flutter APK download |
 
 ---
 
@@ -30,8 +33,10 @@
 | **Generation History** | ✅ | **All versions kept** (not just latest). Every generation records a 4-step timeline: scrape → adapt → generate → save. |
 | **Grounding** | ✅ | Every generation logs IXL skills + MathIsFun URL used |
 | **Web UI** | ✅ | FastAPI + Jinja2. Home, topic pages, prompt builder, history, lab, compare |
+| **Nursing PWA** | ✅ | `/nursing/` daily 5-question quiz, offline fallback, share-to-WhatsApp, installable manifest + service worker |
 | **Pre-commit** | ✅ | Blocks `.env`, runtime artifacts, `__pycache__`. Enforces conventional commits. |
-| **Docker** | ✅ | `Dockerfile` + `docker-compose.yml` + `nginx.conf` ready |
+| **Docker** | ✅ | `Dockerfile` + `docker-compose.yml` + nginx configs ready |
+| **Deploy automation** | ✅ | `scripts/deploy.sh` installs nginx config, selects SSL, copies static assets, reloads nginx, health-checks endpoints |
 
 ---
 
@@ -41,8 +46,11 @@
 |---|---|---|
 | **Live deploy** | ✅ Done | System nginx proxies to Docker app on localhost:8000 |
 | **Azure OpenAI** | No model deployment exists | Optional — OpenAI working fine |
-| **HTTPS/SSL** | Needs live server first | Run Certbot after DNS + deploy |
+| **HTTPS/SSL** | ✅ Done | Let's Encrypt ECDSA cert active; auto-renewal cron set |
 | **Student session UI** | Not built yet | Phase after manager workflow stabilizes |
+| **DPDPA privacy notice** | Required before public share campaigns | Phase 10.2 (Issue #34) |
+| **Flutter release build** | `bcprov-jdk18on-1.80` major version 65 toolchain mismatch | Phase 10.3 (Issue #35) |
+| **HomeScreen nursing card overflow** | Narrow-screen layout bug | Phase 10.5 (Issue #37) |
 
 ---
 
@@ -88,6 +96,7 @@ No passwords. Open access.
 | ADR-006 | JSON file storage (original) | **Superseded by ADR-008** |
 | ADR-007 | Adaptive engine design | Accepted |
 | **ADR-008** | **SQLite for prompt experimentation** | **Accepted** |
+| **ADR-019** | **PWA-first distribution for Nursing** | **Accepted** |
 
 ---
 
@@ -101,6 +110,7 @@ No passwords. Open access.
 | Fractions | 1 | Default | — |
 | Triangles | 1 | Default | — |
 | Percentage | 1 | Default | — |
+| Nursing Staff Nurse | 1 | Default | — |
 
 > Note: 6 topics exist as JSON files from earlier runs. DB migration captured 2 generations (Rational Numbers, Exponents). Re-generating any topic will create a fresh DB row.
 
@@ -108,9 +118,10 @@ No passwords. Open access.
 
 ## 🎯 Next Immediate Work
 
-1. **Deploy to server** (waiting on you for DNS)
-2. **Azure deployment** (waiting on you for AI Foundry config)
-3. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
+1. **Phase 10.2** — DPDPA privacy notice + consent flow before public share campaigns (Issue #34)
+2. **Phase 10.3** — Fix Flutter release build toolchain (Issue #35)
+3. **Phase 10.5** — Fix `HomeScreen` nursing card overflow on narrow screens (Issue #37)
+4. **Manager requests features** — e.g., export ratings CSV, bulk generate, prompt templates from research personas
 
 ---
 
@@ -127,13 +138,17 @@ python3 web/main.py          # localhost:8000
 python3 -m pipeline.run --topic "Integers" --prompt-id <id>
 
 # Verify Docker Compose config
-docker-compose config
+docker compose config
 
 # Deploy to server (run ON the server)
 ./scripts/deploy.sh
 
 # Enable SSL (run ON the server, after DNS works)
 ./scripts/init-ssl.sh
+
+# Nursing smoke test
+curl -s https://drmath.trelolabs.com/nursing/ | head -5
+curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -m json.tool | head -20
 ```
 
 ---
@@ -142,6 +157,8 @@ docker-compose config
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-06-28 | Phase 10.1: Nursing PWA landing live at /nursing/ | `cb71528` |
+| 2026-06-28 | ADR-019: PWA-first distribution for Nursing | `8b199d5` |
 | 2026-05-03 | Prompt versioning, expand/collapse, pipeline timestamps | `3ee765d` |
 | 2026-05-03 | Web UI: prompt families, generation timeline, Lab updates | `0bd98aa` |
 | 2026-05-03 | **LIVE: Deployed to production with HTTPS** | `e264acb` |
