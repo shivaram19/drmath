@@ -28,6 +28,9 @@ void main() {
       await tester.pump();
 
       expect(tester.widget<ElevatedButton>(continueButton).enabled, isTrue);
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
     });
 
     testWidgets('continue button enables after acceptance',

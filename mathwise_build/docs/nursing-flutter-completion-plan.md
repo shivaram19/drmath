@@ -723,6 +723,55 @@ Documented lesson: `pumpAndSettle` waits for all animations to complete; an inde
 - Added widget tests for disclaimer, onboarding, settings, and PDF screens.
 - Created `scripts/generate_nursing_flutter_assets.sh` to regenerate `assets/nursing/nursing_seed_questions.json` from `output/nursing_staff_nurse_output.json`.
 
+## 13. Plan Revisions — Round 4 (2026-05-14)
+
+### 13.1 Unknowns discovered after Phase 8
+
+1. **Disclaimer and onboarding are unreachable.** `HomeScreen._buildNursingCard` navigates directly to `NursingHomeScreen()`, bypassing both screens.
+2. **PDF topic selection is ignored.** `NursingPdfScreen` lets users select topics but always sends all attempts to `/api/nursing/pdf`.
+3. **PDF preview shows raw HTML tags.** The backend returns HTML; the screen renders it in a `Text` widget.
+4. **No integration test for the full nursing flow.** Widget tests cover screens in isolation but not cross-screen navigation.
+5. **Nursing card overflows on narrow screens.** `HomeScreen` tests fail with `RenderFlex overflow` on the card rows.
+6. **HTML rendering dependency trade-off.** `flutter_html` is powerful but adds cost; a zero-dependency HTML-to-text stripper is sufficient for v1.
+
+### 13.2 Decisions for Phase 9
+
+1. **Create `NursingEntryScreen`** as the single module gateway. It checks `disclaimerAccepted` and `onboardingSeen` and routes to the correct first screen. `HomeScreen` will navigate to `NursingEntryScreen()`.
+2. **Filter PDF attempts by selected topics.** `NursingPdfScreen._generate()` will pass only attempts whose `topicId` is in `_selectedTopics`.
+3. **Strip HTML tags for PDF preview.** Use a simple zero-dependency helper to convert backend HTML to readable plain text. Keep the "Copy HTML" button for raw HTML.
+4. **Add an integration test.** Create `integration_test/nursing_flow_test.dart` for entry → disclaimer → onboarding → home → subject → quiz → results.
+5. **Add accessibility tap-target tests** for disclaimer, onboarding, settings, and PDF screens.
+6. **Fix nursing card overflow** in `HomeScreen._buildNursingCard` so the full test suite can pass.
+7. **Handle offline PDF generation.** Show a clear message if `exportPdf` fails while offline.
+
+### 13.3 Phase 9 execution order
+1. ✅ Create `NursingEntryScreen` and update `HomeScreen` nursing card route.
+2. ⏭️ Fix `NursingPdfScreen` topic filtering and HTML preview (moved to Phase 10).
+3. ⏭️ Add offline handling to PDF generation (moved to Phase 10).
+4. ✅ Add integration test skeleton for core nursing flow.
+5. ✅ Add widget tests for `NursingEntryScreen` routing.
+6. ⏭️ Fix nursing card overflow in `HomeScreen` (moved to Phase 10).
+7. ✅ Run all gates (`flutter analyze`, `flutter test test/features/nursing`, `flutter build apk --debug`).
+8. ✅ Commit with conventional message.
+
+### 13.4 Phase 9 completion summary
+- Created `NursingEntryScreen` as the nursing module gateway; it checks `disclaimerAccepted` and `onboardingSeen` and routes to `NursingDisclaimerScreen`, `NursingOnboardingScreen`, or `NursingHomeScreen`.
+- Updated `HomeScreen` nursing card to navigate to `NursingEntryScreen`.
+- Propagated optional `api` and `storage` dependencies through disclaimer, onboarding, settings, and home screens.
+- Added `integration_test` SDK dev dependency and `integration_test/nursing_flow_test.dart` skeleton.
+- Added `test/features/nursing/screens/nursing_entry_screen_test.dart` covering all three routing branches.
+- Analyzer shows only pre-existing `visual_screenshots_test.dart` warnings; nursing analyzer is clean.
+- All nursing widget/service tests pass; debug APK builds successfully.
+- Integration tests cannot run in this environment (no Android/iOS emulator or device).
+
+## 14. Phase 10 backlog
+1. Filter PDF attempts by selected topics.
+2. Strip HTML tags for PDF preview with a zero-dependency helper.
+3. Add offline handling to PDF generation.
+4. Fix nursing card overflow on narrow screens.
+5. Add tap-target/accessibility tests for remaining screens if not already covered.
+6. Run full `flutter test` suite once overflow is resolved.
+
 ## 11. Key Research Citations
 
 [^1]: Flutter breaking changes. *Generic types in PopScope*. https://docs.flutter.dev/release/breaking-changes/popscope-with-result

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mathwise/features/nursing/screens/nursing_home_screen.dart';
 import 'package:mathwise/features/nursing/screens/nursing_onboarding_screen.dart';
@@ -29,6 +28,9 @@ void main() {
 
       expect(find.text('Review Weak Areas'), findsOneWidget);
       expect(find.text('Get Started'), findsOneWidget);
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
     });
 
     testWidgets('skip navigates to home and marks onboarding seen',

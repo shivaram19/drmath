@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -30,12 +29,23 @@ const _attempts = [
     topicId: 'vital_signs',
     cognitiveLevel: 'remember',
   ),
+  Attempt(
+    questionId: 2,
+    selectedOption: 'B',
+    isCorrect: false,
+    timeSeconds: 15,
+    confidence: 2,
+    subjectId: 'nursing',
+    topicId: 'medication_administration',
+    cognitiveLevel: 'remember',
+  ),
 ];
 
 void main() {
   group('NursingPdfScreen', () {
     testWidgets('loads weak topics and generates PDF',
         (WidgetTester tester) async {
+      http.Request? pdfRequest;
       final client = MockClient((request) async {
         if (request.url.path == '/api/nursing/analyze') {
           return _jsonResponse(<String, dynamic>{
@@ -54,8 +64,9 @@ void main() {
           });
         }
         if (request.url.path == '/api/nursing/pdf') {
+          pdfRequest = request;
           return http.Response.bytes(
-            utf8.encode('<html><body>Practice PDF</body></html>'),
+            utf8.encode('<html><body><h1>Weak Area Practice</h1><p>Generated for vital signs</p></body></html>'),
             200,
             headers: {'content-type': 'text/html; charset=utf-8'},
           );
@@ -78,7 +89,14 @@ void main() {
       await tester.tap(find.text('Generate Practice PDF'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Practice PDF'), findsOneWidget);
+      expect(find.text('Weak Area Practice Generated for vital signs'), findsOneWidget);
+
+      // Verify only the selected topic's attempt was sent.
+      expect(pdfRequest, isNotNull);
+      final body = jsonDecode(pdfRequest!.body) as Map<String, dynamic>;
+      final attempts = body['attempts'] as List<dynamic>;
+      expect(attempts, hasLength(1));
+      expect(attempts.first['topic_id'], 'vital_signs');
 
       final copied = <String>[];
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -94,7 +112,13 @@ void main() {
       await tester.tap(find.text('Copy HTML'));
       await tester.pump();
 
-      expect(copied, contains('<html><body>Practice PDF</body></html>'));
+      expect(
+        copied,
+        contains('<html><body><h1>Weak Area Practice</h1><p>Generated for vital signs</p></body></html>'),
+      );
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
     });
   });
 }

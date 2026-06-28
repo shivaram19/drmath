@@ -19,6 +19,24 @@ class NursingPdfScreen extends StatefulWidget {
   State<NursingPdfScreen> createState() => _NursingPdfScreenState();
 }
 
+String _htmlToPlainText(String html) {
+  // Minimal zero-dependency HTML-to-text conversion for v1.
+  // Strips tags, decodes a few common entities, and collapses whitespace.
+  var text = html
+      .replaceAll(RegExp(r'<[^>]*>'), ' ')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll('&hellip;', '…')
+      .replaceAll('&ndash;', '–')
+      .replaceAll('&mdash;', '—');
+  text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+  return text;
+}
+
 class _NursingPdfScreenState extends State<NursingPdfScreen> {
   late final NursingApiService _api = widget.api ?? NursingApiService();
   List<Capability> _weakTopics = [];
@@ -62,12 +80,18 @@ class _NursingPdfScreenState extends State<NursingPdfScreen> {
   Future<void> _generate() async {
     setState(() => _generating = true);
     try {
-      final html = await _api.exportPdf(widget.attempts);
+      final filtered = widget.attempts
+          .where((a) => _selectedTopics.contains(a.topicId))
+          .toList();
+      final html = await _api.exportPdf(filtered);
       if (mounted) setState(() => _html = html);
     } on NursingApiException catch (e) {
       if (mounted) {
+        final message = e.isOffline
+            ? 'You are offline. The PDF will be available when you reconnect.'
+            : e.message;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
+          SnackBar(content: Text(message)),
         );
       }
     } catch (e) {
@@ -172,7 +196,7 @@ class _NursingPdfScreenState extends State<NursingPdfScreen> {
             child: Card(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                child: Text(_html!),
+                child: Text(_htmlToPlainText(_html!)),
               ),
             ),
           ),

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mathwise/features/nursing/models/attempt.dart';
 import 'package:mathwise/features/nursing/screens/nursing_disclaimer_screen.dart';
@@ -22,6 +21,9 @@ void main() {
       expect(find.text('Offline analysis'), findsOneWidget);
       expect(find.text('Clear progress'), findsOneWidget);
       expect(find.text('Disclaimer'), findsOneWidget);
+
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
     });
 
     testWidgets('shows pending sync indicator when analysis is queued',

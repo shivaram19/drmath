@@ -32,7 +32,7 @@ import '../curriculum/curriculum_grid_screen.dart';
 import '../curriculum/curriculum_list_screen.dart';
 import '../curriculum/curriculum_stepper_screen.dart';
 import '../games/games_screen.dart';
-import '../nursing/screens/nursing_home_screen.dart';
+import '../nursing/screens/nursing_entry_screen.dart';
 import '../practice/practice_question_screen.dart';
 import '../profile/profile_screen.dart';
 import '../topics/topic_choice_screen.dart';
@@ -341,10 +341,13 @@ class _HomeTab extends StatelessWidget {
                   children: [
                     const Icon(Icons.schedule, color: AppColors.primary, size: 18),
                     const SizedBox(width: 4),
-                    Text(
-                      '1h 30m Today',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                    Flexible(
+                      child: Text(
+                        '1h 30m Today',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -354,10 +357,13 @@ class _HomeTab extends StatelessWidget {
                   children: [
                     const Icon(Icons.star, color: AppColors.tertiary, size: 18),
                     const SizedBox(width: 4),
-                    Text(
-                      '3 Lifelines Available',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                    Flexible(
+                      child: Text(
+                        '3 Lifelines Available',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -411,12 +417,14 @@ class _HomeTab extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ],
             ),
           ),
           ElevatedButton(
-            onPressed: () => _navigate(context, const NursingHomeScreen()),
+            onPressed: () => _navigate(context, const NursingEntryScreen()),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.onPrimary,
