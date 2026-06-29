@@ -67,16 +67,36 @@ Rules:
 """
 
 
-def fetch_source_text(url: str) -> str:
+def _extract_pdf_text(response: requests.Response) -> str:
+    import pdfplumber
+    import io
+
+    text_parts = []
+    with pdfplumber.open(io.BytesIO(response.content)) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text_parts.append(page_text)
+    return "\n".join(text_parts)
+
+
+def load_source_text(url: str, text_file: Optional[Path] = None) -> str:
+    if text_file and text_file.exists():
+        return text_file.read_text(encoding="utf-8")[:MAX_SOURCE_CHARS]
+
     headers = {"User-Agent": "DrMathAgent/1.0 (educational content generation)"}
-    response = requests.get(url, headers=headers, timeout=30)
+    response = requests.get(url, headers=headers, timeout=60)
     response.raise_for_status()
-    text = response.text
-    # Very crude HTML-to-text: strip tags and collapse whitespace.
-    text = re.sub(r"<script[^>]*>.*?</script>", " ", text, flags=re.S)
-    text = re.sub(r"<style[^>]*>.*?</style>", " ", text, flags=re.S)
-    text = re.sub(r"<[^>]+>", " ", text)
-    text = re.sub(r"\s+", " ", text).strip()
+
+    if url.lower().endswith(".pdf") or response.headers.get("content-type", "").startswith("application/pdf"):
+        text = _extract_pdf_text(response)
+    else:
+        text = response.text
+        # Very crude HTML-to-text: strip tags and collapse whitespace.
+        text = re.sub(r"<script[^>]*>.*?</script>", " ", text, flags=re.S)
+        text = re.sub(r"<style[^>]*>.*?</style>", " ", text, flags=re.S)
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
     return text[:MAX_SOURCE_CHARS]
 
 
@@ -155,11 +175,14 @@ def run(args: argparse.Namespace) -> int:
         print("--source-url is required")
         return 1
 
-    print(f"Fetching source: {args.source_url}")
+    if args.source_text_file:
+        print(f"Loading source text from: {args.source_text_file}")
+    else:
+        print(f"Fetching source: {args.source_url}")
     try:
-        source_text = fetch_source_text(args.source_url)
+        source_text = load_source_text(args.source_url, args.source_text_file)
     except Exception as exc:
-        print(f"Failed to fetch source: {exc}")
+        print(f"Failed to load source: {exc}")
         return 1
 
     bank = load_bank(BANK_PATH)
@@ -212,6 +235,7 @@ def main() -> int:
     parser.add_argument("--subject-id", required=True)
     parser.add_argument("--topic-id", required=True)
     parser.add_argument("--source-url", required=True)
+    parser.add_argument("--source-text-file", type=Path, default=None)
     parser.add_argument("--count", type=int, default=10)
     return run(parser.parse_args())
 
