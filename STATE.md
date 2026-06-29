@@ -115,6 +115,7 @@ No passwords. Open access.
 | **ADR-025** | **Pragmatic SOLID refactor strategy** | **Proposed** |
 | **ADR-026** | **PWA-first default mobile strategy; Flutter native layer deferred** | **Accepted** |
 | **ADR-027** | **Local-first attempt persistence and sync for Nursing PWA** | **Accepted** |
+| **ADR-028** | **Spaced-repetition question selection for Nursing PWA** | **Accepted** |
 
 ---
 
@@ -151,7 +152,7 @@ No passwords. Open access.
 8. **🟡 ADR-026** — Proposed PWA-first default mobile strategy. Approval required before treating Flutter as secondary.
 9. **🟡 Phase 10.11 — PWA-first mobile learning loop** — Nursing is the reference implementation; math reuses the same engine.
    - **M1 — Local-first PWA foundation** ✅ — IndexedDB attempt store + sync queue in nursing PWA; `POST /api/nursing/attempts` persists to SQLite with idempotent `client_attempt_id`. Pending manual offline validation (24h, reconnect, no duplicates).
-   - **M2 — Spaced-repetition selector** — Replace random 5-question selection with SM-2-style queue using `last_seen_at` and `performance_history`.
+   - **~~M2 — Spaced-repetition selector~~ ✅** — Replaced random selection with SM-2-style queue; fetches 50-question pool, prioritizes due weak-area items, enforces ≥30% previously-seen weak items when history exists. ISSUE-001 closed.
    - **M3 — Math PWA practice shell** — Build `/practice/` PWA for Class VII math using the local-first + sync pattern.
    - **M4 — Content depth sprint** — Generate/verify 100+ questions per math topic and 500+ nursing questions with source metadata.
    - Flutter backend wiring remains **deferred** until the PWA loop is validated.
@@ -193,7 +194,7 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 
 | Date | Change | Commit |
 |---|---|---|
-| 2026-05-05 | Phase 10.11 M1: local-first nursing PWA sync — IndexedDB attempt store + sync queue, `POST /api/nursing/attempts` idempotent SQLite persistence, PWA status UI; 64 tests passing | — |
+| 2026-05-05 | Phase 10.11 M2: spaced-repetition selector for nursing PWA — IndexedDB question_stats, SM-2-style scheduling, 50-question candidate pool, weak-area prioritization; ADR-028 accepted; ISSUE-001 closed | `d88d48c` |
 | 2026-05-05 | ADR-027 accepted: local-first attempt persistence and sync architecture for nursing PWA | `docs/adrs/ADR-027-local-first-attempt-sync-nursing-pwa.md` |
 | 2026-05-05 | ADR-026 accepted: PWA-first default mobile strategy; Flutter backend integration deferred; documented in `docs/adrs/ADR-026-pwa-first-default-mobile-strategy.md` | — |
 | 2026-05-05 | Research: mobile e2e first-principles introspection — PWA vs native, offline-first EdTech, spaced-practice evidence, item-bank size requirements; see `docs/research/bidirectional/bidirectional-12-mobile-e2e-introspection.md` | — |
