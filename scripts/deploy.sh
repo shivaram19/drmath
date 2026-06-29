@@ -157,6 +157,16 @@ else
 fi
 
 # ------------------------------------------------------------------
+# 5.5 Version nursing PWA service worker for cache busting
+# ------------------------------------------------------------------
+echo ""
+echo "[5.5/9] Versioning PWA service worker..."
+
+DEPLOY_VERSION="$(git -C "$PROJECT_DIR" rev-parse --short HEAD 2>/dev/null || date +%s)"
+DEPLOY_CACHE_NAME="mathwise-nursing-${DEPLOY_VERSION}"
+echo "✅ PWA cache version: $DEPLOY_CACHE_NAME"
+
+# ------------------------------------------------------------------
 # 6. Deploy static PWA assets to nginx webroot
 # ------------------------------------------------------------------
 echo ""
@@ -167,6 +177,15 @@ run_as_root rm -rf "$NGINX_HTML/static/nursing" "$NGINX_HTML/nursing"
 run_as_root mkdir -p "$NGINX_HTML/static"
 run_as_root cp -r "$PROJECT_DIR/web/static/." "$NGINX_HTML/static/"
 run_as_root cp -r "$PROJECT_DIR/web/static/nursing" "$NGINX_HTML/nursing"
+
+# Inject deploy-specific cache name into the deployed service worker so the
+# browser installs a new SW and invalidates old caches on the next page load.
+for target in "$NGINX_HTML/static/nursing/sw.js" "$NGINX_HTML/nursing/sw.js"; do
+    if [ -f "$target" ]; then
+        run_as_root sed -i "s|const CACHE_NAME = 'mathwise-nursing-v1';|const CACHE_NAME = '${DEPLOY_CACHE_NAME}';|g" "$target"
+    fi
+done
+
 run_as_root chown -R www-data:www-data "$NGINX_HTML"
 
 if command -v nginx &> /dev/null; then
