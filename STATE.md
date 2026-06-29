@@ -41,6 +41,7 @@
 | **Web-to-APK Conversion** | ✅ | UTM-tagged prompts on result, landing banner, share text; `apk_download_clicked` + `app_first_open` events |
 | **Native App Analytics Consent** | ✅ | One-time in-app dialog; separate `mw_native_consent` record; DPDPA-aligned |
 | **Native APK network permissions** | ✅ | `INTERNET` + `ACCESS_NETWORK_STATE` added to `AndroidManifest.xml`; fixes installed-APK "No internet connection" error |
+| **Flutter ↔ backend e2e** | ⚠️ Deferred | Flutter UI still uses hardcoded data. Per ADR-026, backend integration is deferred; PWA is the default mobile layer. |
 | **Pre-commit** | ✅ | Blocks `.env`, runtime artifacts, `__pycache__`. Enforces conventional commits. |
 | **Docker** | ✅ | `Dockerfile` + `docker-compose.yml` + nginx configs ready |
 | **Deploy automation** | ✅ | `scripts/deploy.sh` installs nginx config, selects SSL, copies static assets, reloads nginx, health-checks endpoints |
@@ -111,6 +112,7 @@ No passwords. Open access.
 | **ADR-023** | **Web-to-APK conversion measurement** | **Accepted** |
 | **ADR-024** | **WhatsApp + Telegram channel strategy, consent model, and data retention** | **Proposed — dual-channel architecture with Telegram-first phased MVP** |
 | **ADR-025** | **Pragmatic SOLID refactor strategy** | **Proposed** |
+| **ADR-026** | **PWA-first default mobile strategy; Flutter native layer deferred** | **Proposed** |
 
 ---
 
@@ -137,16 +139,23 @@ No passwords. Open access.
 3. **~~Phase 10.8b~~ ✅** — Math pipeline decoupled behind ports (`pipeline/interfaces.py`, `pipeline/adapters.py`, `pipeline/use_cases.py`); `run_pipeline()` is now a compatibility wrapper.
 4. **~~Phase 10.8c~~ ✅** — Web composition root created (`web/dependencies.py`); `NursingService` and `AnalyticsSink` injected via FastAPI `Depends`. `web/main.py` left intact; router split deferred to incremental cleanup.
 5. **🟡 Phase 10.9 — Backend** — Daily quiz nudge experiment, reframed as a phased behavioral-intervention test:
-   - **10.9a** — User discovery (survey/interviews) + 60+ verified nursing questions pre-flight. **In progress: discovery-survey endpoint and PWA modal live.**
-   - **10.9b** — **Telegram-only MVP** testing active-retrieval nudge vs. generic reminder.
+   - **10.9a** — User discovery (survey/interviews) + 60+ verified nursing questions pre-flight. **Discovery-survey endpoint and PWA modal live.**
+   - **10.9b** — **Telegram-only MVP** testing active-retrieval nudge vs. generic reminder. **Blocked on ADR-024 approval.**
    - **10.9c** — Port winning arm to WhatsApp; offer channel choice; validate CPAU.
    - **10.9d** — Automatic channel fallback, cadence preference, and scale.
-   **Tracked in #52. No sender code until 10.9a pre-conditions are met.**
-6. **Phase 10.10** — Expand nursing seed bank to 100 verified questions across INC GNM domains with `source_url`, `source_section`, and `verified_at` metadata. **Must reach 60+ questions before 10.9b launch.**
+   **Tracked in #52. No sender code until 10.9a pre-conditions are met and ADR-024 is Accepted.**
+6. **Phase 10.10** — Expand nursing seed bank to **500+ verified questions** with `source_url`, `source_section`, and `verified_at` metadata. **Must reach 100+ questions before 10.9b launch** (60-question gate was the pre-discovery minimum; a real adaptive bank needs more).
 7. **🟡 ADR-024** — Architecture Decision Record revised (`docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md`, status **Proposed**) for a **dual-channel WhatsApp + Telegram** strategy with **Telegram-first implementation sequencing**, DPDP Rules, 2025 multilingual-notice and one-click-withdrawal requirements, and 1-year send-log retention. Approval required before bot code is merged.
-8. **ADR-025** — Write Architecture Decision Record for pragmatic SOLID refactor strategy (ports for volatile boundaries, Strangler Fig, delete `src/`).
-9. **Structural cleanup** — Delete empty `src/` tree, update `AGENTS.md`, remove runtime artifacts from production Docker image.
-10. **Manager requests features** — export ratings CSV, bulk generate, prompt templates from research personas.
+8. **🟡 ADR-026** — Proposed PWA-first default mobile strategy. Approval required before treating Flutter as secondary.
+9. **Phase 10.11 — PWA-first math mobile experience** — Build the real mobile learning loop:
+   - Offline-first IndexedDB store for attempts, progress, and sync queue.
+   - Spaced-repetition scheduler (SM-2 style) for daily question selection.
+   - Weak-area summary linked to concept explanations.
+   - Minimum 100 verified questions per active topic before calling it adaptive-ready.
+   - Flutter backend wiring remains **deferred** until the PWA loop is validated.
+10. **ADR-025** — Write Architecture Decision Record for pragmatic SOLID refactor strategy (ports for volatile boundaries, Strangler Fig, delete `src/`).
+11. **Structural cleanup** — Delete empty `src/` tree, update `AGENTS.md`, remove runtime artifacts from production Docker image.
+12. **Manager requests features** — export ratings CSV, bulk generate, prompt templates from research personas.
 
 ---
 
@@ -182,6 +191,8 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 
 | Date | Change | Commit |
 |---|---|---|
+| 2026-05-05 | ADR-026: PWA-first default mobile strategy proposed; Flutter backend integration deferred; documented in `docs/adrs/ADR-026-pwa-first-default-mobile-strategy.md` | — |
+| 2026-05-05 | Research: mobile e2e first-principles introspection — PWA vs native, offline-first EdTech, spaced-practice evidence, item-bank size requirements; see `docs/research/bidirectional/bidirectional-12-mobile-e2e-introspection.md` | — |
 | 2026-05-05 | Phase 10.9a: discovery-survey endpoint, JSONL survey store, and PWA modal/banner for channel/cadence/challenge preferences; 61 tests passing | — |
 | 2026-05-05 | Phase 10.9 introspection: surfaced market, cadence, content-readiness, and DPDP-Rule unknowns; documented in `docs/research/bidirectional/bidirectional-11-phase10_9-introspection.md` | — |
 | 2026-05-05 | ADR-024 revised: Telegram-first phased MVP, DPDP Rules 2025 multilingual notice + one-click withdrawal, 1-year send-log retention, nursing market context | `docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md` |
