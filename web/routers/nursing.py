@@ -8,7 +8,10 @@ from pathlib import Path
 from fastapi import APIRouter, Query, Request, Form, Depends
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel, field_validator
+from sqlalchemy.orm import Session
 
+from db import crud
+from db.database import get_db
 from web.dependencies import get_analytics_sink, get_nursing_service, get_survey_store
 from web.domain.constants import DEFAULT_PATTERN_KEY, CognitiveLevel, QuestionContext
 from web.domain.models import Attempt, Question
@@ -71,6 +74,78 @@ class ReportResponse(BaseModel):
 class PdfRequest(BaseModel):
     attempts: List[Attempt]
     top_n: int = 3
+
+
+# ---------------------------------------------------------------------------
+# Attempt sync (M1 local-first PWA foundation)
+# ---------------------------------------------------------------------------
+
+
+def _parse_iso_datetime(value: str) -> datetime:
+    """Parse an ISO 8601 string, handling the trailing Z variant."""
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+class AttemptPayload(BaseModel):
+    client_attempt_id: str
+    session_id: str
+    question_id: int
+    selected_option: str
+    is_correct: bool
+    answered_at: str
+    subject_id: Optional[str] = None
+    topic_id: Optional[str] = None
+    cognitive_level: Optional[str] = None
+    correct_option: Optional[str] = None
+    time_seconds: Optional[float] = None
+    confidence: Optional[int] = None
+
+
+class SyncAttemptsRequest(BaseModel):
+    attempts: List[AttemptPayload]
+
+
+class SyncAttemptsResponse(BaseModel):
+    status: str
+    received: int
+    accepted: int
+    duplicates_ignored: int
+
+
+@api_router.post("/attempts", response_model=SyncAttemptsResponse)
+def sync_attempts(
+    payload: SyncAttemptsRequest,
+    db: Session = Depends(get_db),
+) -> SyncAttemptsResponse:
+    """Receive a batch of nursing attempts from the PWA sync queue.
+
+    The endpoint is idempotent: duplicate client_attempt_id values are ignored.
+    """
+    records = []
+    for attempt in payload.attempts:
+        records.append(
+            {
+                "client_attempt_id": attempt.client_attempt_id,
+                "session_id": attempt.session_id,
+                "question_id": attempt.question_id,
+                "selected_option": attempt.selected_option,
+                "is_correct": attempt.is_correct,
+                "answered_at": _parse_iso_datetime(attempt.answered_at),
+                "subject_id": attempt.subject_id,
+                "topic_id": attempt.topic_id,
+                "cognitive_level": attempt.cognitive_level,
+                "correct_option": attempt.correct_option,
+                "time_seconds": attempt.time_seconds,
+                "confidence": attempt.confidence,
+            }
+        )
+    accepted = crud.record_nursing_attempts(db, records)
+    return SyncAttemptsResponse(
+        status="recorded",
+        received=len(records),
+        accepted=accepted,
+        duplicates_ignored=len(records) - accepted,
+    )
 
 
 @api_router.get("/status")

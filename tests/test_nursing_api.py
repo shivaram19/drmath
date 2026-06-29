@@ -4,6 +4,8 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
+from db import crud
+from db.database import SessionLocal
 from web.adapters.analytics import JSONLAnalyticsSink
 from web.adapters.survey_store import JSONLSurveyStore
 from web.dependencies import get_analytics_sink, get_survey_store
@@ -269,6 +271,65 @@ def test_discovery_survey_rejects_invalid_interested(client):
             "cadence": "daily",
             "biggest_challenge": "time_management",
         },
+    )
+    assert response.status_code == 422
+
+
+def _attempt_payload(client_attempt_id=None, question_id=1, session_id="test_sync"):
+    import uuid
+    return {
+        "client_attempt_id": client_attempt_id or uuid.uuid4().hex,
+        "session_id": session_id,
+        "question_id": question_id,
+        "selected_option": "A",
+        "is_correct": True,
+        "answered_at": "2026-05-05T12:00:00Z",
+        "subject_id": "anatomy_physiology",
+        "topic_id": "ap_cardiovascular",
+        "cognitive_level": "remember",
+    }
+
+
+def test_sync_attempts_records_batch(client):
+    response = client.post(
+        "/api/nursing/attempts",
+        json={"attempts": [_attempt_payload(question_id=1), _attempt_payload(question_id=2)]},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["received"] == 2
+    assert data["accepted"] == 2
+    assert data["duplicates_ignored"] == 0
+
+
+def test_sync_attempts_ignores_duplicates(client):
+    import uuid
+    session_id = f"test_dup_{uuid.uuid4().hex}"
+    dup_id = f"dup-{uuid.uuid4().hex}"
+    client.post(
+        "/api/nursing/attempts",
+        json={"attempts": [_attempt_payload(dup_id, 10, session_id)]},
+    )
+    response = client.post(
+        "/api/nursing/attempts",
+        json={"attempts": [_attempt_payload(dup_id, 10, session_id)]},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["received"] == 1
+    assert data["accepted"] == 0
+    assert data["duplicates_ignored"] == 1
+    db = SessionLocal()
+    try:
+        assert crud.count_nursing_attempts(db, session_id=session_id) == 1
+    finally:
+        db.close()
+
+
+def test_sync_attempts_rejects_missing_required(client):
+    response = client.post(
+        "/api/nursing/attempts",
+        json={"attempts": [{"question_id": 1}]},
     )
     assert response.status_code == 422
 

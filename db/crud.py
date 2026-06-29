@@ -2,14 +2,15 @@
 import json
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.dialects.sqlite import insert
 
 from sqlalchemy.exc import IntegrityError
 
-from db.models import Prompt, Topic, Generation, Evaluation, GroundingLog, QuestionReview
+from db.models import Prompt, Topic, Generation, Evaluation, GroundingLog, QuestionReview, NursingAttempt
 
 
 # ------------------------------------------------------------------
@@ -411,6 +412,57 @@ def list_question_reviews(db: Session, generation_id: Optional[int] = None) -> L
     if generation_id:
         q = q.filter(QuestionReview.generation_id == generation_id)
     return q.order_by(QuestionReview.question_index.asc()).all()
+
+
+# ------------------------------------------------------------------
+# Nursing attempts (local-first sync)
+# ------------------------------------------------------------------
+
+
+def record_nursing_attempts(db: Session, attempts: List[Dict[str, Any]]) -> int:
+    """Persist nursing attempts, ignoring duplicates by client_attempt_id.
+
+    Returns the number of newly inserted rows.
+    """
+    inserted = 0
+    for attempt in attempts:
+        stmt = (
+            insert(NursingAttempt)
+            .values(**attempt)
+            .on_conflict_do_nothing(index_elements=["client_attempt_id"])
+        )
+        result = db.execute(stmt)
+        inserted += result.rowcount
+    db.commit()
+    return inserted
+
+
+def list_nursing_attempts(
+    db: Session,
+    session_id: Optional[str] = None,
+    question_id: Optional[int] = None,
+    limit: Optional[int] = None,
+) -> List[NursingAttempt]:
+    q = db.query(NursingAttempt).order_by(NursingAttempt.answered_at.desc())
+    if session_id:
+        q = q.filter(NursingAttempt.session_id == session_id)
+    if question_id is not None:
+        q = q.filter(NursingAttempt.question_id == question_id)
+    if limit:
+        q = q.limit(limit)
+    return q.all()
+
+
+def count_nursing_attempts(db: Session, session_id: Optional[str] = None) -> int:
+    q = db.query(NursingAttempt)
+    if session_id:
+        q = q.filter(NursingAttempt.session_id == session_id)
+    return q.count()
+
+
+# ------------------------------------------------------------------
+# Question Reviews (PM Review System)
+# ------------------------------------------------------------------
 
 
 def get_question_review_stats(db: Session, generation_id: int) -> dict:

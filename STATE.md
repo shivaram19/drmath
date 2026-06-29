@@ -38,6 +38,7 @@
 | **Nursing PWA** | ✅ | `/nursing/` daily 5-question quiz, offline fallback, share-to-WhatsApp, installable manifest + service worker |
 | **Privacy & Consent** | ✅ | DPDPA notice at `/nursing/privacy`, consent banner, conditional share, withdrawal link |
 | **Nursing Analytics** | ✅ | Anonymous `sendBeacon` events gated by `mw_privacy_consent`; JSONL retention 30 days |
+| **Nursing Local-First Sync** | ✅ | IndexedDB attempt store + sync queue; `POST /api/nursing/attempts` idempotent; survives offline, no duplicate records |
 | **Web-to-APK Conversion** | ✅ | UTM-tagged prompts on result, landing banner, share text; `apk_download_clicked` + `app_first_open` events |
 | **Native App Analytics Consent** | ✅ | One-time in-app dialog; separate `mw_native_consent` record; DPDPA-aligned |
 | **Native APK network permissions** | ✅ | `INTERNET` + `ACCESS_NETWORK_STATE` added to `AndroidManifest.xml`; fixes installed-APK "No internet connection" error |
@@ -112,7 +113,8 @@ No passwords. Open access.
 | **ADR-023** | **Web-to-APK conversion measurement** | **Accepted** |
 | **ADR-024** | **WhatsApp + Telegram channel strategy, consent model, and data retention** | **Proposed — dual-channel architecture with Telegram-first phased MVP** |
 | **ADR-025** | **Pragmatic SOLID refactor strategy** | **Proposed** |
-| **ADR-026** | **PWA-first default mobile strategy; Flutter native layer deferred** | **Proposed** |
+| **ADR-026** | **PWA-first default mobile strategy; Flutter native layer deferred** | **Accepted** |
+| **ADR-027** | **Local-first attempt persistence and sync for Nursing PWA** | **Accepted** |
 
 ---
 
@@ -147,11 +149,11 @@ No passwords. Open access.
 6. **Phase 10.10** — Expand nursing seed bank to **500+ verified questions** with `source_url`, `source_section`, and `verified_at` metadata. **Must reach 100+ questions before 10.9b launch** (60-question gate was the pre-discovery minimum; a real adaptive bank needs more).
 7. **🟡 ADR-024** — Architecture Decision Record revised (`docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md`, status **Proposed**) for a **dual-channel WhatsApp + Telegram** strategy with **Telegram-first implementation sequencing**, DPDP Rules, 2025 multilingual-notice and one-click-withdrawal requirements, and 1-year send-log retention. Approval required before bot code is merged.
 8. **🟡 ADR-026** — Proposed PWA-first default mobile strategy. Approval required before treating Flutter as secondary.
-9. **Phase 10.11 — PWA-first math mobile experience** — Build the real mobile learning loop:
-   - Offline-first IndexedDB store for attempts, progress, and sync queue.
-   - Spaced-repetition scheduler (SM-2 style) for daily question selection.
-   - Weak-area summary linked to concept explanations.
-   - Minimum 100 verified questions per active topic before calling it adaptive-ready.
+9. **🟡 Phase 10.11 — PWA-first mobile learning loop** — Nursing is the reference implementation; math reuses the same engine.
+   - **M1 — Local-first PWA foundation** ✅ — IndexedDB attempt store + sync queue in nursing PWA; `POST /api/nursing/attempts` persists to SQLite with idempotent `client_attempt_id`. Pending manual offline validation (24h, reconnect, no duplicates).
+   - **M2 — Spaced-repetition selector** — Replace random 5-question selection with SM-2-style queue using `last_seen_at` and `performance_history`.
+   - **M3 — Math PWA practice shell** — Build `/practice/` PWA for Class VII math using the local-first + sync pattern.
+   - **M4 — Content depth sprint** — Generate/verify 100+ questions per math topic and 500+ nursing questions with source metadata.
    - Flutter backend wiring remains **deferred** until the PWA loop is validated.
 10. **ADR-025** — Write Architecture Decision Record for pragmatic SOLID refactor strategy (ports for volatile boundaries, Strangler Fig, delete `src/`).
 11. **Structural cleanup** — Delete empty `src/` tree, update `AGENTS.md`, remove runtime artifacts from production Docker image.
@@ -191,7 +193,9 @@ curl -s "https://drmath.trelolabs.com/api/nursing/questions?limit=5" | python3 -
 
 | Date | Change | Commit |
 |---|---|---|
-| 2026-05-05 | ADR-026: PWA-first default mobile strategy proposed; Flutter backend integration deferred; documented in `docs/adrs/ADR-026-pwa-first-default-mobile-strategy.md` | — |
+| 2026-05-05 | Phase 10.11 M1: local-first nursing PWA sync — IndexedDB attempt store + sync queue, `POST /api/nursing/attempts` idempotent SQLite persistence, PWA status UI; 64 tests passing | — |
+| 2026-05-05 | ADR-027 accepted: local-first attempt persistence and sync architecture for nursing PWA | `docs/adrs/ADR-027-local-first-attempt-sync-nursing-pwa.md` |
+| 2026-05-05 | ADR-026 accepted: PWA-first default mobile strategy; Flutter backend integration deferred; documented in `docs/adrs/ADR-026-pwa-first-default-mobile-strategy.md` | — |
 | 2026-05-05 | Research: mobile e2e first-principles introspection — PWA vs native, offline-first EdTech, spaced-practice evidence, item-bank size requirements; see `docs/research/bidirectional/bidirectional-12-mobile-e2e-introspection.md` | — |
 | 2026-05-05 | Phase 10.9a: discovery-survey endpoint, JSONL survey store, and PWA modal/banner for channel/cadence/challenge preferences; 61 tests passing | — |
 | 2026-05-05 | Phase 10.9 introspection: surfaced market, cadence, content-readiness, and DPDP-Rule unknowns; documented in `docs/research/bidirectional/bidirectional-11-phase10_9-introspection.md` | — |

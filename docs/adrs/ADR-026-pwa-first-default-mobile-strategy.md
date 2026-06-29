@@ -3,7 +3,7 @@
 **Date:** 2026-05-05  
 **Scope:** Mobile delivery layer for Dr. Math — defaulting to Progressive Web App (PWA) for both math and nursing, with Flutter retained only as a future optional native layer.  
 **Research Phase:** Bidirectional / cross-domain impact analysis (mobile architecture, low-bandwidth EdTech, content economics).  
-**Status:** Proposed.  
+**Status:** Accepted.  
 **Tracked in:** #52
 
 ---

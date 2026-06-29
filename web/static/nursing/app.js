@@ -38,6 +38,9 @@
       apkPromptBody: 'మరిన్ని mock tests, PDFs, daily reminders కోసం MathWise app install చేసుకోండి.',
       apkPromptBtn: 'Android app download',
       apkPromptDismiss: 'తర్వాత చూద్దాం',
+      syncSaved: 'సేవ్ చేయబడింది',
+      syncPending: 'సింక్ కావలసి ఉంది',
+      syncError: 'సింక్ విఫలమైంది',
     },
     en: {
       heroTitle: 'Telangana Staff Nurse',
@@ -75,6 +78,9 @@
       apkPromptBody: 'Install MathWise for full mock tests, PDFs, and daily reminders.',
       apkPromptBtn: 'Download Android app',
       apkPromptDismiss: 'Maybe later',
+      syncSaved: 'Saved',
+      syncPending: 'Pending sync',
+      syncError: 'Sync failed',
     },
   };
 
@@ -86,6 +92,12 @@
   const SURVEY_COMPLETED_KEY = 'mw_nursing_survey_completed';
   const SURVEY_DISMISSED_AT_KEY = 'mw_nursing_survey_dismissed_at';
   const SURVEY_DISMISS_DAYS = 7;
+
+  const DB_NAME = 'drmath_nursing';
+  const DB_VERSION = 1;
+  const ATTEMPTS_STORE = 'attempts';
+  const SYNC_QUEUE_STORE = 'sync_queue';
+  const SESSION_ID_KEY = 'mw_nursing_session_id';
   const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
   const DEFAULT_UTM = {
     utm_source: 'web_nursing',
@@ -423,6 +435,141 @@
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Local-first attempt store + sync queue (M1)
+  // ---------------------------------------------------------------------------
+
+  function generateId() {
+    if ('crypto' in window && 'randomUUID' in crypto) return crypto.randomUUID();
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+
+  function getSessionId() {
+    let id = null;
+    try {
+      id = localStorage.getItem(SESSION_ID_KEY);
+    } catch {}
+    if (!id) {
+      id = generateId();
+      try {
+        localStorage.setItem(SESSION_ID_KEY, id);
+      } catch {}
+    }
+    return id;
+  }
+
+  function openDb() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(ATTEMPTS_STORE)) {
+          db.createObjectStore(ATTEMPTS_STORE, { keyPath: 'client_attempt_id' });
+        }
+        if (!db.objectStoreNames.contains(SYNC_QUEUE_STORE)) {
+          db.createObjectStore(SYNC_QUEUE_STORE, { keyPath: 'client_attempt_id' });
+        }
+      };
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  function dbTx(storeName, mode) {
+    return openDb().then((db) => {
+      const tx = db.transaction(storeName, mode);
+      return { tx, store: tx.objectStore(storeName) };
+    });
+  }
+
+  function dbPut(storeName, record) {
+    return dbTx(storeName, 'readwrite').then(({ store }) => new Promise((resolve, reject) => {
+      const req = store.put(record);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    }));
+  }
+
+  function dbGetAll(storeName) {
+    return dbTx(storeName, 'readonly').then(({ store }) => new Promise((resolve, reject) => {
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    }));
+  }
+
+  function dbDelete(storeName, key) {
+    return dbTx(storeName, 'readwrite').then(({ store }) => new Promise((resolve, reject) => {
+      const req = store.delete(key);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    }));
+  }
+
+  function updateSyncStatus(state) {
+    const el = $('syncStatus');
+    if (!el) return;
+    el.classList.remove('hidden', 'pending', 'error', 'saved');
+    if (state === 'saved') {
+      el.textContent = t('syncSaved');
+      el.classList.add('saved');
+    } else if (state === 'pending') {
+      el.textContent = t('syncPending');
+      el.classList.add('pending');
+    } else if (state === 'error') {
+      el.textContent = t('syncError');
+      el.classList.add('error');
+    }
+    el.classList.remove('hidden');
+  }
+
+  async function flushSyncQueue() {
+    let pending = [];
+    try {
+      pending = await dbGetAll(SYNC_QUEUE_STORE);
+    } catch (err) {
+      console.error('read sync queue failed', err);
+      updateSyncStatus('error');
+      return;
+    }
+    if (!pending.length) {
+      updateSyncStatus('saved');
+      return;
+    }
+    updateSyncStatus('pending');
+    try {
+      const response = await fetch('/api/nursing/attempts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attempts: pending }),
+      });
+      if (!response.ok) throw new Error('sync failed');
+      await response.json();
+      for (const item of pending) {
+        await dbDelete(SYNC_QUEUE_STORE, item.client_attempt_id);
+      }
+      updateSyncStatus('saved');
+    } catch (err) {
+      console.error('flushSyncQueue failed', err);
+      updateSyncStatus('error');
+    }
+  }
+
+  async function recordAttempt(attempt) {
+    try {
+      await dbPut(ATTEMPTS_STORE, attempt);
+      await dbPut(SYNC_QUEUE_STORE, attempt);
+      if (navigator.onLine) {
+        await flushSyncQueue();
+      } else {
+        updateSyncStatus('pending');
+      }
+    } catch (err) {
+      console.error('recordAttempt failed', err);
+      updateSyncStatus('error');
+    }
+  }
+
   async function loadQuestions() {
     try {
       const response = await fetch('/api/nursing/questions?limit=5');
@@ -495,6 +642,23 @@
     $('feedbackBox').innerHTML = isCorrect
       ? `<strong>${t('correct')}</strong> ${q.explanation}`
       : `<strong>${t('wrong')} ${correct}</strong>. ${q.explanation}`;
+
+    const attempt = {
+      client_attempt_id: generateId(),
+      session_id: getSessionId(),
+      question_id: q.id,
+      subject_id: q.subject_id || null,
+      topic_id: q.topic_id || null,
+      cognitive_level: q.cognitive_level || null,
+      selected_option: key,
+      correct_option: correct,
+      is_correct: isCorrect,
+      answered_at: new Date().toISOString(),
+      time_seconds: null,
+      confidence: null,
+    };
+    recordAttempt(attempt);
+
     trackEvent('question_answered', {
       question_index: currentIndex,
       total: questions.length,
@@ -536,6 +700,8 @@
       $('result').classList.add('hidden');
       $('quiz').classList.remove('hidden');
       renderQuestion();
+      if (navigator.onLine) flushSyncQueue();
+      else updateSyncStatus('pending');
     });
   }
 
@@ -627,6 +793,16 @@
     }
   });
 
+  window.addEventListener('online', () => {
+    flushSyncQueue();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && navigator.onLine) {
+      flushSyncQueue();
+    }
+  });
+
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -645,6 +821,10 @@
   setLang('te');
   tryShowLandingBanner();
   initSurvey();
+
+  if (navigator.onLine) {
+    flushSyncQueue();
+  }
 
   if (!getConsent()) {
     showConsentBanner();

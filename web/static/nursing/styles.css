@@ -407,3 +407,15 @@ html, body {
   color: var(--muted);
   margin-top: 12px;
 }
+
+.sync-status {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: -8px;
+  margin-bottom: 12px;
+  min-height: 1.2em;
+}
+
+.sync-status.saved { color: var(--success); }
+.sync-status.pending { color: var(--accent); }
+.sync-status.error { color: var(--danger); }

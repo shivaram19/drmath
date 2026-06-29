@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from db.database import Base
@@ -137,3 +137,26 @@ class GroundingLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     generation: Mapped["Generation"] = relationship("Generation", back_populates="grounding_logs")
+
+
+class NursingAttempt(Base):
+    __tablename__ = "nursing_attempts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    client_attempt_id: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    session_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    question_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    subject_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    topic_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    cognitive_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    selected_option: Mapped[str] = mapped_column(String, nullable=False)
+    correct_option: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    is_correct: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    time_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    confidence: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    answered_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    synced_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("client_attempt_id", name="uq_nursing_attempts_client_attempt_id"),
+    )
