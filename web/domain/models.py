@@ -26,6 +26,9 @@ class Question(BaseModel):
     correct_answer: str = Field(pattern=r"^[A-D]$")
     explanation: str
     source: str
+    source_url: Optional[str] = None
+    source_section: Optional[str] = None
+    verified_at: Optional[str] = None
     verification_status: VerificationStatus
     verified_by: Optional[str] = None
     last_reviewed: Optional[str] = None

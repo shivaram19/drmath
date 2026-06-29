@@ -353,6 +353,18 @@ def test_get_concept_rejects_empty_topic(client):
     assert response.status_code == 422
 
 
+def test_questions_include_source_metadata(client):
+    response = client.get("/api/nursing/questions?limit=1")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    question = data[0]
+    assert "source_url" in question
+    assert "source_section" in question
+    assert "verified_at" in question
+    assert question["source_section"] is not None
+
+
 def test_discovery_survey_optional_other_challenge(client, tmp_path):
     path = tmp_path / "nursing_discovery_survey.jsonl"
     app.dependency_overrides[get_survey_store] = lambda: JSONLSurveyStore(path=path)
