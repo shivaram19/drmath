@@ -147,7 +147,7 @@ No passwords. Open access.
    - **10.9c** — Port winning arm to WhatsApp; offer channel choice; validate CPAU.
    - **10.9d** — Automatic channel fallback, cadence preference, and scale.
    **Tracked in #52. No sender code until 10.9a pre-conditions are met and ADR-024 is Accepted.**
-6. **Phase 10.10** — Expand nursing seed bank to **500+ verified questions** with `source_url`, `source_section`, and `verified_at` metadata. **Must reach 100+ questions before 10.9b launch** (60-question gate was the pre-discovery minimum; a real adaptive bank needs more).
+6. **~~Phase 10.10~~ ✅** — Nursing seed bank expanded to **574 verified questions** across 11 subjects / 49 topics via agentic generation from the INC GNM syllabus PDF; all questions carry `source_url`, `source_section`, `verified_at`. ISSUE-003 closed.
 7. **🟡 ADR-024** — Architecture Decision Record revised (`docs/adrs/ADR-024-whatsapp-channel-choice-consent-retention.md`, status **Proposed**) for a **dual-channel WhatsApp + Telegram** strategy with **Telegram-first implementation sequencing**, DPDP Rules, 2025 multilingual-notice and one-click-withdrawal requirements, and 1-year send-log retention. Approval required before bot code is merged.
 8. **🟡 ADR-026** — Proposed PWA-first default mobile strategy. Approval required before treating Flutter as secondary.
 9. **🟡 Phase 10.11 — PWA-first mobile learning loop** — Nursing is the reference implementation; math reuses the same engine.
