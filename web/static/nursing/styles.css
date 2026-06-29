@@ -419,3 +419,36 @@ html, body {
 .sync-status.saved { color: var(--success); }
 .sync-status.pending { color: var(--accent); }
 .sync-status.error { color: var(--danger); }
+
+.weak-area-box {
+  margin: 16px 0;
+  padding: 14px;
+  border-radius: 12px;
+  background: #FFF3E0;
+  border-left: 4px solid var(--accent);
+}
+
+.weak-area-title {
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 4px;
+  text-transform: capitalize;
+}
+
+.weak-area-stats {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.concept-modal-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.concept-content {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  white-space: pre-line;
+}

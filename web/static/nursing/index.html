@@ -70,6 +70,7 @@
         <h2 id="resultTitle">Great effort!</h2>
         <p id="resultScore" class="score"></p>
         <p id="resultMessage"></p>
+        <div id="weakAreaBox" class="weak-area-box hidden" aria-live="polite"></div>
         <div id="apkPromptResult" class="apk-prompt apk-prompt-result hidden" aria-live="polite"></div>
         <button id="retryBtn" class="primary-btn">Try Again</button>
         <button id="installBtn" class="secondary-btn hidden">Add to Home Screen</button>
@@ -138,6 +139,14 @@
         <p class="survey-note" data-key="surveyNote">No phone number or personal details are collected.</p>
       </form>
       <p id="surveyThanks" class="hidden center" data-key="surveyThanks">Thank you for helping us improve MathWise Nursing!</p>
+    </div>
+  </div>
+
+  <div id="conceptModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="conceptTitle">
+    <div class="modal-content concept-modal-content">
+      <h2 id="conceptTitle">Concept</h2>
+      <div id="conceptContent" class="concept-content"></div>
+      <button id="conceptCloseBtn" class="primary-btn">Close</button>
     </div>
   </div>
 

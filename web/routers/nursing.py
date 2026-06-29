@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from pathlib import Path
 
-from fastapi import APIRouter, Query, Request, Form, Depends
+from fastapi import APIRouter, Query, Request, Form, Depends, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
@@ -110,6 +110,43 @@ class SyncAttemptsResponse(BaseModel):
     received: int
     accepted: int
     duplicates_ignored: int
+
+
+class ConceptResponse(BaseModel):
+    topic_id: str
+    explanation: str
+    source_count: int
+
+
+@api_router.get("/concept", response_model=ConceptResponse)
+def get_concept(
+    topic_id: str = Query(..., min_length=1),
+    service: NursingService = Depends(get_nursing_service),
+) -> ConceptResponse:
+    """Return a concept explanation for a nursing topic.
+
+    The explanation is synthesized from the explanations of up to 3 questions in
+    the topic. This is a pragmatic v1 until a dedicated concept-explanation
+    adapter (ISSUE-015) is built.
+    """
+    questions = service.repository.get_by_topic(topic_id)
+    if not questions:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    explanations = []
+    seen = set()
+    for q in questions:
+        text = (q.explanation or "").strip()
+        if text and text not in seen:
+            seen.add(text)
+            explanations.append(text)
+        if len(explanations) >= 3:
+            break
+    explanation = "\n\n".join(explanations) or f"No explanation available for {topic_id}."
+    return ConceptResponse(
+        topic_id=topic_id,
+        explanation=explanation,
+        source_count=len(explanations),
+    )
 
 
 @api_router.post("/attempts", response_model=SyncAttemptsResponse)

@@ -94,10 +94,11 @@
   const SURVEY_DISMISS_DAYS = 7;
 
   const DB_NAME = 'drmath_nursing';
-  const DB_VERSION = 2;
+  const DB_VERSION = 3;
   const ATTEMPTS_STORE = 'attempts';
   const SYNC_QUEUE_STORE = 'sync_queue';
   const QUESTION_STATS_STORE = 'question_stats';
+  const CONCEPT_CACHE_STORE = 'concept_cache';
   const SESSION_ID_KEY = 'mw_nursing_session_id';
   const DAY_MS = 24 * 60 * 60 * 1000;
   const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
@@ -115,6 +116,7 @@
   let score = 0;
   let answered = false;
   let deferredPrompt = null;
+  let quizAttempts = [];
 
   const $ = (id) => document.getElementById(id);
 
@@ -474,6 +476,9 @@
         if (!db.objectStoreNames.contains(QUESTION_STATS_STORE)) {
           db.createObjectStore(QUESTION_STATS_STORE, { keyPath: 'question_id' });
         }
+        if (!db.objectStoreNames.contains(CONCEPT_CACHE_STORE)) {
+          db.createObjectStore(CONCEPT_CACHE_STORE, { keyPath: 'topic_id' });
+        }
       };
       req.onsuccess = (e) => resolve(e.target.result);
       req.onerror = (e) => reject(e.target.error);
@@ -733,6 +738,12 @@
     const correct = q.correct_answer;
     const isCorrect = key === correct;
     if (isCorrect) score += 1;
+    quizAttempts.push({
+      question_id: q.id,
+      topic_id: q.topic_id || null,
+      subject_id: q.subject_id || null,
+      is_correct: isCorrect,
+    });
 
     document.querySelectorAll('.option').forEach((b) => {
       b.disabled = true;
@@ -781,11 +792,97 @@
     $('nextBtn').classList.remove('hidden');
   }
 
+  function computeWeakestTopic() {
+    const byTopic = {};
+    quizAttempts.forEach((a) => {
+      if (!a.topic_id) return;
+      if (!byTopic[a.topic_id]) {
+        byTopic[a.topic_id] = { correct: 0, total: 0, subject_id: a.subject_id };
+      }
+      byTopic[a.topic_id].total += 1;
+      if (a.is_correct) byTopic[a.topic_id].correct += 1;
+    });
+    let weakest = null;
+    let lowestAccuracy = Infinity;
+    Object.entries(byTopic).forEach(([topic_id, stats]) => {
+      const accuracy = stats.correct / stats.total;
+      if (
+        accuracy < lowestAccuracy ||
+        (accuracy === lowestAccuracy && stats.total > (byTopic[weakest]?.total || 0))
+      ) {
+        lowestAccuracy = accuracy;
+        weakest = topic_id;
+      }
+    });
+    if (!weakest) return null;
+    return { topic_id: weakest, accuracy: lowestAccuracy, ...byTopic[weakest] };
+  }
+
+  async function loadConcept(topicId) {
+    const cached = await dbGet(CONCEPT_CACHE_STORE, topicId).catch(() => null);
+    if (cached) return cached;
+    if (!navigator.onLine) return null;
+    try {
+      const response = await fetch(`/api/nursing/concept?topic_id=${encodeURIComponent(topicId)}`);
+      if (!response.ok) throw new Error('concept fetch failed');
+      const data = await response.json();
+      await dbPut(CONCEPT_CACHE_STORE, {
+        topic_id: data.topic_id,
+        explanation: data.explanation,
+        cached_at: new Date().toISOString(),
+      });
+      return data;
+    } catch (err) {
+      console.error('loadConcept failed', err);
+      return null;
+    }
+  }
+
+  function renderWeakArea() {
+    const box = $('weakAreaBox');
+    if (!box) return;
+    const weakest = computeWeakestTopic();
+    if (!weakest) {
+      box.classList.add('hidden');
+      return;
+    }
+    const accuracyPct = Math.round(weakest.accuracy * 100);
+    box.innerHTML = `
+      <div class="weak-area">
+        <p class="weak-area-title">Focus area: ${weakest.topic_id.replace(/_/g, ' ')}</p>
+        <p class="weak-area-stats">Accuracy: ${accuracyPct}% (${weakest.correct}/${weakest.total})</p>
+        <button id="reviewConceptBtn" class="secondary-btn small">Review concept</button>
+      </div>
+    `;
+    box.classList.remove('hidden');
+    $('reviewConceptBtn').addEventListener('click', () => showConceptModal(weakest.topic_id));
+  }
+
+  async function showConceptModal(topicId) {
+    const modal = $('conceptModal');
+    const content = $('conceptContent');
+    const title = $('conceptTitle');
+    title.textContent = topicId.replace(/_/g, ' ');
+    content.textContent = 'Loading concept...';
+    modal.classList.remove('hidden');
+    const data = await loadConcept(topicId);
+    if (data && data.explanation) {
+      content.textContent = data.explanation;
+    } else {
+      content.textContent = 'Concept explanation not available offline. Connect to the internet and try again.';
+    }
+  }
+
+  function closeConceptModal() {
+    $('conceptModal').classList.add('hidden');
+  }
+
   function showResult() {
     $('quiz').classList.add('hidden');
     $('result').classList.remove('hidden');
     $('resultScore').textContent = `${score} / ${questions.length}`;
     $('resultMessage').textContent = t('resultMessage');
+    renderWeakArea();
     trackEvent('quiz_completed', { score, total: questions.length });
     try {
       localStorage.setItem(COMPLETED_KEY, '1');
@@ -804,6 +901,7 @@
       questions = data;
       currentIndex = 0;
       score = 0;
+      quizAttempts = [];
       $('intro').classList.add('hidden');
       $('apkPromptBanner').classList.add('hidden');
       $('result').classList.add('hidden');
@@ -901,6 +999,8 @@
       renderQuestion();
     }
   });
+  const conceptCloseBtn = $('conceptCloseBtn');
+  if (conceptCloseBtn) conceptCloseBtn.addEventListener('click', closeConceptModal);
 
   window.addEventListener('online', () => {
     flushSyncQueue();

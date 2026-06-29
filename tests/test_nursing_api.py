@@ -334,6 +334,25 @@ def test_sync_attempts_rejects_missing_required(client):
     assert response.status_code == 422
 
 
+def test_get_concept_for_topic(client):
+    response = client.get("/api/nursing/concept?topic_id=ap_cardiovascular")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["topic_id"] == "ap_cardiovascular"
+    assert data["source_count"] > 0
+    assert len(data["explanation"]) > 0
+
+
+def test_get_concept_unknown_topic_returns_404(client):
+    response = client.get("/api/nursing/concept?topic_id=nonexistent_topic_xyz")
+    assert response.status_code == 404
+
+
+def test_get_concept_rejects_empty_topic(client):
+    response = client.get("/api/nursing/concept?topic_id=")
+    assert response.status_code == 422
+
+
 def test_discovery_survey_optional_other_challenge(client, tmp_path):
     path = tmp_path / "nursing_discovery_survey.jsonl"
     app.dependency_overrides[get_survey_store] = lambda: JSONLSurveyStore(path=path)
