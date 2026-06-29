@@ -155,6 +155,7 @@ No passwords. Open access.
    - **~~M2 — Spaced-repetition selector~~ ✅** — Replaced random selection with SM-2-style queue; fetches 50-question pool, prioritizes due weak-area items, enforces ≥30% previously-seen weak items when history exists. ISSUE-001 closed.
    - **~~M2b — Weak-area concept card~~ ✅** — Result screen shows weakest topic + accuracy; `GET /api/nursing/concept` synthesizes explanation; concept cards cached offline. ISSUE-002 closed.
    - **~~M2c — PWA cache busting~~ ✅** — `scripts/deploy.sh` injects git-hash cache name into deployed `sw.js`; old caches purged on activation. ISSUE-006 closed.
+   - **~~M2d — Source metadata schema~~ ✅** — Nursing question schema extended with `source_url`, `source_section`, `verified_at`; generator + backfill scripts added. ISSUE-004 closed.
    - **M3 — Math PWA practice shell** — Build `/practice/` PWA for Class VII math using the local-first + sync pattern.
    - **M4 — Content depth sprint** — Generate/verify 100+ questions per math topic and 500+ nursing questions with source metadata.
    - Flutter backend wiring remains **deferred** until the PWA loop is validated.
