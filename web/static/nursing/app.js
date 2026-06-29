@@ -94,10 +94,12 @@
   const SURVEY_DISMISS_DAYS = 7;
 
   const DB_NAME = 'drmath_nursing';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   const ATTEMPTS_STORE = 'attempts';
   const SYNC_QUEUE_STORE = 'sync_queue';
+  const QUESTION_STATS_STORE = 'question_stats';
   const SESSION_ID_KEY = 'mw_nursing_session_id';
+  const DAY_MS = 24 * 60 * 60 * 1000;
   const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
   const DEFAULT_UTM = {
     utm_source: 'web_nursing',
@@ -469,6 +471,9 @@
         if (!db.objectStoreNames.contains(SYNC_QUEUE_STORE)) {
           db.createObjectStore(SYNC_QUEUE_STORE, { keyPath: 'client_attempt_id' });
         }
+        if (!db.objectStoreNames.contains(QUESTION_STATS_STORE)) {
+          db.createObjectStore(QUESTION_STATS_STORE, { keyPath: 'question_id' });
+        }
       };
       req.onsuccess = (e) => resolve(e.target.result);
       req.onerror = (e) => reject(e.target.error);
@@ -502,6 +507,14 @@
     return dbTx(storeName, 'readwrite').then(({ store }) => new Promise((resolve, reject) => {
       const req = store.delete(key);
       req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    }));
+  }
+
+  function dbGet(storeName, key) {
+    return dbTx(storeName, 'readonly').then(({ store }) => new Promise((resolve, reject) => {
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result || null);
       req.onerror = () => reject(req.error);
     }));
   }
@@ -570,12 +583,104 @@
     }
   }
 
+  function computeNextDue(stat, isCorrect) {
+    const now = Date.now();
+    let intervalDays = 1;
+    if (stat && stat.next_due_at && stat.last_seen_at) {
+      const previousInterval = new Date(stat.next_due_at).getTime() - new Date(stat.last_seen_at).getTime();
+      intervalDays = Math.max(1, Math.round(previousInterval / DAY_MS));
+    }
+    if (isCorrect) intervalDays *= 2;
+    else intervalDays = 1;
+    return new Date(now + intervalDays * DAY_MS).toISOString();
+  }
+
+  async function recordQuestionStat(questionId, isCorrect, meta = {}) {
+    let stat = await dbGet(QUESTION_STATS_STORE, questionId);
+    const now = new Date().toISOString();
+    if (!stat) {
+      stat = {
+        question_id: questionId,
+        subject_id: meta.subject_id || null,
+        topic_id: meta.topic_id || null,
+        correct_count: 0,
+        incorrect_count: 0,
+        last_seen_at: now,
+        next_due_at: now,
+      };
+    }
+    stat.last_seen_at = now;
+    if (isCorrect) stat.correct_count += 1;
+    else stat.incorrect_count += 1;
+    stat.next_due_at = computeNextDue(stat, isCorrect);
+    stat.subject_id = meta.subject_id || stat.subject_id;
+    stat.topic_id = meta.topic_id || stat.topic_id;
+    await dbPut(QUESTION_STATS_STORE, stat);
+  }
+
+  function weaknessScore(stat) {
+    if (!stat) return 0;
+    const seen = stat.correct_count + stat.incorrect_count;
+    if (seen === 0) return 0;
+    const accuracy = stat.correct_count / seen;
+    return (1 - accuracy) * 100 + seen;
+  }
+
+  async function selectDailyQuestions(candidatePool, count = 5) {
+    const stats = await dbGetAll(QUESTION_STATS_STORE);
+    const statMap = new Map(stats.map((s) => [s.question_id, s]));
+    const now = new Date().toISOString();
+
+    const withMeta = candidatePool.map((q) => ({
+      question: q,
+      stat: statMap.get(q.id) || null,
+      isDue: statMap.get(q.id) && statMap.get(q.id).next_due_at <= now,
+    }));
+
+    const due = withMeta
+      .filter((item) => item.isDue)
+      .sort((a, b) => weaknessScore(b.stat) - weaknessScore(a.stat) || new Date(a.stat.last_seen_at) - new Date(b.stat.last_seen_at));
+
+    const seenIds = new Set(stats.map((s) => s.question_id));
+    const unseen = withMeta
+      .filter((item) => !seenIds.has(item.question.id))
+      .sort(() => Math.random() - 0.5);
+
+    const nonDueSeen = withMeta
+      .filter((item) => item.stat && !item.isDue)
+      .sort((a, b) => weaknessScore(b.stat) - weaknessScore(a.stat) || new Date(a.stat.last_seen_at) - new Date(b.stat.last_seen_at));
+
+    let selected = due.map((item) => item.question);
+    const needWeakMinimum = Math.ceil(count * 0.3);
+    const weakPool = due.concat(nonDueSeen).map((item) => item.question);
+    if (selected.length < needWeakMinimum) {
+      selected = weakPool.slice(0, Math.max(needWeakMinimum, count));
+    } else if (selected.length > count) {
+      selected = selected.slice(0, count);
+    }
+
+    const usedIds = new Set(selected.map((q) => q.id));
+    const fillers = [];
+    [...unseen, ...nonDueSeen, ...due].forEach((item) => {
+      if (!usedIds.has(item.question.id)) fillers.push(item.question);
+    });
+    fillers.sort(() => Math.random() - 0.5);
+
+    while (selected.length < count && fillers.length) {
+      selected.push(fillers.shift());
+    }
+
+    return selected.slice(0, count);
+  }
+
   async function loadQuestions() {
     try {
-      const response = await fetch('/api/nursing/questions?limit=5');
+      const response = await fetch('/api/nursing/questions?limit=50');
       if (!response.ok) throw new Error('API error');
       const data = await response.json();
-      if (Array.isArray(data) && data.length) return data;
+      if (Array.isArray(data) && data.length) {
+        return selectDailyQuestions(data, 5);
+      }
       throw new Error('Empty API response');
     } catch (err) {
       console.warn('API failed, using fallback', err);
@@ -658,6 +763,10 @@
       confidence: null,
     };
     recordAttempt(attempt);
+    recordQuestionStat(q.id, isCorrect, {
+      subject_id: q.subject_id || null,
+      topic_id: q.topic_id || null,
+    }).catch((err) => console.error('recordQuestionStat failed', err));
 
     trackEvent('question_answered', {
       question_index: currentIndex,
